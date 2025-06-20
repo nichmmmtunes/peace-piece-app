@@ -1179,6 +1179,7 @@
     border-radius: 4px;
     font-size: 0.9rem;
     background: white;
+    color: var(--color-neutral-900);
     cursor: pointer;
   }
 
