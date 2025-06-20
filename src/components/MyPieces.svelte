@@ -610,7 +610,7 @@
 
   .stat-value {
     font-weight: 600;
-    color: var(--color-primary-600);
+    color: var(--text-color);
   }
 
   .stat-label {
