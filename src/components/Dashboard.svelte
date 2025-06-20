@@ -132,6 +132,32 @@
       // Combine all applications
       applications = [...(userApplications || []), ...(organizerApplications || [])];
 
+      // Load recent activity (notifications)
+      const { data: recentNotifications, error: activityError } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', $user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (activityError) throw activityError;
+      
+      // Transform notifications into activity items
+      if (recentNotifications && recentNotifications.length > 0) {
+        projectActivity = recentNotifications.map(notification => ({
+          id: notification.id,
+          title: notification.title,
+          message: notification.message,
+          type: notification.type,
+          date: notification.created_at,
+          actionUrl: notification.action_url,
+          read: notification.read
+        }));
+      } else {
+        // Fallback to empty array if no notifications
+        projectActivity = [];
+      }
+
       // Generate timeline reminders from project milestones
       const now = new Date();
       const reminders: any[] = [];
@@ -146,7 +172,7 @@
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 
                 reminders.push({
-                  type: 'Final Submission',
+                  type: milestone.title || 'Deadline',
                   projectTitle: project.title,
                   dueDate: milestone.due_date,
                   daysRemaining: diffDays,
@@ -162,18 +188,6 @@
       timelineReminders = reminders.sort((a, b) => 
         new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
       ).slice(0, 3); // Take only the 3 closest deadlines
-
-      // Mock project activity for now
-      projectActivity = [
-        {
-          id: 'activity1',
-          fileName: 'threads_illustration_3.2.png',
-          version: 'v3.2',
-          projectTitle: 'Threads of Belonging',
-          uploadDate: '2025-06-10',
-          status: 'Status Label'
-        }
-      ];
 
     } catch (e: any) {
       console.error('Error loading dashboard data:', e);
@@ -255,6 +269,81 @@
         return app.status === 'rejected';
       }
       return true;
+    });
+  }
+
+  // Get notification icon based on type
+  function getNotificationIcon(type: string): string {
+    switch (type) {
+      case 'success':
+        return `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>`;
+      case 'warning':
+        return `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>`;
+      case 'error':
+        return `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>`;
+      default: // info
+        return `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>`;
+    }
+  }
+
+  // Get notification color based on type
+  function getNotificationColor(type: string): string {
+    switch (type) {
+      case 'success':
+        return 'var(--color-success-600)';
+      case 'warning':
+        return 'var(--color-warning-600)';
+      case 'error':
+        return 'var(--color-error-600)';
+      default: // info
+        return 'var(--color-primary-600)';
+    }
+  }
+
+  // Format relative time for notifications
+  function formatRelativeTime(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) {
+      return 'Just now';
+    }
+    
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+    }
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+      return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    }
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) {
+      return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+    }
+    
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
     });
   }
 
@@ -415,30 +504,27 @@
               <div class="activity-list">
                 {#each projectActivity as activity (activity.id)}
                   <div class="activity-item" in:fly={{ y: 20, duration: 300 }}>
-                    <div class="activity-details">
-                      <div class="activity-file">
-                        <span class="file-name">{activity.fileName}</span>
-                        <span class="file-version">{activity.version}</span>
-                      </div>
-                      <div class="activity-project">
-                        <span>{activity.projectTitle}</span>
-                      </div>
-                      <div class="activity-date">
-                        <span>Uploaded {formatDate(activity.uploadDate)}</span>
-                      </div>
+                    <div class="activity-icon" style="color: {getNotificationColor(activity.type)}">
+                      {@html getNotificationIcon(activity.type)}
                     </div>
                     
-                    <div class="activity-actions">
-                      <span class="status-badge">{activity.status}</span>
-                      <button class="action-button dark">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                          <polyline points="7 10 12 15 17 10"></polyline>
-                          <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        Next Action
-                      </button>
+                    <div class="activity-details">
+                      <div class="activity-header">
+                        <h3 class="activity-title">{activity.title}</h3>
+                        <span class="activity-time">{formatRelativeTime(activity.date)}</span>
+                      </div>
+                      <p class="activity-message">{activity.message}</p>
+                      
+                      {#if activity.actionUrl}
+                        <a href={activity.actionUrl} use:link class="activity-action">
+                          View Details →
+                        </a>
+                      {/if}
                     </div>
+                    
+                    {#if !activity.read}
+                      <div class="unread-indicator"></div>
+                    {/if}
                   </div>
                 {/each}
               </div>
@@ -514,7 +600,7 @@
                       </span>
                       
                       {#if application.status === 'submitted' || application.status === 'reviewing'}
-                        {#if $user && application.pieces?.organizer_user_id === $user.id}
+                        {#if $user && application.pieces?.organizer_id && application.pieces?.organizer_user_id === $user.id}
                           <div class="action-buttons">
                             <a href="/review-application/{application.id}" use:link class="action-button review">
                               <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
@@ -948,49 +1034,74 @@
 
   .activity-item {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    gap: var(--space-3);
     padding: var(--space-4);
-    background: transparent;
+    background: var(--bg-color);
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
+    position: relative;
+  }
+
+  .activity-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background-color: color-mix(in srgb, currentColor 10%, transparent);
+    border-radius: 50%;
+    flex-shrink: 0;
   }
 
   .activity-details {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
+    flex: 1;
   }
 
-  .activity-file {
+  .activity-header {
     display: flex;
-    align-items: center;
-    gap: var(--space-2);
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-2);
   }
 
-  .file-name {
-    font-weight: 500;
+  .activity-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
     color: var(--text-color);
   }
 
-  .file-version {
+  .activity-time {
     font-size: 0.75rem;
-    padding: var(--space-1) var(--space-2);
-    background: var(--color-neutral-100);
-    border-radius: var(--radius-md);
     color: var(--text-muted);
   }
 
-  .activity-project,
-  .activity-date {
+  .activity-message {
     font-size: 0.875rem;
     color: var(--text-muted);
+    margin: 0 0 var(--space-2) 0;
+    line-height: 1.4;
   }
 
-  .activity-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
+  .activity-action {
+    font-size: 0.875rem;
+    color: var(--color-primary-600);
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .activity-action:hover {
+    text-decoration: underline;
+  }
+
+  .unread-indicator {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-primary-600);
+    border-radius: 50%;
   }
 
   /* Applications Section */
