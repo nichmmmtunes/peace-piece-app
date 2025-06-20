@@ -94,16 +94,36 @@
     const fileExt = file.name.split('.').pop();
     const fileName = `${crypto.randomUUID()}.${fileExt}`;
     
+    console.log(`DEBUG: Uploading file to bucket '${bucket}' with name '${fileName}'`);
+    
     const { data, error } = await supabase.storage
       .from(bucket)
       .upload(fileName, file);
       
-    if (error) throw error;
+    if (error) {
+      console.error(`DEBUG: Error uploading file to ${bucket}:`, error);
+      throw error;
+    }
+    
+    console.log(`DEBUG: File uploaded successfully to ${bucket}/${fileName}`);
     
     const { data: { publicUrl } } = supabase.storage
       .from(bucket)
       .getPublicUrl(fileName);
       
+    console.log(`DEBUG: Generated public URL: ${publicUrl}`);
+    
+    // Test URL validity
+    try {
+      const response = await fetch(publicUrl, { method: 'HEAD' });
+      console.log(`DEBUG: URL test response status: ${response.status}`);
+      if (!response.ok) {
+        console.warn(`DEBUG: URL test failed with status ${response.status}`);
+      }
+    } catch (e) {
+      console.error(`DEBUG: URL test fetch error:`, e);
+    }
+    
     return publicUrl;
   }
   
@@ -116,11 +136,23 @@
       
       // Process clips to upload any local files to storage
       if (data.clips && Array.isArray(data.clips)) {
+        console.log(`DEBUG: Processing ${data.clips.length} clips for saving`);
+        
         for (let i = 0; i < data.clips.length; i++) {
           const clip = data.clips[i];
           
+          console.log(`DEBUG: Processing clip ${i}:`, {
+            id: clip.id,
+            type: clip.type,
+            name: clip.name,
+            url: clip.url,
+            hasFile: !!clip.file
+          });
+          
           // Check if clip has a file that needs to be uploaded
           if (clip.file && clip.url && clip.url.startsWith('blob:')) {
+            console.log(`DEBUG: Clip ${clip.id} has a blob URL that needs to be uploaded:`, clip.url);
+            
             try {
               // Determine the appropriate bucket based on file type
               let bucket = 'pieces'; // default bucket
@@ -130,8 +162,12 @@
                 bucket = 'videos';
               }
               
+              console.log(`DEBUG: Selected bucket for clip ${clip.id}: ${bucket}`);
+              
               // Upload the file and get the public URL
               const publicUrl = await uploadFileToStorage(clip.file, bucket);
+              
+              console.log(`DEBUG: Clip ${clip.id} URL before update:`, clip.url);
               
               // Update the clip with the new URL and remove the file reference
               data.clips[i] = {
@@ -139,17 +175,30 @@
                 url: publicUrl,
                 file: undefined // Remove file reference as it's now uploaded
               };
+              
+              console.log(`DEBUG: Clip ${clip.id} URL after update:`, data.clips[i].url);
             } catch (uploadError) {
-              console.error('Error uploading file:', uploadError);
+              console.error(`DEBUG: Error uploading file for clip ${clip.id}:`, uploadError);
               // Continue with other clips even if one fails
             }
+          } else if (clip.url) {
+            console.log(`DEBUG: Clip ${clip.id} already has a permanent URL:`, clip.url);
+          } else {
+            console.log(`DEBUG: Clip ${clip.id} has no URL to process`);
           }
         }
       }
       
       // Log the data being saved for debugging
       console.log('DEBUG: Saving editor data with clips:', data.clips);
-      console.log('DEBUG: Clip URLs being saved:', data.clips.map(clip => ({ id: clip.id, type: clip.type, url: clip.url })));
+      if (data.clips) {
+        console.log('DEBUG: Clip URLs being saved:', data.clips.map(clip => ({ 
+          id: clip.id, 
+          type: clip.type, 
+          url: clip.url,
+          isBlob: clip.url?.startsWith('blob:') || false
+        })));
+      }
       
       const { error: updateError } = await supabase
         .from('pieces')
@@ -171,6 +220,7 @@
       
     } catch (e: any) {
       saveMessage = `Error saving changes: ${e.message}`;
+      console.error('DEBUG: Error in saveEditorData:', e);
     } finally {
       saving = false;
     }
