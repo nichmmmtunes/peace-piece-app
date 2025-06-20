@@ -82,12 +82,63 @@
     }
   }
   
+  // Helper function to upload a file to Supabase Storage
+  async function uploadFileToStorage(file: File, bucket: string): Promise<string> {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${crypto.randomUUID()}.${fileExt}`;
+    
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(fileName, file);
+      
+    if (error) throw error;
+    
+    const { data: { publicUrl } } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(fileName);
+      
+    return publicUrl;
+  }
+  
   async function saveEditorData(data: any) {
     if (!$user || !canEdit || !piece) return;
     
     try {
       saving = true;
       saveMessage = 'Saving...';
+      
+      // Process clips to upload any local files to storage
+      if (data.clips && Array.isArray(data.clips)) {
+        for (let i = 0; i < data.clips.length; i++) {
+          const clip = data.clips[i];
+          
+          // Check if clip has a file that needs to be uploaded
+          if (clip.file && clip.url && clip.url.startsWith('blob:')) {
+            try {
+              // Determine the appropriate bucket based on file type
+              let bucket = 'pieces'; // default bucket
+              if (clip.type === 'audio') {
+                bucket = 'audio';
+              } else if (clip.type === 'video') {
+                bucket = 'videos';
+              }
+              
+              // Upload the file and get the public URL
+              const publicUrl = await uploadFileToStorage(clip.file, bucket);
+              
+              // Update the clip with the new URL and remove the file reference
+              data.clips[i] = {
+                ...clip,
+                url: publicUrl,
+                file: undefined // Remove file reference as it's now uploaded
+              };
+            } catch (uploadError) {
+              console.error('Error uploading file:', uploadError);
+              // Continue with other clips even if one fails
+            }
+          }
+        }
+      }
       
       const { error: updateError } = await supabase
         .from('pieces')

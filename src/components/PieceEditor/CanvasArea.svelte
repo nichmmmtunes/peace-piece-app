@@ -15,6 +15,7 @@
   // Video element references for playback control
   let backgroundVideoElement: HTMLVideoElement;
   let overlayVideoElements: Map<string, HTMLVideoElement> = new Map();
+  let audioElements: Map<string, HTMLAudioElement> = new Map();
 
   function formatTime(seconds: number): string {
     const mins = Math.floor(seconds / 60);
@@ -79,6 +80,35 @@
           } else if (!isPlaying && !videoElement.paused) {
             videoElement.pause();
           }
+        }
+      }
+    });
+    
+    // Control audio elements
+    audioClips.forEach(clip => {
+      const audioElement = audioElements.get(clip.id);
+      if (audioElement) {
+        const audioTime = currentTime - clip.timelineStart + (clip.contentStartTime || 0);
+        
+        // Ensure audio time stays within content bounds
+        const clampedAudioTime = Math.max(
+          clip.contentStartTime || 0,
+          Math.min(clip.contentEndTime || clip.duration, audioTime)
+        );
+        
+        if (Math.abs(audioElement.currentTime - clampedAudioTime) > 0.2) {
+          audioElement.currentTime = clampedAudioTime;
+        }
+        
+        // Set volume from clip property
+        if (clip.volume !== undefined) {
+          audioElement.volume = clip.volume;
+        }
+        
+        if (isPlaying && audioElement.paused) {
+          audioElement.play().catch(console.warn);
+        } else if (!isPlaying && !audioElement.paused) {
+          audioElement.pause();
         }
       }
     });
@@ -305,6 +335,16 @@
       }
     };
   }
+  
+  // Helper function to bind audio elements to the map
+  function bindAudioElement(node: HTMLAudioElement, clipId: string) {
+    audioElements.set(clipId, node);
+    return {
+      destroy() {
+        audioElements.delete(clipId);
+      }
+    };
+  }
 </script>
 
 <div class="canvas-area" on:click={handleCanvasAreaClick}>
@@ -397,6 +437,15 @@
         </div>
       {/each}
 
+      <!-- Audio Elements (hidden) -->
+      {#each audioClips as audioClip (audioClip.id)}
+        <audio 
+          use:bindAudioElement={audioClip.id}
+          src={audioClip.url || audioClip.sampleData?.thumbnail} 
+          style="display: none;"
+        ></audio>
+      {/each}
+
       <!-- Audio Visualization -->
       {#if audioClips.length > 0}
         <div class="audio-visualization">
@@ -413,6 +462,18 @@
                         class:active={isPlaying}
                         style="
                           height: {level * 20}px;
+                          animation-delay: {i * 0.1}s;
+                        "
+                      ></div>
+                    {/each}
+                  {:else}
+                    <!-- Default waveform if no sample data -->
+                    {#each Array(10) as _, i}
+                      <div 
+                        class="waveform-bar"
+                        class:active={isPlaying}
+                        style="
+                          height: {Math.random() * 15 + 5}px;
                           animation-delay: {i * 0.1}s;
                         "
                       ></div>
@@ -607,8 +668,8 @@
     color: white;
     font-size: 0.8rem;
     z-index: 100;
-    visibility: hidden;
-    opacity: 0;
+    visibility: visible;
+    opacity: 1;
   }
 
   .audio-indicator {
@@ -675,8 +736,8 @@
     font-family: monospace;
     font-size: 0.9rem;
     z-index: 100;
-    visibility: hidden;
-    opacity: 0;
+    visibility: visible;
+    opacity: 1;
   }
 
   .active-layers {

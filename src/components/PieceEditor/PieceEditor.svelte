@@ -41,7 +41,7 @@ let newLayerFile: File | null = null;
 
 // Auto-save timer
 let autoSaveTimer: number;
-const AUTO_SAVE_INTERVAL = 30000; // 30 seconds
+const AUTO_SAVE_INTERVAL = 10000; // 10 seconds
 
 // Event dispatcher for saving data
 const dispatch = createEventDispatcher();
@@ -205,32 +205,86 @@ function reorderLayers(event) {
   saveEditorData();
 }
 
-async function addVideoFile(event) {
+async function addMediaFile(event) {
   const file = event.detail;
-  if (!file.type.startsWith('video/')) return;
-
-  const url = URL.createObjectURL(file);
-  const video = document.createElement('video');
+  if (!file) return;
   
-  video.onloadedmetadata = () => {
+  // Create a URL for the file
+  const url = URL.createObjectURL(file);
+  
+  // Determine the file type
+  const fileType = file.type.startsWith('audio/') ? 'audio' : 
+                  file.type.startsWith('video/') ? 'video' : 
+                  file.type.startsWith('image/') ? 'image' : null;
+  
+  if (!fileType) {
+    console.error('Unsupported file type:', file.type);
+    return;
+  }
+  
+  // Create appropriate media element to get duration
+  const mediaElement = fileType === 'audio' ? document.createElement('audio') : 
+                      fileType === 'video' ? document.createElement('video') : null;
+  
+  if (mediaElement) {
+    mediaElement.onloadedmetadata = () => {
+      const duration = mediaElement.duration;
+      
+      const clip: VideoClip = {
+        id: Math.random().toString(36).substr(2, 9),
+        file,
+        url,
+        duration,
+        contentStartTime: 0,
+        contentEndTime: duration,
+        layer: clips.length,
+        timelineStart: 0,
+        timelineEnd: duration,
+        name: file.name,
+        type: fileType,
+        icon: fileType === 'audio' ? '🎵' : fileType === 'video' ? '▶️' : '🖼️',
+        position: { x: 50, y: 50 },
+        scale: { x: 100, y: 100 },
+        rotation: 0,
+        opacity: 1,
+        volume: 1,
+        brightness: 1,
+        contrast: 1,
+        saturation: 1,
+        blur: 0,
+        mixBlendMode: 'normal',
+        // Initialize animation properties
+        animation: 'none',
+        animationDuration: 1,
+        animationDelay: 0
+      };
+      
+      clips = [...clips, clip];
+      
+      // Save after adding a media file
+      saveEditorData();
+    };
+    
+    mediaElement.src = url;
+  } else if (fileType === 'image') {
+    // For images, we don't need to get duration
     const clip: VideoClip = {
       id: Math.random().toString(36).substr(2, 9),
       file,
       url,
-      duration: video.duration,
+      duration: 10, // Default duration for images
       contentStartTime: 0,
-      contentEndTime: video.duration,
+      contentEndTime: 10,
       layer: clips.length,
       timelineStart: 0,
-      timelineEnd: video.duration,
+      timelineEnd: 10,
       name: file.name,
-      type: 'video',
-      icon: '▶️',
+      type: 'image',
+      icon: '🖼️',
       position: { x: 50, y: 50 },
-      scale: { x: 100, y: 100 }, // 100% of canvas
+      scale: { x: 100, y: 100 },
       rotation: 0,
       opacity: 1,
-      volume: 1,
       brightness: 1,
       contrast: 1,
       saturation: 1,
@@ -244,11 +298,9 @@ async function addVideoFile(event) {
     
     clips = [...clips, clip];
     
-    // Save after adding a video file
+    // Save after adding an image file
     saveEditorData();
-  };
-  
-  video.src = url;
+  }
 }
 
 function updateClipProperty(event) {
@@ -401,7 +453,7 @@ $: activeClips = clips
         on:selectClip={selectClip}
         on:deleteClip={deleteClip}
         on:createLayer={createLayer}
-        on:addVideoFile={addVideoFile}
+        on:addVideoFile={addMediaFile}
         on:reorderLayers={reorderLayers}
       />
       

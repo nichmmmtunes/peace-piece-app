@@ -951,4 +951,8 @@
   .popup-btn:disabled:hover {
     background: #007AFF;
   }
+
+  .popup-btn.secondary:disabled:hover {
+    background: #f0f0f0;
+  }
 </style>
