@@ -39,18 +39,33 @@
       piece = application.pieces;
       applicantProfile = application.profiles;
       
+      console.log('DEBUG: Current user ID (from $user store):', $user?.id);
+      console.log('DEBUG: Piece ID from application:', piece.id);
+      console.log('DEBUG: Piece organizer ID (from piece object):', piece.organizer_id);
+      console.log('DEBUG: Applicant Profile ID (from application object):', applicantProfile.id);
+      
       // Check if current user is the organizer of this piece
       if ($user && piece.organizer_id) {
         // Get the organizer data to check if current user owns this organizer
-        const { data: organizerData } = await supabase
+        const { data: organizerData, error: organizerError } = await supabase
           .from('organizers')
           .select('user_id')
           .eq('id', piece.organizer_id)
           .single();
-        
-        if (organizerData && organizerData.user_id === $user.id) {
-          canReview = true;
+      
+        if (organizerError) {
+          console.error('DEBUG: Error fetching organizer data:', organizerError);
+        } else {
+          console.log('DEBUG: Fetched organizer data (user_id):', organizerData?.user_id);
+          if (organizerData && organizerData.user_id === $user.id) {
+            canReview = true;
+            console.log('DEBUG: User is identified as organizer, canReview set to true.');
+          } else {
+            console.log('DEBUG: User is NOT the organizer for this piece based on fetched organizer data.');
+          }
         }
+      } else {
+        console.log('DEBUG: User not authenticated or piece.organizer_id is missing, skipping organizer check.');
       }
       
       // Load artist profile of the applicant
