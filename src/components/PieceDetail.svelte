@@ -453,7 +453,6 @@
 
           <!-- Organizer Info -->
           <div class="organizer-section" in:fly={{ y: 20, duration: 300, delay: 200 }}>
-            <div class="organizer-label">Organized by</div>
             <div class="organizer-info">
               <div class="organizer-avatar">
                 {#if piece.organizer_avatar_url}
@@ -465,6 +464,7 @@
                 {/if}
               </div>
               <div class="organizer-details">
+                <div class="organizer-label">Organized by</div>
                 <h3 class="organizer-name">{piece.organizer_name}</h3>
                 <p class="organizer-bio">{piece.organizer_description || 'Community organizer and facilitator.'}</p>
               </div>
@@ -1035,7 +1035,7 @@
   }
 
   .organizer-label, .sponsor-label {
-    font-size: 0.875rem;
+    font-size: 14px;
     color: var(--text-muted);
     margin-bottom: var(--space-3);
   }
