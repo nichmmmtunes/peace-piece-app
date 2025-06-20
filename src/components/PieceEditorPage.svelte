@@ -38,6 +38,13 @@
       // Load editor data if it exists
       editorData = piece.editor_data || null;
       
+      // Log the loaded editor data for debugging
+      console.log('DEBUG: Loaded editor data:', editorData);
+      if (editorData && editorData.clips) {
+        console.log('DEBUG: Loaded clips:', editorData.clips);
+        console.log('DEBUG: Clip URLs:', editorData.clips.map(clip => ({ id: clip.id, type: clip.type, url: clip.url })));
+      }
+      
       // Check if current user is the organizer of this piece
       if ($user && piece.organizer_id) {
         // Get the organizer data to check if current user owns this organizer
@@ -139,6 +146,10 @@
           }
         }
       }
+      
+      // Log the data being saved for debugging
+      console.log('DEBUG: Saving editor data with clips:', data.clips);
+      console.log('DEBUG: Clip URLs being saved:', data.clips.map(clip => ({ id: clip.id, type: clip.type, url: clip.url })));
       
       const { error: updateError } = await supabase
         .from('pieces')

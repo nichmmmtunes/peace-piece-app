@@ -1,6 +1,6 @@
 export interface VideoClip {
   id: string;
-  file: File;
+  file?: File; // Make file optional since it won't be available after page reload
   url?: string;
   duration: number;
   contentStartTime: number; // Start point within the original media file
