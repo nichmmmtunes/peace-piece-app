@@ -102,9 +102,9 @@
   --space-16: 4rem;   /* 64px */
   
   /* Border radius */
-  --radius-sm: 0.25rem;
+  --radius-sm: 6rem;
   --radius-md: 10px;
-  --radius-lg: 10px 30px 10px 30px;
+  --radius-lg: 10px 30px 10px 10px;
   --radius-full: 9999px;
   
   color-scheme: light dark;
