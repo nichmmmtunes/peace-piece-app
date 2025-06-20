@@ -82,7 +82,7 @@
   // CRITICAL: Force clean URL if a hash is present on initial load
   // This helps svelte-spa-router consistently use history mode
   if (window.location.hash && window.location.hash !== '#') {
-    const cleanPath = window.location.pathname;
+    const cleanPath = window.location.hash.substring(1);
     const cleanSearch = window.location.search;
     const fullCleanUrl = cleanPath + cleanSearch;
   
