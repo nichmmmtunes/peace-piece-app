@@ -690,7 +690,8 @@
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-2) var(--space-4);
-    background: var(--card-bg);
+    background: var(--bg-color);
+    border: solid 1px var(--border-color);
     border-radius: var(--radius-md);
     font-size: 0.875rem;
     color: var(--text-color);
