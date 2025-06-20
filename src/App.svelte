@@ -31,6 +31,7 @@
   import ArtistProfileSettings from './components/ArtistProfileSettings.svelte';
   import OrganizerProfileSettings from './components/OrganizerProfileSettings.svelte';
   import ApplyArtist from './components/ApplyArtist.svelte';
+  import ReviewApplication from './components/ReviewApplication.svelte';
 
   let darkMode = false;
   let onboardingCompleted = false;
@@ -200,10 +201,11 @@
     '/create-peace': CreatePiece,
     '/pieces': MyPieces,
     '/apply/:id': ApplyArtist,
+    '/review-application/:id': ReviewApplication,
   };
 
   // List of routes that require authentication
-  const protectedRoutes = ['/', '/settings', '/settings/artist-profile', '/settings/organizer-profile', '/dashboard', '/onboarding', '/update/:id', '/edit/:id', '/notifications', '/create-peace', '/pieces', '/apply/:id'];
+  const protectedRoutes = ['/', '/settings', '/settings/artist-profile', '/settings/organizer-profile', '/dashboard', '/onboarding', '/update/:id', '/edit/:id', '/notifications', '/create-peace', '/pieces', '/apply/:id', '/review-application/:id'];
 
   // List of routes that should only show top bar (no sidebar) regardless of auth status
   const topBarOnlyRoutes = ['/auth', '/confirm-signup', '/signup-confirmed', '/onboarding', '/forgot-password', '/reset-password'];

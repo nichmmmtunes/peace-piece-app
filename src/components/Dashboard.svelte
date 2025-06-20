@@ -531,8 +531,13 @@
                       
                       {#if application.status === 'submitted' || application.status === 'reviewing'}
                         <div class="action-buttons">
-                          <button class="action-button approve">Approve</button>
-                          <button class="action-button decline">Decline</button>
+                          <a href="/review-application/{application.id}" use:link class="action-button review">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                              <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            Review
+                          </a>
                         </div>
                       {:else}
                         <a href="/profile/amira" use:link class="action-button">
@@ -905,6 +910,16 @@
 
   .action-button.dark:hover {
     background: var(--color-neutral-800);
+  }
+
+  .action-button.review {
+    background: var(--color-primary-600);
+    color: white;
+    border-color: var(--color-primary-700);
+  }
+
+  .action-button.review:hover {
+    background: var(--color-primary-700);
   }
 
   .action-button.approve {
