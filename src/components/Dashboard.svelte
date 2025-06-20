@@ -100,15 +100,7 @@
         .from('applications')
         .select(`
           *,
-          pieces:piece_id(
-            id,
-            title,
-            image_url,
-            organizer_id,
-            organizers:organizer_id(
-              name
-            )
-          )
+          pieces:piece_id(*) // Select all fields from the piece_details view
         `)
         .eq('applicant_profile_id', $user.id)
         .order('created_at', { ascending: false });
@@ -122,15 +114,7 @@
           .from('applications')
           .select(`
             *,
-            pieces:piece_id(
-              id,
-              title,
-              image_url,
-              organizer_id,
-              organizers:organizer_id(
-                name
-              )
-            ),
+            pieces:piece_id(*), // Select all fields from the piece_details view
             profiles:applicant_profile_id(
               username,
               avatar_url
@@ -530,16 +514,28 @@
                       </span>
                       
                       {#if application.status === 'submitted' || application.status === 'reviewing'}
-                        <div class="action-buttons">
-                          <a href="/review-application/{application.id}" use:link class="action-button review">
+                        {#if $user && application.pieces?.organizer_user_id === $user.id}
+                          <div class="action-buttons">
+                            <a href="/review-application/{application.id}" use:link class="action-button review">
+                              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                              </svg>
+                              Review
+                            </a>
+                          </div>
+                        {:else}
+                          <!-- If status is submitted/reviewing but user is not the organizer -->
+                          <a href="/profile/{application.profiles?.username}" use:link class="action-button">
                             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
                               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                               <circle cx="12" cy="12" r="3"></circle>
                             </svg>
-                            Review
+                            View Portfolio
                           </a>
-                        </div>
+                        {/if}
                       {:else}
+                        <!-- For other statuses (approved, rejected), always show View Portfolio -->
                         <a href="/profile/{application.profiles?.username}" use:link class="action-button">
                           <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
