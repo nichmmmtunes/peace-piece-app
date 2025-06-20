@@ -100,7 +100,7 @@
         .from('applications')
         .select(`
           *,
-          pieces:piece_id(*) // Select all fields from the piece_details view
+          pieces:piece_id(*)
         `)
         .eq('applicant_profile_id', $user.id)
         .order('created_at', { ascending: false });
@@ -114,7 +114,7 @@
           .from('applications')
           .select(`
             *,
-            pieces:piece_id(*), // Select all fields from the piece_details view
+            pieces:piece_id(*),
             profiles:applicant_profile_id(
               username,
               avatar_url
