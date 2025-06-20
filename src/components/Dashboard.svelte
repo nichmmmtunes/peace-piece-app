@@ -515,8 +515,8 @@
                     
                     <div class="application-details">
                       <div class="applicant-info">
-                        <h3 class="applicant-name">Amira Jalloh</h3>
-                        <span class="applicant-role">Illustrator</span>
+                        <h3 class="applicant-name">{application.profiles?.username || 'Unknown Applicant'}</h3>
+                        <span class="applicant-role">{application.selected_mediums?.[0] || 'Artist'}</span>
                       </div>
                       
                       <div class="application-meta">
@@ -540,7 +540,7 @@
                           </a>
                         </div>
                       {:else}
-                        <a href="/profile/amira" use:link class="action-button">
+                        <a href="/profile/{application.profiles?.username}" use:link class="action-button">
                           <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                             <circle cx="12" cy="12" r="3"></circle>
