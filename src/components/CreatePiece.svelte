@@ -1990,7 +1990,7 @@ onMount(() => {
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    background-color: var(--color-primary-100);
+    background: var(--color-primary-100);
     color: var(--color-primary-700);
     border: 1px solid var(--color-primary-200);
     padding: var(--space-2) var(--space-3);
