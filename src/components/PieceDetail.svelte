@@ -1126,7 +1126,7 @@
   .about-section, .timeline-section, .team-section, .comments-section {
     padding: var(--space-6) 0;
     background: transparent;
-    border-radius: var(--radius-lg);
+    border-radius: 0px;
     border-top: 1px solid var(--border-color);
   }
 
