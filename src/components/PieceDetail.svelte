@@ -1113,24 +1113,15 @@
 
   /* Section Styling */
   .section-title {
-    font-size: 1.75rem;
+    font-size: 28px;
     font-weight: 700;
-    margin: 0 0 var(--space-4) 0;
+    margin: 0 0 50px 0;
     color: var(--text-color);
     position: relative;
     padding-bottom: var(--space-2);
+    font-family: var(--font-instrument-serif);
   }
 
-  .section-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 60px;
-    height: 3px;
-    background-color: var(--color-primary-600);
-    border-radius: 3px;
-  }
 
   .about-section, .timeline-section, .team-section, .comments-section {
     padding: var(--space-6);
