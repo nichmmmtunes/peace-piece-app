@@ -1243,6 +1243,7 @@
     font-weight: 600;
     margin: 0;
     color: var(--text-color);
+    padding-right: 20px;
   }
 
   .days-badge {
