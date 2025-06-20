@@ -1030,14 +1030,14 @@
   .organizer-section, .sponsor-section {
     padding: var(--space-4);
     background: var(--bg-color);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-color);
+    border-radius: 0px;
+    border: none;
   }
 
   .organizer-label, .sponsor-label {
     font-size: 14px;
     color: var(--text-muted);
-    margin-bottom: var(--space-3);
+    margin-bottom: var(--space-2);
   }
 
   .organizer-info, .sponsor-info {
