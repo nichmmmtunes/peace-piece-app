@@ -1115,7 +1115,7 @@
   .section-title {
     font-size: 28px;
     font-weight: 700;
-    margin: 0 0 50px 0;
+    margin: 0 0 35px 0;
     color: var(--text-color);
     position: relative;
     padding-bottom: var(--space-2);
@@ -1124,10 +1124,10 @@
 
 
   .about-section, .timeline-section, .team-section, .comments-section {
-    padding: var(--space-6);
-    background: var(--card-bg);
+    padding: var(--space-6) 0;
+    background: transparent;
     border-radius: var(--radius-lg);
-    border: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-color);
   }
 
   .project-overview {
