@@ -1628,7 +1628,7 @@
     display: flex;
     justify-content: space-between;
     padding: var(--space-2) var(--space-3);
-    background-color: var(--color-neutral-50);
+    background: var(--bg-color);
     border-radius: var(--radius-md);
   }
   
