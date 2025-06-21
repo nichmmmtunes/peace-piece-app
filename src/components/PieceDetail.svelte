@@ -1112,6 +1112,7 @@
     align-items: center;
     gap: var(--space-2);
     transition: background-color 0.2s;
+    margin: 0 auto;
   }
 
   .unlock-button:hover {
