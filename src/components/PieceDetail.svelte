@@ -447,7 +447,31 @@
           <!-- Featured Image -->
           {#if piece.image_url}
             <div class="featured-image-container" in:fly={{ y: 20, duration: 300, delay: 100 }}>
-              <img src={piece.image_url} alt={piece.title} class="featured-image" />
+              {#if hasDonated}
+                <a href="/view/{piece.id}" use:link class="image-link">
+                  <img src={piece.image_url} alt={piece.title} class="featured-image" />
+                </a>
+              {:else}
+                <img src={piece.image_url} alt={piece.title} class="featured-image" />
+                <div class="image-lock-overlay" on:click={handleDonate}>
+                  <div class="lock-icon">
+                    <svg viewBox="0 0 24 24" width="48" height="48" stroke="white" stroke-width="2" fill="none">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                  </div>
+                  <div class="lock-message">
+                    <h3>Support to Unlock</h3>
+                    <p>Donate to view the full artwork and join the conversation</p>
+                    <button class="unlock-button">
+                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                      </svg>
+                      Donate Now
+                    </button>
+                  </div>
+                </div>
+              {/if}
             </div>
           {/if}
 
@@ -1017,6 +1041,7 @@
     width: 100%;
     border-radius: var(--radius-lg);
     overflow: hidden;
+    position: relative;
   }
 
   .featured-image {
@@ -1024,6 +1049,73 @@
     height: auto;
     display: block;
     object-fit: cover;
+  }
+
+  .image-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.3s ease;
+  }
+
+  .image-link:hover {
+    transform: scale(1.02);
+  }
+
+  .image-lock-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .image-lock-overlay:hover {
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  .lock-icon {
+    margin-bottom: var(--space-4);
+  }
+
+  .lock-message {
+    text-align: center;
+    color: white;
+    max-width: 80%;
+  }
+
+  .lock-message h3 {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-2);
+  }
+
+  .lock-message p {
+    margin-bottom: var(--space-4);
+    font-size: 1rem;
+  }
+
+  .unlock-button {
+    background: var(--color-primary-600);
+    color: white;
+    border: none;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    transition: background-color 0.2s;
+  }
+
+  .unlock-button:hover {
+    background: var(--color-success-600);
   }
 
   /* Organizer Section */
@@ -1137,6 +1229,36 @@
     margin-bottom: var(--space-6);
   }
 
+  .project-overview :global(p) {
+    margin-bottom: 1rem;
+  }
+
+  .project-overview :global(ul), .project-overview :global(ol) {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+  }
+
+  .project-overview :global(li) {
+    margin-bottom: 0.5rem;
+  }
+
+  .project-overview :global(a) {
+    color: var(--color-primary-600);
+    text-decoration: none;
+  }
+
+  .project-overview :global(a:hover) {
+    text-decoration: underline;
+  }
+
+  .project-overview :global(strong) {
+    font-weight: 600;
+  }
+
+  .project-overview :global(em) {
+    font-style: italic;
+  }
+
   .seeking-section h3, .collaboration-section h3, .deliverable-section h3, .compensation-section h3 {
     font-size: 1.25rem;
     font-weight: 600;
@@ -1190,7 +1312,7 @@
   }
 
   .date-day {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     font-weight: 600;
     color: var(--text-color);
   }
