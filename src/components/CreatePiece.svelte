@@ -1652,7 +1652,7 @@
   }
   
   .submission-note p {
-    color: var(--color-primary-700);
+    color: var(--color-neutral-900);
     margin: 0;
     font-size: 0.875rem;
     line-height: 1.5;
