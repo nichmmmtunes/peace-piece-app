@@ -1015,7 +1015,7 @@
     max-width: 200px;
     max-height: 150px;
     object-fit: cover;
-    border-radius: var(--radius-sm);
+    border-radius: 0px;
     margin-bottom: var(--space-2);
     display: block;
   }
