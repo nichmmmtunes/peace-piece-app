@@ -17,7 +17,9 @@
 
       let query = supabase
         .from('piece_details')
-        .select('*');
+        .select('*')
+        .eq('approved', true) // Only show approved pieces
+        .neq('project_status', 'submitted_for_approval'); // Don't show pieces in review
 
       // Apply sorting
       switch (sortBy) {
@@ -164,8 +166,8 @@
                 <span class="amount-raised">{formatAmount(piece.amount_raised)} raised</span>
               </div>
 
-              {#if piece.poem}
-                <p class="piece-excerpt">{truncateText(piece.poem, 120)}</p>
+              {#if piece.mission}
+                <p class="piece-excerpt">{truncateText(piece.mission, 120)}</p>
               {/if}
 
               <div class="piece-stats">

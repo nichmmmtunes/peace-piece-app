@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { push, link } from 'svelte-spa-router';
   import { supabase } from '../lib/supabase';
+  import { user } from '../stores/authStore';
   import { fade, fly } from 'svelte/transition';
   import RichTextEditor from './RichTextEditor.svelte';
 
@@ -27,7 +28,7 @@
   let piece: any = null;
   
   // Project status and milestones
-  let projectStatus: 'open_to_applications' | 'seeking_funding' | 'published' = 'open_to_applications';
+  let projectStatus: 'submitted_for_approval' | 'open_to_applications' | 'seeking_funding' | 'published' = 'submitted_for_approval';
   let milestones: { title: string, description: string, completed: boolean, due_date?: string }[] = [];
   
   // Cause tags and accepted mediums
@@ -42,9 +43,11 @@
   let deliverableFormat = '';
   let compensationDetails = '';
   let fundingGoal: number | null = null;
+  let approved = false;
 
   // Project status options
   const projectStatusOptions = [
+    { value: 'submitted_for_approval', label: 'Submit for Approval' },
     { value: 'open_to_applications', label: 'Open to Applications' },
     { value: 'seeking_funding', label: 'Seeking Funding' },
     { value: 'published', label: 'Published' }
@@ -72,8 +75,9 @@
       currentVideoUrl = piece.video_url || '';
       
       // Load project status and milestones
-      projectStatus = piece.project_status || 'open_to_applications';
+      projectStatus = piece.project_status || 'submitted_for_approval';
       milestones = piece.milestones || [];
+      approved = piece.approved || false;
       
       // Load cause tags and accepted mediums
       causeTags = piece.cause_tags || [];
@@ -168,6 +172,11 @@
         videoUrl = await uploadFile(videoFile, 'videos');
       }
 
+      // If changing from a different status to 'submitted_for_approval', set approved to false
+      if (piece.project_status !== 'submitted_for_approval' && projectStatus === 'submitted_for_approval') {
+        approved = false;
+      }
+
       const { error: pieceError } = await supabase
         .from('pieces')
         .update({
@@ -187,6 +196,7 @@
           deliverable_format: deliverableFormat,
           compensation_details: compensationDetails,
           funding_goal: fundingGoal,
+          approved: approved,
           updated_at: new Date().toISOString()
         })
         .eq('id', params.id);
@@ -402,12 +412,28 @@
               <div class="field-help">
                 <p>Select the current status of your project:</p>
                 <ul>
+                  <li><strong>Submit for Approval:</strong> Your piece will be reviewed before being published</li>
                   <li><strong>Open to Applications:</strong> Artists can apply to contribute</li>
                   <li><strong>Seeking Funding:</strong> Project is looking for sponsors and donations</li>
                   <li><strong>Published:</strong> Project is complete and published</li>
                 </ul>
               </div>
             </div>
+            
+            <!-- Approval Status -->
+            {#if $user && piece && piece.organizer_user_id === $user.id}
+              <div class="form-group">
+                <label for="approvalStatus">Approval Status</label>
+                <div class="approval-status">
+                  <div class="status-badge {approved ? 'approved' : 'pending'}">
+                    {approved ? 'Approved' : 'Pending Approval'}
+                  </div>
+                  {#if !approved && projectStatus !== 'submitted_for_approval'}
+                    <p class="approval-note">This piece is not yet approved. It will not be visible to the public until approved by an admin.</p>
+                  {/if}
+                </div>
+              </div>
+            {/if}
             
             <!-- Funding Goal -->
             <div class="form-group">
@@ -1335,6 +1361,39 @@
 
   .spinner {
     animation: spin 1s linear infinite;
+  }
+
+  /* Approval status styles */
+  .approval-status {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    width: fit-content;
+  }
+
+  .status-badge.approved {
+    background-color: var(--color-success-100);
+    color: var(--color-success-700);
+  }
+
+  .status-badge.pending {
+    background-color: var(--color-warning-100);
+    color: var(--color-warning-700);
+  }
+
+  .approval-note {
+    font-size: 0.875rem;
+    color: var(--color-warning-600);
+    margin: 0;
   }
 
   @media (max-width: 768px) {

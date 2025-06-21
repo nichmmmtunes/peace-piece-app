@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { link } from 'svelte-spa-router';
+  import { push, link } from 'svelte-spa-router';
   import { supabase } from '../lib/supabase';
   import { user } from '../stores/authStore';
   import { fade, fly } from 'svelte/transition';
@@ -12,17 +12,11 @@
   let loading = true;
   let error: string | null = null;
   let isFollowing = false;
-  let canEdit = false;
   let isOrganizer = false;
-  let isArtist = false;
-  let hasApplied = false;
-  let comments: any[] = [];
-  let newComment = '';
-  let submittingComment = false;
+  let isContributor = false;
   let hasDonated = false;
-  let checkingDonation = false;
-  let donating = false;
-  let donationError = '';
+  let checkoutLoading = false;
+  let checkoutError: string | null = null;
   
   async function loadPiece() {
     try {
@@ -39,26 +33,30 @@
       
       piece = data;
       
-      // Check if current user is the organizer of this piece
-      if ($user && piece.organizer_id) {
-        // Get the organizer data to check if current user owns this organizer
-        const { data: organizerData } = await supabase
-          .from('organizers')
-          .select('user_id')
-          .eq('id', piece.organizer_id)
-          .single();
-        
-        if (organizerData && organizerData.user_id === $user.id) {
-          isOrganizer = true;
-          canEdit = true;
-          hasDonated = true; // Organizers can always view their own content
-        }
+      // Check if current user is the organizer
+      if ($user && piece.organizer_user_id === $user.id) {
+        isOrganizer = true;
       }
       
-      // Check if user has donated to this specific piece (only for non-organizers)
-      if ($user && !isOrganizer) {
-        await checkDonationStatus();
+      // Check if current user is a contributor
+      if ($user && piece.contributors) {
+        const isUserContributor = piece.contributors.some(
+          (contributor: any) => {
+            // Get the user's artist profile
+            return supabase
+              .from('artists')
+              .select('id')
+              .eq('user_id', $user.id)
+              .eq('id', contributor.id)
+              .then(({ data }) => data && data.length > 0);
+          }
+        );
         
+        isContributor = isUserContributor;
+      }
+      
+      // Check if user is following the piece
+      if ($user) {
         const { data: followData } = await supabase
           .from('piece_followers')
           .select('piece_id')
@@ -68,30 +66,25 @@
           
         isFollowing = !!followData;
         
-        // Check if user has an artist profile
-        const { data: artistData } = await supabase
-          .from('artists')
-          .select('id')
+        // Check if user has donated to this piece
+        const { data: customerData } = await supabase
+          .from('stripe_customers')
+          .select('customer_id')
           .eq('user_id', $user.id)
           .maybeSingle();
           
-        isArtist = !!artistData;
-        
-        // Check if user has already applied to this piece
-        if (isArtist) {
-          const { data: applicationData } = await supabase
-            .from('applications')
+        if (customerData && customerData.customer_id) {
+          const { data: orderData } = await supabase
+            .from('stripe_orders')
             .select('id')
+            .eq('customer_id', customerData.customer_id)
             .eq('piece_id', params.id)
-            .eq('applicant_profile_id', $user.id)
+            .eq('status', 'completed')
             .maybeSingle();
             
-          hasApplied = !!applicationData;
+          hasDonated = !!orderData;
         }
       }
-
-      // Load comments
-      await loadComments();
       
     } catch (e: any) {
       error = e.message;
@@ -99,154 +92,12 @@
       loading = false;
     }
   }
-
-  async function checkDonationStatus() {
-    if (!$user || isOrganizer) {
-      hasDonated = true; // Organizers can always view
-      return;
-    }
-
-    try {
-      checkingDonation = true;
-      
-      // Check if user has made any successful payments/donations specifically to this piece
-      const { data: customerData } = await supabase
-        .from('stripe_customers')
-        .select('customer_id')
-        .eq('user_id', $user.id)
-        .maybeSingle();
-
-      if (customerData) {
-        // Check for completed orders for this specific piece
-        const { data: orderData } = await supabase
-          .from('stripe_orders')
-          .select('id')
-          .eq('customer_id', customerData.customer_id)
-          .eq('piece_id', params.id) // Check for this specific piece
-          .eq('status', 'completed')
-          .limit(1);
-
-        hasDonated = orderData && orderData.length > 0;
-      } else {
-        hasDonated = false;
-      }
-    } catch (e: any) {
-      console.error('Error checking donation status:', e);
-      hasDonated = false; // Default to false on error
-    } finally {
-      checkingDonation = false;
-    }
-  }
-
-  async function handleDonate() {
-    if (!$user) {
-      // Redirect to auth if not logged in
-      window.location.hash = '/auth';
-      return;
-    }
-
-    try {
-      donating = true;
-      donationError = '';
-
-      // Get the user's session token
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-      if (sessionError || !session?.access_token) {
-        throw new Error('Failed to get user session. Please log in again.');
-      }
-
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`;
-      
-      const headers = {
-        'Authorization': `Bearer ${session.access_token}`, // Use the user's session token here
-        'Content-Type': 'application/json',
-      };
-
-      const body = {
-        price_id: products.donation.priceId,
-        mode: products.donation.mode,
-        piece_id: params.id, // Include the piece ID
-        success_url: `${window.location.origin}/piece/${params.id}?donation=success`,
-        cancel_url: `${window.location.origin}/piece/${params.id}?donation=cancelled`,
-      };
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create checkout session');
-      }
-
-      const { url } = await response.json();
-      
-      if (url) {
-        // Redirect to Stripe Checkout
-        window.location.href = url;
-      } else {
-        throw new Error('No checkout URL received');
-      }
-
-    } catch (e: any) {
-      console.error('Donation error:', e);
-      donationError = e.message || 'Failed to process donation. Please try again.';
-    } finally {
-      donating = false;
-    }
-  }
-
-  async function loadComments() {
-    try {
-      const { data, error } = await supabase
-        .from('comments')
-        .select(`
-          *,
-          profiles:profile_id (
-            username,
-            avatar_url
-          )
-        `)
-        .eq('piece_id', params.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      comments = data || [];
-    } catch (e: any) {
-      console.error('Error loading comments:', e);
-    }
-  }
-
-  async function submitComment() {
-    if (!$user || !newComment.trim() || !hasDonated) return;
-
-    try {
-      submittingComment = true;
-      
-      const { error } = await supabase
-        .from('comments')
-        .insert({
-          piece_id: params.id,
-          profile_id: $user.id,
-          content: newComment.trim()
-        });
-
-      if (error) throw error;
-
-      newComment = '';
-      await loadComments();
-    } catch (e: any) {
-      console.error('Error submitting comment:', e);
-    } finally {
-      submittingComment = false;
-    }
-  }
   
   async function toggleFollow() {
-    if (!$user || isOrganizer) return;
+    if (!$user) {
+      push('/auth');
+      return;
+    }
     
     try {
       if (isFollowing) {
@@ -265,12 +116,60 @@
       }
       
       isFollowing = !isFollowing;
-      piece.follower_count += isFollowing ? 1 : -1;
+      
+      // Update follower count in the UI
+      if (piece) {
+        piece.follower_count += isFollowing ? 1 : -1;
+      }
     } catch (e: any) {
       console.error('Error toggling follow:', e);
     }
   }
-
+  
+  async function handleDonate() {
+    if (!$user) {
+      push('/auth');
+      return;
+    }
+    
+    try {
+      checkoutLoading = true;
+      checkoutError = null;
+      
+      const { priceId, mode } = products.donation;
+      
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          price_id: priceId,
+          success_url: `${window.location.origin}/piece/${params.id}?donation=success`,
+          cancel_url: `${window.location.origin}/piece/${params.id}?donation=canceled`,
+          mode,
+          piece_id: params.id
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create checkout session');
+      }
+      
+      const { url } = await response.json();
+      
+      // Redirect to Stripe Checkout
+      window.location.href = url;
+      
+    } catch (e: any) {
+      checkoutError = e.message;
+    } finally {
+      checkoutLoading = false;
+    }
+  }
+  
   function formatAmount(amount: number): string {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -279,114 +178,57 @@
       maximumFractionDigits: 0,
     }).format(amount);
   }
-
-  function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      year: 'numeric'
-    });
+  
+  function calculateProgress(raised: number, goal: number): number {
+    if (!goal || goal <= 0) return 0;
+    const progress = (raised / goal) * 100;
+    return Math.min(progress, 100); // Cap at 100%
   }
   
-  // Function to get status badge color
-  function getStatusColor(status: string): string {
-    switch (status) {
-      case 'open_to_applications':
-        return 'var(--color-primary-600)';
-      case 'seeking_funding':
-        return 'var(--color-warning-600)';
-      case 'published':
-        return 'var(--color-success-600)';
-      default:
-        return 'var(--color-neutral-600)';
+  // Check if the current user can view this piece
+  function canViewPiece(): boolean {
+    if (!piece) return false;
+    
+    // If piece is approved, anyone can view it
+    if (piece.approved) return true;
+    
+    // If piece is in 'submitted_for_approval' status, only organizer and contributors can view
+    if (piece.project_status === 'submitted_for_approval') {
+      return isOrganizer || isContributor;
     }
+    
+    // For other statuses, if not approved, only organizer and contributors can view
+    return isOrganizer || isContributor;
   }
   
-  // Function to get status badge background color
-  function getStatusBgColor(status: string): string {
-    switch (status) {
-      case 'open_to_applications':
-        return 'var(--color-primary-100)';
-      case 'seeking_funding':
-        return 'var(--color-warning-100)';
-      case 'published':
-        return 'var(--color-success-100)';
-      default:
-        return 'var(--color-neutral-100)';
-    }
+  // Check if the current user can view the full piece content (image, audio, etc.)
+  function canViewFullContent(): boolean {
+    if (!piece) return false;
+    
+    // Organizers and contributors can always view full content
+    if (isOrganizer || isContributor) return true;
+    
+    // If the piece is not approved, only organizers and contributors can view
+    if (!piece.approved) return false;
+    
+    // For approved pieces, check if user has donated
+    return hasDonated;
   }
   
-  // Function to get formatted status label
-  function getStatusLabel(status: string): string {
-    switch (status) {
-      case 'open_to_applications':
-        return 'Open to Applications';
-      case 'seeking_funding':
-        return 'Seeking Funding';
-      case 'published':
-        return 'Published';
-      default:
-        return 'Unknown Status';
-    }
-  }
-
-  // Function to render markdown-like content (basic implementation)
-  function renderMarkdown(text: string): string {
-    if (!text) return '';
-    
-    return text
-      // Bold text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      // Italic text
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      // Line breaks
-      .replace(/\n/g, '<br>')
-      // Links
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-  }
-  
-  // Function to calculate days until kickoff
-  function getDaysUntilKickoff(): number | null {
-    if (!piece?.kickoff_date) return null;
-    
-    const kickoffDate = new Date(piece.kickoff_date);
-    const today = new Date();
-    
-    // Reset time part for accurate day calculation
-    kickoffDate.setHours(0, 0, 0, 0);
-    today.setHours(0, 0, 0, 0);
-    
-    const diffTime = kickoffDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    return diffDays > 0 ? diffDays : 0;
-  }
-  
-  // Function to calculate funding progress percentage
-  function getFundingProgress(): number {
-    if (!piece?.funding_goal || piece.funding_goal <= 0) return 0;
-    
-    const progress = (piece.amount_raised / piece.funding_goal) * 100;
-    return Math.min(100, Math.max(0, progress)); // Clamp between 0-100
-  }
-
-  // Check for donation success/cancel in URL params
   onMount(() => {
+    if (params.id) {
+      loadPiece();
+    }
+    
+    // Check for donation success/cancel query params
     const urlParams = new URLSearchParams(window.location.search);
     const donationStatus = urlParams.get('donation');
     
     if (donationStatus === 'success') {
-      // Refresh donation status after successful payment
-      setTimeout(() => {
-        checkDonationStatus();
-      }, 1000);
+      // Reload the piece to update donation status
+      loadPiece();
     }
   });
-  
-  $: if (params.id) {
-    loadPiece();
-  }
 </script>
 
 <div class="piece-detail">
@@ -398,238 +240,259 @@
   {:else if error}
     <div class="error-container" transition:fade>
       <div class="error-card">
-        <h2>Oops! Something went wrong</h2>
+        <h2>Piece Not Found</h2>
         <p>{error}</p>
-        <button class="primary" on:click={loadPiece}>Try Again</button>
+        <a href="/explore" use:link class="primary">Explore Pieces</a>
+      </div>
+    </div>
+  {:else if !canViewPiece()}
+    <div class="unauthorized-container" transition:fade>
+      <div class="unauthorized-card">
+        <h2>Access Restricted</h2>
+        <p>This piece is currently in review and not publicly available.</p>
+        <a href="/explore" use:link class="primary">Explore Public Pieces</a>
       </div>
     </div>
   {:else if piece}
     <div class="piece-container">
-      <!-- Status Badge -->
-      {#if piece.project_status}
-        <div class="status-badge-container" in:fade>
-          <div 
-            class="status-badge" 
-            style="background-color: {getStatusBgColor(piece.project_status)}; color: {getStatusColor(piece.project_status)};"
-          >
-            <span class="status-indicator" style="background-color: {getStatusColor(piece.project_status)};"></span>
-            {getStatusLabel(piece.project_status)}
+      <!-- Draft Banner (if piece is not approved) -->
+      {#if !piece.approved}
+        <div class="draft-banner" in:fade>
+          <div class="draft-content">
+            <div class="draft-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </div>
+            <div class="draft-message">
+              <span class="draft-label">DRAFT</span>
+              <span class="draft-text">
+                {#if piece.project_status === 'submitted_for_approval'}
+                  This piece is currently under review and not publicly visible.
+                {:else}
+                  This piece is not yet approved and only visible to you and contributors.
+                {/if}
+              </span>
+            </div>
           </div>
         </div>
       {/if}
-
-      <!-- Main Content Layout -->
-      <div class="piece-layout">
-        <!-- Left Column: Main Content -->
-        <div class="piece-main-content">
-          <!-- Title and Description -->
-          <div class="piece-header" in:fly={{ y: 20, duration: 300 }}>
-            <h1 class="piece-title">{piece.title}</h1>
-            <p class="piece-subtitle">{piece.piece_description || 'A collaborative art piece exploring themes of peace and community.'}</p>
+      
+      <!-- Header Section -->
+      <div class="piece-header" in:fade>
+        <div class="header-content">
+          <h1>{piece.title}</h1>
+          <div class="piece-meta">
+            <div class="organizer">
+              <span>Organized by</span>
+              <a href="/profile/{piece.organizer_name}" use:link class="organizer-name">
+                {piece.organizer_name}
+              </a>
+            </div>
             
-            <!-- Cause Tags -->
-            {#if piece.cause_tags && piece.cause_tags.length > 0}
-              <div class="cause-tags">
-                {#each piece.cause_tags as tag}
-                  <span class="tag cause-tag">{tag}</span>
-                {/each}
+            <div class="piece-stats">
+              <div class="stat">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+                <span>{piece.follower_count || 0} Followers</span>
+              </div>
+              
+              <div class="stat">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>{piece.contributors?.length || 0} Contributors</span>
+              </div>
+              
+              <div class="stat">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                  <line x1="12" y1="1" x2="12" y2="23"></line>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                <span>{formatAmount(piece.amount_raised || 0)} Raised</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          {#if isOrganizer}
+            <a href="/update/{piece.id}" use:link class="edit-button">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              Edit Piece
+            </a>
+            
+            <a href="/edit/{piece.id}" use:link class="edit-button">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <path d="M15 10l4.553-2.276A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14M5 18h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z"></path>
+              </svg>
+              Editor
+            </a>
+          {/if}
+          
+          <button 
+            class="follow-button" 
+            class:following={isFollowing}
+            on:click={toggleFollow}
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill={isFollowing ? "currentColor" : "none"}>
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            {isFollowing ? 'Following' : 'Follow'}
+          </button>
+        </div>
+      </div>
+      
+      <!-- Main Content -->
+      <div class="piece-content">
+        <!-- Left Column -->
+        <div class="content-left">
+          <!-- Main Image -->
+          <div class="piece-image-container" in:fly={{ y: 20, duration: 300 }}>
+            {#if piece.image_url}
+              <div class="piece-image">
+                <img src={piece.image_url} alt={piece.title} />
+                
+                {#if !canViewFullContent()}
+                  <div class="image-overlay">
+                    <div class="overlay-content">
+                      <div class="lock-icon">
+                        <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                      </div>
+                      <h3>Support to Unlock</h3>
+                      <p>Donate to this piece to access the full content</p>
+                      <button class="donate-button" on:click={handleDonate}>
+                        Donate Now
+                      </button>
+                    </div>
+                  </div>
+                {:else}
+                  <a href="/view/{piece.id}" use:link class="view-button">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    View Full Piece
+                  </a>
+                {/if}
               </div>
             {:else}
-              <div class="cause-tags">
-                <span class="tag cause-tag">Immigration Rights</span>
-                <span class="tag cause-tag">Illustration</span>
-                <span class="tag cause-tag">Poetry</span>
-                <span class="tag cause-tag">Sound Design</span>
+              <div class="image-placeholder">
+                <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1" fill="none">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21,15 16,10 5,21"></polyline>
+                </svg>
+                <p>No image available</p>
               </div>
             {/if}
           </div>
-
-          <!-- Featured Image -->
-          {#if piece.image_url}
-            <div class="featured-image-container" in:fly={{ y: 20, duration: 300, delay: 100 }}>
-              {#if hasDonated}
-                <a href="/view/{piece.id}" use:link class="image-link">
-                  <img src={piece.image_url} alt={piece.title} class="featured-image" />
-                </a>
-              {:else}
-                <img src={piece.image_url} alt={piece.title} class="featured-image" />
-                <div class="image-lock-overlay" on:click={handleDonate}>
-                  <div class="lock-icon">
-                    <svg viewBox="0 0 24 24" width="48" height="48" stroke="white" stroke-width="2" fill="none">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
-                  </div>
-                  <div class="lock-message">
-                    <h3>Support to Unlock</h3>
-                    <p>Donate to view the full artwork and join the conversation</p>
-                    <button class="unlock-button">
-                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                      </svg>
-                      Donate Now
-                    </button>
-                  </div>
-                </div>
-              {/if}
+          
+          <!-- Audio Player -->
+          {#if piece.audio_url && canViewFullContent()}
+            <div class="audio-container" in:fly={{ y: 20, duration: 300, delay: 100 }}>
+              <h3>Audio Experience</h3>
+              <audio controls src={piece.audio_url} class="audio-player"></audio>
             </div>
           {/if}
-
-          <!-- Organizer Info -->
-          <div class="organizer-section" in:fly={{ y: 20, duration: 300, delay: 200 }}>
-            <div class="organizer-info">
-              <div class="organizer-avatar">
-                {#if piece.organizer_avatar_url}
-                  <img src={piece.organizer_avatar_url} alt={piece.organizer_name} />
-                {:else}
-                  <div class="avatar-placeholder">
-                    {piece.organizer_name?.[0]?.toUpperCase() || 'O'}
+          
+          <!-- Project Status -->
+          <div class="project-status-container" in:fly={{ y: 20, duration: 300, delay: 150 }}>
+            <h3>Project Status</h3>
+            <div class="status-badge {piece.project_status}">
+              {#if piece.project_status === 'submitted_for_approval'}
+                Submitted for Approval
+              {:else if piece.project_status === 'open_to_applications'}
+                Open to Applications
+              {:else if piece.project_status === 'seeking_funding'}
+                Seeking Funding
+              {:else if piece.project_status === 'published'}
+                Published
+              {/if}
+            </div>
+            
+            {#if piece.project_status === 'open_to_applications' && !isOrganizer && !isContributor && piece.approved}
+              <a href="/apply/{piece.id}" use:link class="apply-button">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="8.5" cy="7" r="4"></circle>
+                  <line x1="20" y1="8" x2="20" y2="14"></line>
+                  <line x1="23" y1="11" x2="17" y2="11"></line>
+                </svg>
+                Apply as Artist
+              </a>
+            {/if}
+          </div>
+          
+          <!-- Funding Progress -->
+          {#if piece.funding_goal && piece.funding_goal > 0}
+            <div class="funding-progress" in:fly={{ y: 20, duration: 300, delay: 200 }}>
+              <div class="funding-header">
+                <h3>Funding Progress</h3>
+                <div class="funding-amounts">
+                  <span class="amount-raised">{formatAmount(piece.amount_raised || 0)}</span>
+                  <span class="amount-separator">of</span>
+                  <span class="funding-goal">{formatAmount(piece.funding_goal)}</span>
+                </div>
+              </div>
+              
+              <div class="progress-bar">
+                <div 
+                  class="progress-fill" 
+                  style="width: {calculateProgress(piece.amount_raised || 0, piece.funding_goal)}%"
+                ></div>
+              </div>
+              
+              <div class="funding-actions">
+                <button 
+                  class="donate-button" 
+                  on:click={handleDonate}
+                  disabled={checkoutLoading}
+                >
+                  {#if checkoutLoading}
+                    <svg class="spinner" viewBox="0 0 24 24" width="16" height="16">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="60" stroke-dashoffset="60" stroke-linecap="round">
+                        <animate attributeName="stroke-dashoffset" dur="2s" values="60;0" repeatCount="indefinite"/>
+                      </circle>
+                    </svg>
+                    Processing...
+                  {:else}
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                      <line x1="12" y1="1" x2="12" y2="23"></line>
+                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                    Donate to Support
+                  {/if}
+                </button>
+                
+                {#if checkoutError}
+                  <div class="checkout-error">
+                    {checkoutError}
                   </div>
                 {/if}
               </div>
-              <div class="organizer-details">
-                <div class="organizer-label">Organized by</div>
-                <h3 class="organizer-name">{piece.organizer_name}</h3>
-                <p class="organizer-bio">{piece.organizer_description || 'Community organizer and facilitator.'}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Sponsor Info -->
-          {#if piece.sponsors && piece.sponsors.length > 0}
-            <div class="sponsor-section" in:fly={{ y: 20, duration: 300, delay: 300 }}>
-              <div class="sponsor-label">Sponsored by</div>
-              {#each piece.sponsors as sponsor}
-                <div class="sponsor-info">
-                  <div class="sponsor-logo">
-                    {#if sponsor.logo_url}
-                      <img src={sponsor.logo_url} alt={sponsor.name} />
-                    {:else}
-                      <div class="logo-placeholder">
-                        {sponsor.name?.[0]?.toUpperCase() || 'S'}
-                      </div>
-                    {/if}
-                  </div>
-                  <div class="sponsor-details">
-                    <h3 class="sponsor-name">{sponsor.name}</h3>
-                    <p class="sponsor-bio">{sponsor.bio || 'Supporting arts and community initiatives.'}</p>
-                    
-                    {#if sponsor.website}
-                      <a href={sponsor.website} target="_blank" rel="noopener noreferrer" class="sponsor-link">Website</a>
-                    {/if}
-                    
-                    {#if sponsor.additional_links && sponsor.additional_links.length > 0}
-                      <div class="sponsor-additional-links">
-                        {#each sponsor.additional_links as link}
-                          {#if link.name && link.url}
-                            <a href={link.url} target="_blank" rel="noopener noreferrer" class="sponsor-link">{link.name}</a>
-                          {/if}
-                        {/each}
-                      </div>
-                    {/if}
-                  </div>
-                </div>
-              {/each}
             </div>
           {/if}
-
-          <!-- About the Project -->
-          <section class="about-section" in:fly={{ y: 20, duration: 300, delay: 400 }}>
-            <h2 class="section-title">About the Project</h2>
-            
-            {#if piece.full_project_overview}
-              <div class="project-overview">
-                {@html renderMarkdown(piece.full_project_overview)}
-              </div>
-            {:else if piece.piece_description}
-              <div class="project-overview">
-                {@html renderMarkdown(piece.piece_description)}
-              </div>
-            {/if}
-            
-            {#if piece.accepted_mediums && piece.accepted_mediums.length > 0}
-              <div class="seeking-section">
-                <h3>Organizers are specifically seeking:</h3>
-                <ul class="seeking-list">
-                  {#each piece.accepted_mediums as medium}
-                    <li>Artists skilled in {medium}</li>
-                  {/each}
-                </ul>
-              </div>
-            {/if}
-            
-            {#if piece.collaboration_structure}
-              <div class="collaboration-section">
-                <h3>Collaboration Structure</h3>
-                <p>{piece.collaboration_structure}</p>
-              </div>
-            {/if}
-            
-            {#if piece.deliverable_format}
-              <div class="deliverable-section">
-                <h3>Final Deliverable</h3>
-                <p>{piece.deliverable_format}</p>
-              </div>
-            {/if}
-            
-            {#if piece.compensation_details}
-              <div class="compensation-section">
-                <h3>Artist Compensation</h3>
-                <p>{piece.compensation_details}</p>
-              </div>
-            {/if}
-          </section>
-
-          <!-- Timeline Section -->
-          {#if piece.milestones && piece.milestones.length > 0}
-            <section class="timeline-section" in:fly={{ y: 20, duration: 300, delay: 500 }}>
-              <h2 class="section-title">Timeline</h2>
-              
-              <div class="timeline">
-                {#each piece.milestones as milestone, index}
-                  <div class="timeline-item" class:completed={milestone.completed}>
-                    <div class="timeline-date">
-                      {#if milestone.due_date}
-                        <div class="date-month">{formatDate(milestone.due_date).split(' ')[0]}</div>
-                        <div class="date-day">{formatDate(milestone.due_date).split(' ')[1].replace(',', '')}</div>
-                      {:else}
-                        <div class="date-month">TBD</div>
-                      {/if}
-                    </div>
-                    
-                    <div class="timeline-content">
-                      <div class="timeline-marker" class:completed={milestone.completed}>
-                        <div class="marker-dot"></div>
-                        {#if index < piece.milestones.length - 1}
-                          <div class="marker-line"></div>
-                        {/if}
-                      </div>
-                      
-                      <div class="timeline-details">
-                        <h3 class="timeline-title">
-                          {#if milestone.completed}
-                            <span class="completed-icon">✓</span>
-                          {/if}
-                          {milestone.title}
-                        </h3>
-                        <p class="timeline-description">{milestone.description}</p>
-                      </div>
-                    </div>
-                  </div>
-                {/each}
-              </div>
-            </section>
-          {/if}
-
-          <!-- Meet the Team Section -->
+          
+          <!-- Contributors -->
           {#if piece.contributors && piece.contributors.length > 0}
-            <section class="team-section" in:fly={{ y: 20, duration: 300, delay: 600 }}>
-              <h2 class="section-title">Meet the Team (so far)</h2>
-              
-              <div class="team-grid">
+            <div class="contributors-section" in:fly={{ y: 20, duration: 300, delay: 250 }}>
+              <h3>Contributors</h3>
+              <div class="contributors-list">
                 {#each piece.contributors as contributor}
-                  <div class="team-member">
-                    <div class="member-avatar">
+                  <div class="contributor-card">
+                    <div class="contributor-avatar">
                       {#if contributor.avatar_url}
                         <img src={contributor.avatar_url} alt={contributor.name} />
                       {:else}
@@ -638,256 +501,161 @@
                         </div>
                       {/if}
                     </div>
-                    
-                    <div class="member-details">
-                      <h3 class="member-name">{contributor.name}</h3>
-                      <div class="member-role">{contributor.role}</div>
-                      {#if contributor.bio}
-                        <p class="member-bio">{contributor.bio}</p>
+                    <div class="contributor-info">
+                      <h4 class="contributor-name">{contributor.name}</h4>
+                      <span class="contributor-role">{contributor.role}</span>
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            </div>
+          {/if}
+          
+          <!-- Sponsors -->
+          {#if piece.sponsors && piece.sponsors.length > 0}
+            <div class="sponsors-section" in:fly={{ y: 20, duration: 300, delay: 300 }}>
+              <h3>Sponsors</h3>
+              <div class="sponsors-list">
+                {#each piece.sponsors as sponsor}
+                  <div class="sponsor-card">
+                    {#if sponsor.logo_url}
+                      <img src={sponsor.logo_url} alt={sponsor.name} class="sponsor-logo" />
+                    {:else}
+                      <div class="sponsor-placeholder">
+                        {sponsor.name?.[0]?.toUpperCase() || 'S'}
+                      </div>
+                    {/if}
+                    <div class="sponsor-info">
+                      <h4 class="sponsor-name">{sponsor.name}</h4>
+                      <span class="sponsor-amount">{formatAmount(sponsor.amount)}</span>
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            </div>
+          {/if}
+        </div>
+        
+        <!-- Right Column -->
+        <div class="content-right">
+          <!-- Mission -->
+          {#if piece.mission}
+            <div class="mission-section" in:fly={{ y: 20, duration: 300 }}>
+              <h2>Mission</h2>
+              <div class="mission-content">
+                {@html piece.mission}
+              </div>
+            </div>
+          {/if}
+          
+          <!-- Description -->
+          {#if piece.piece_description}
+            <div class="description-section" in:fly={{ y: 20, duration: 300, delay: 50 }}>
+              <h2>Description</h2>
+              <div class="description-content">
+                {piece.piece_description}
+              </div>
+            </div>
+          {/if}
+          
+          <!-- Project Details -->
+          {#if piece.full_project_overview || piece.collaboration_structure || piece.deliverable_format}
+            <div class="details-section" in:fly={{ y: 20, duration: 300, delay: 100 }}>
+              <h2>Project Details</h2>
+              
+              {#if piece.full_project_overview}
+                <div class="detail-group">
+                  <h3>Project Overview</h3>
+                  <p>{piece.full_project_overview}</p>
+                </div>
+              {/if}
+              
+              {#if piece.collaboration_structure}
+                <div class="detail-group">
+                  <h3>Collaboration Structure</h3>
+                  <p>{piece.collaboration_structure}</p>
+                </div>
+              {/if}
+              
+              {#if piece.deliverable_format}
+                <div class="detail-group">
+                  <h3>Deliverable Format</h3>
+                  <p>{piece.deliverable_format}</p>
+                </div>
+              {/if}
+              
+              {#if piece.compensation_details}
+                <div class="detail-group">
+                  <h3>Compensation Details</h3>
+                  <p>{piece.compensation_details}</p>
+                </div>
+              {/if}
+            </div>
+          {/if}
+          
+          <!-- Cause Tags -->
+          {#if piece.cause_tags && piece.cause_tags.length > 0}
+            <div class="tags-section" in:fly={{ y: 20, duration: 300, delay: 150 }}>
+              <h3>Causes</h3>
+              <div class="tags-list">
+                {#each piece.cause_tags as tag}
+                  <span class="tag cause-tag">{tag}</span>
+                {/each}
+              </div>
+            </div>
+          {/if}
+          
+          <!-- Accepted Mediums -->
+          {#if piece.accepted_mediums && piece.accepted_mediums.length > 0}
+            <div class="tags-section" in:fly={{ y: 20, duration: 300, delay: 200 }}>
+              <h3>Accepted Mediums</h3>
+              <div class="tags-list">
+                {#each piece.accepted_mediums as medium}
+                  <span class="tag medium-tag">{medium}</span>
+                {/each}
+              </div>
+            </div>
+          {/if}
+          
+          <!-- Project Timeline -->
+          {#if piece.milestones && piece.milestones.length > 0}
+            <div class="timeline-section" in:fly={{ y: 20, duration: 300, delay: 250 }}>
+              <h2>Project Timeline</h2>
+              <div class="timeline">
+                {#each piece.milestones as milestone, index}
+                  <div class="timeline-item" class:completed={milestone.completed}>
+                    <div class="timeline-marker">
+                      <div class="marker-dot"></div>
+                      {#if index < piece.milestones.length - 1}
+                        <div class="marker-line"></div>
+                      {/if}
+                    </div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">{milestone.title}</h3>
+                      {#if milestone.description}
+                        <p class="timeline-description">{milestone.description}</p>
+                      {/if}
+                      {#if milestone.due_date}
+                        <div class="timeline-date">
+                          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                          </svg>
+                          <span>
+                            {new Date(milestone.due_date).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </span>
+                        </div>
                       {/if}
                     </div>
                   </div>
                 {/each}
               </div>
-            </section>
-          {/if}
-
-          <!-- Comments Section -->
-          <section class="comments-section" in:fly={{ y: 20, duration: 300, delay: 700 }}>
-            <h2 class="section-title">Comments ({comments.length})</h2>
-            
-            {#if $user}
-              {#if hasDonated}
-                <form class="comment-form" on:submit|preventDefault={submitComment}>
-                  <textarea
-                    bind:value={newComment}
-                    placeholder="Share your thoughts about this piece..."
-                    rows="3"
-                    disabled={submittingComment}
-                  ></textarea>
-                  <button 
-                    type="submit" 
-                    class="primary"
-                    disabled={!newComment.trim() || submittingComment}
-                  >
-                    {submittingComment ? 'Posting...' : 'Post Comment'}
-                  </button>
-                </form>
-              {:else if !checkingDonation}
-                <div class="donation-required-prompt">
-                  <div class="prompt-icon">
-                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                      <circle cx="12" cy="16" r="1"></circle>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
-                  </div>
-                  <div class="prompt-content">
-                    <h3>Support this Peace Piece to join the conversation</h3>
-                    <p>Donate to unlock the ability to comment and engage with this artistic community.</p>
-                    <button 
-                      class="primary donate-button"
-                      on:click={handleDonate}
-                      disabled={donating}
-                    >
-                      {#if donating}
-                        <svg class="spinner" viewBox="0 0 24 24" width="16" height="16">
-                          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="60" stroke-dashoffset="60" stroke-linecap="round">
-                            <animate attributeName="stroke-dashoffset" dur="2s" values="60;0" repeatCount="indefinite"/>
-                          </circle>
-                        </svg>
-                        Processing...
-                      {:else}
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                        </svg>
-                        Donate Now
-                      {/if}
-                    </button>
-                    
-                    {#if donationError}
-                      <div class="donation-error">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <line x1="15" y1="9" x2="9" y2="15"></line>
-                          <line x1="9" y1="9" x2="15" y2="15"></line>
-                        </svg>
-                        {donationError}
-                      </div>
-                    {/if}
-                  </div>
-                </div>
-              {:else}
-                <div class="checking-donation">
-                  <div class="loading-spinner small"></div>
-                  <p>Checking donation status...</p>
-                </div>
-              {/if}
-            {:else}
-              <div class="auth-prompt">
-                <p><a href="/auth" use:link>Sign in</a> to leave a comment</p>
-              </div>
-            {/if}
-
-            <div class="comments-list">
-              {#each comments as comment (comment.id)}
-                <div class="comment" in:fly={{ y: 20, duration: 300 }}>
-                  <div class="comment-header">
-                    <div class="comment-author">
-                      {#if comment.profiles?.avatar_url}
-                        <img src={comment.profiles.avatar_url} alt="Avatar" class="comment-avatar" />
-                      {:else}
-                        <div class="comment-avatar-placeholder">
-                          {comment.profiles?.username?.[0]?.toUpperCase() || '?'}
-                        </div>
-                      {/if}
-                      <span class="comment-username">{comment.profiles?.username || 'Anonymous'}</span>
-                    </div>
-                    <span class="comment-date">{formatDate(comment.created_at)}</span>
-                  </div>
-                  <div class="comment-content">
-                    <p>{comment.content}</p>
-                  </div>
-                </div>
-              {/each}
-
-              {#if comments.length === 0}
-                <div class="empty-comments">
-                  <p>No comments yet. Be the first to share your thoughts!</p>
-                </div>
-              {/if}
-            </div>
-          </section>
-        </div>
-
-        <!-- Right Column: Info Panel -->
-        <div class="piece-info-panel">
-          <div class="info-card" in:fly={{ y: 20, duration: 300 }}>
-            <!-- Funding Information -->
-            <div class="funding-info">
-              <div class="funding-amount">{formatAmount(piece.amount_raised || 0)}</div>
-              <div class="funding-goal">raised of {formatAmount(piece.funding_goal || 5000)} goal</div>
-              
-              <!-- Progress Bar -->
-              <div class="progress-container">
-                <div class="progress-bar" style="width: {getFundingProgress()}%"></div>
-              </div>
-              
-              <!-- Countdown -->
-              {#if getDaysUntilKickoff() !== null}
-                <div class="countdown">
-                  <span class="countdown-number">{getDaysUntilKickoff()}</span> days until kick-off
-                </div>
-              {/if}
-            </div>
-            
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-              <button class="action-button primary" on:click={handleDonate}>
-                Support the Artists
-              </button>
-              
-              {#if piece.project_status === 'published' && $user}
-                <a 
-                  href="/view/{piece.id}" 
-                  use:link 
-                  class="action-button secondary view-artwork-button"
-                  class:disabled={!hasDonated}
-                  title={!hasDonated ? "Donate to view the artwork" : "View the artwork"}
-                >
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                  View Artwork
-                </a>
-              {/if}
-              
-              {#if $user && isArtist && !isOrganizer && !hasApplied && piece.project_status === 'open_to_applications'}
-                <a href="/apply/{piece.id}" use:link class="action-button secondary">
-                  Apply as an Artist
-                </a>
-              {:else if $user && isArtist && !isOrganizer && hasApplied}
-                <button class="action-button secondary" disabled>
-                  Application Submitted
-                </button>
-              {:else if $user && !isArtist && !isOrganizer}
-                <a href="/settings/artist-profile" use:link class="action-button secondary">
-                  Create Artist Profile
-                </a>
-              {:else if !$user}
-                <a href="/auth" use:link class="action-button secondary">
-                  Sign in to Apply
-                </a>
-              {/if}
-              
-              <div class="minor-actions">
-                <button 
-                  class="minor-action-button" 
-                  class:active={isFollowing}
-                  on:click={toggleFollow}
-                  title={isFollowing ? "Unfollow" : "Save"}
-                >
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill={isFollowing ? "currentColor" : "none"}>
-                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                  </svg>
-                  Save
-                </button>
-                
-                <button class="minor-action-button" title="Share">
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                    <circle cx="18" cy="5" r="3"></circle>
-                    <circle cx="6" cy="12" r="3"></circle>
-                    <circle cx="18" cy="19" r="3"></circle>
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                  </svg>
-                  Share
-                </button>
-              </div>
-            </div>
-            
-            <!-- Donation Summary -->
-            {#if piece.cause_tags && piece.cause_tags.length > 0}
-              <div class="donation-summary">
-                <div class="donation-amount">{formatAmount(580)}</div>
-                <div class="donation-cause">
-                  Donated to {piece.cause_tags[0]}
-                </div>
-                <button class="cause-button">
-                  Support the Cause
-                </button>
-              </div>
-            {:else}
-              <div class="donation-summary">
-                <div class="donation-amount">{formatAmount(580)}</div>
-                <div class="donation-cause">
-                  Donated to Immigrant Rights
-                </div>
-                <button class="cause-button">
-                  Support the Cause
-                </button>
-              </div>
-            {/if}
-          </div>
-          
-          <!-- Edit Button for Organizers -->
-          {#if canEdit}
-            <div class="edit-card" in:fly={{ y: 20, duration: 300, delay: 100 }}>
-              <a href="/update/{piece.id}" use:link class="edit-button">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                </svg>
-                Edit Details
-              </a>
-              
-              <a href="/edit/{piece.id}" use:link class="edit-button">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                  <path d="M15 10l4.553-2.276A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14M5 18h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z"></path>
-                </svg>
-                Edit Piece
-              </a>
             </div>
           {/if}
         </div>
@@ -898,9 +666,9 @@
 
 <style>
   .piece-detail {
+    padding: var(--space-6);
     max-width: 1200px;
     margin: 0 auto;
-    padding: 32px var(--space-4) var(--space-5);
   }
 
   .loading {
@@ -921,114 +689,650 @@
     animation: spin 1s linear infinite;
   }
 
-  .loading-spinner.small {
-    width: 20px;
-    height: 20px;
-    border-width: 2px;
-  }
-
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
 
-  .error-container {
+  .error-container,
+  .unauthorized-container {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 400px;
   }
 
-  .error-card {
+  .error-card,
+  .unauthorized-card {
     background: var(--card-bg);
     border: 1px solid var(--color-error-200);
     border-radius: var(--radius-lg);
     padding: var(--space-8);
     text-align: center;
-    max-width: 400px;
+    max-width: 500px;
   }
 
-  .error-card h2 {
+  .error-card h2,
+  .unauthorized-card h2 {
     color: var(--color-error-600);
     margin-bottom: var(--space-4);
   }
 
-  /* Main Layout */
   .piece-container {
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
   }
 
-  .piece-layout {
-    display: grid;
-    grid-template-columns: 1fr 350px;
+  /* Draft Banner */
+  .draft-banner {
+    background-color: var(--color-warning-100);
+    border: 1px solid var(--color-warning-300);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
+  }
+
+  .draft-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .draft-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: var(--color-warning-200);
+    color: var(--color-warning-700);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .draft-message {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .draft-label {
+    font-weight: 700;
+    color: var(--color-warning-700);
+    font-size: 0.875rem;
+  }
+
+  .draft-text {
+    color: var(--color-warning-700);
+    font-size: 0.875rem;
+  }
+
+  /* Header Section */
+  .piece-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     gap: var(--space-6);
   }
 
-  /* Status Badge */
-  .status-badge-container {
-    display: flex;
-    margin-bottom: var(--space-2);
+  .header-content {
+    flex: 1;
   }
 
-  .status-badge {
-    display: inline-flex;
+  .piece-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 var(--space-4) 0;
+    color: var(--text-color);
+  }
+
+  .piece-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  .organizer {
+    display: flex;
     align-items: center;
     gap: var(--space-2);
-    padding: var(--space-1) var(--space-3);
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    color: var(--text-muted);
   }
 
-  .status-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
+  .organizer-name {
+    font-weight: 500;
+    color: var(--color-primary-600);
+    text-decoration: none;
+  }
+
+  .organizer-name:hover {
+    text-decoration: underline;
+  }
+
+  .piece-stats {
+    display: flex;
+    gap: var(--space-4);
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: var(--space-3);
+  }
+
+  .edit-button,
+  .follow-button {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .edit-button {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    text-decoration: none;
+  }
+
+  .edit-button:hover {
+    background-color: var(--color-neutral-100);
+  }
+
+  .follow-button {
+    background-color: var(--color-primary-600);
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+
+  .follow-button:hover {
+    background-color: var(--color-primary-700);
+  }
+
+  .follow-button.following {
+    background-color: var(--color-success-600);
+  }
+
+  .follow-button.following:hover {
+    background-color: var(--color-success-700);
   }
 
   /* Main Content */
-  .piece-main-content {
+  .piece-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+  }
+
+  .content-left,
+  .content-right {
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
   }
 
-  .piece-header {
+  /* Image Section */
+  .piece-image-container {
+    width: 100%;
+  }
+
+  .piece-image {
+    position: relative;
+    width: 100%;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .piece-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--radius-lg);
+  }
+
+  .image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .overlay-content {
+    text-align: center;
+    padding: var(--space-6);
+    max-width: 300px;
+  }
+
+  .lock-icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-4);
+    color: white;
+  }
+
+  .overlay-content h3 {
+    color: white;
+    margin: 0 0 var(--space-2) 0;
+    font-size: 1.5rem;
+  }
+
+  .overlay-content p {
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0 0 var(--space-4) 0;
+  }
+
+  .donate-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    background-color: var(--color-success-600);
+    color: white;
+    border: none;
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 100%;
+  }
+
+  .donate-button:hover {
+    background-color: var(--color-success-700);
+  }
+
+  .donate-button:disabled {
+    background-color: var(--color-neutral-400);
+    cursor: not-allowed;
+  }
+
+  .view-button {
+    position: absolute;
+    bottom: var(--space-4);
+    right: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    backdrop-filter: blur(4px);
+  }
+
+  .view-button:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+
+  .image-placeholder {
+    width: 100%;
+    height: 300px;
+    background-color: var(--color-neutral-100);
+    border-radius: var(--radius-lg);
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
     gap: var(--space-2);
   }
 
-  .piece-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    line-height: 1.2;
+  /* Audio Section */
+  .audio-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+  }
+
+  .audio-container h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 var(--space-3) 0;
+    color: var(--text-color);
+  }
+
+  .audio-player {
+    width: 100%;
+  }
+
+  /* Project Status */
+  .project-status-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+  }
+
+  .project-status-container h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 var(--space-3) 0;
+    color: var(--text-color);
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: var(--space-3);
+  }
+
+  .status-badge.submitted_for_approval {
+    background-color: var(--color-warning-100);
+    color: var(--color-warning-700);
+  }
+
+  .status-badge.open_to_applications {
+    background-color: var(--color-success-100);
+    color: var(--color-success-700);
+  }
+
+  .status-badge.seeking_funding {
+    background-color: var(--color-primary-100);
+    color: var(--color-primary-700);
+  }
+
+  .status-badge.published {
+    background-color: var(--color-accent-100);
+    color: var(--color-accent-700);
+  }
+
+  .apply-button {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    background-color: var(--color-success-600);
+    color: white;
+    border: none;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    width: fit-content;
+  }
+
+  .apply-button:hover {
+    background-color: var(--color-success-700);
+  }
+
+  /* Funding Progress */
+  .funding-progress {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+  }
+
+  .funding-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-3);
+  }
+
+  .funding-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
     margin: 0;
     color: var(--text-color);
   }
 
-  .piece-subtitle {
-    font-size: 1.125rem;
-    color: var(--text-muted);
-    margin: 0;
-    line-height: 1.5;
+  .funding-amounts {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 0.875rem;
   }
 
-  .cause-tags {
+  .amount-raised {
+    font-weight: 600;
+    color: var(--color-success-600);
+  }
+
+  .amount-separator {
+    color: var(--text-muted);
+  }
+
+  .funding-goal {
+    color: var(--text-color);
+  }
+
+  .progress-bar {
+    height: 8px;
+    background-color: var(--color-neutral-100);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: var(--space-4);
+  }
+
+  .progress-fill {
+    height: 100%;
+    background-color: var(--color-success-600);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+
+  .funding-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .checkout-error {
+    color: var(--color-error-600);
+    font-size: 0.875rem;
+    text-align: center;
+  }
+
+  /* Contributors Section */
+  .contributors-section,
+  .sponsors-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+  }
+
+  .contributors-section h3,
+  .sponsors-section h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 var(--space-3) 0;
+    color: var(--text-color);
+  }
+
+  .contributors-list,
+  .sponsors-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .contributor-card,
+  .sponsor-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    background-color: var(--bg-color);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+  }
+
+  .contributor-avatar,
+  .sponsor-logo,
+  .sponsor-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .contributor-avatar img,
+  .sponsor-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .avatar-placeholder,
+  .sponsor-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-neutral-200);
+    color: var(--color-neutral-600);
+    font-weight: 600;
+    font-size: 1.25rem;
+  }
+
+  .contributor-info,
+  .sponsor-info {
+    flex: 1;
+  }
+
+  .contributor-name,
+  .sponsor-name {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 var(--space-1) 0;
+    color: var(--text-color);
+  }
+
+  .contributor-role {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .sponsor-amount {
+    font-size: 0.875rem;
+    color: var(--color-success-600);
+    font-weight: 500;
+  }
+
+  /* Content Sections */
+  .mission-section,
+  .description-section,
+  .details-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+  }
+
+  .mission-section h2,
+  .description-section h2,
+  .details-section h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 var(--space-4) 0;
+    color: var(--text-color);
+  }
+
+  .mission-content,
+  .description-content {
+    color: var(--text-color);
+    line-height: 1.6;
+  }
+
+  .mission-content :global(p),
+  .description-content p {
+    margin-bottom: var(--space-4);
+  }
+
+  .mission-content :global(p:last-child),
+  .description-content p:last-child {
+    margin-bottom: 0;
+  }
+
+  .mission-content :global(ul),
+  .mission-content :global(ol),
+  .description-content ul,
+  .description-content ol {
+    margin-bottom: var(--space-4);
+    padding-left: var(--space-6);
+  }
+
+  .mission-content :global(li),
+  .description-content li {
+    margin-bottom: var(--space-2);
+  }
+
+  .detail-group {
+    margin-bottom: var(--space-6);
+  }
+
+  .detail-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .detail-group h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 var(--space-2) 0;
+    color: var(--text-color);
+  }
+
+  .detail-group p {
+    color: var(--text-color);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Tags Section */
+  .tags-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+  }
+
+  .tags-section h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 var(--space-3) 0;
+    color: var(--text-color);
+  }
+
+  .tags-list {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
-    margin-top: var(--space-3);
   }
 
   .tag {
-    font-size: 0.75rem;
+    display: inline-block;
     padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
     font-weight: 500;
   }
 
@@ -1037,291 +1341,35 @@
     color: var(--color-primary-700);
   }
 
-  .featured-image-container {
-    width: 100%;
+  .medium-tag {
+    background-color: var(--color-success-100);
+    color: var(--color-success-700);
+  }
+
+  /* Timeline Section */
+  .timeline-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
-    overflow: hidden;
-    position: relative;
+    padding: var(--space-6);
   }
 
-  .featured-image {
-    width: 100%;
-    height: auto;
-    display: block;
-    object-fit: cover;
-  }
-
-  .image-link {
-    display: block;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.3s ease;
-  }
-
-  .image-link:hover {
-    transform: scale(1.02);
-  }
-
-  .image-lock-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-
-  .image-lock-overlay:hover {
-    background: rgba(0, 0, 0, 0.8);
-  }
-
-  .lock-icon {
-    margin-bottom: var(--space-4);
-  }
-
-  .lock-message {
-    text-align: center;
-    color: white;
-    max-width: 80%;
-  }
-
-  .lock-message h3 {
+  .timeline-section h2 {
     font-size: 1.5rem;
-    margin-bottom: var(--space-2);
-  }
-
-  .lock-message p {
-    margin-bottom: var(--space-4);
-    font-size: 1rem;
-  }
-
-  .unlock-button {
-    background: var(--color-primary-600);
-    color: white;
-    border: none;
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-md);
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    transition: background-color 0.2s;
-    margin: 0 auto;
-  }
-
-  .unlock-button:hover {
-    background: var(--color-success-600);
-  }
-
-  /* Organizer Section */
-  .organizer-section, .sponsor-section {
-    padding: var(--space-4);
-    background: var(--bg-color);
-    border-radius: 0px;
-    border: none;
-  }
-
-  .organizer-label, .sponsor-label {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin-bottom: var(--space-2);
-  }
-
-  .organizer-info, .sponsor-info {
-    display: flex;
-    gap: var(--space-4);
-    align-items: flex-start;
-  }
-
-  .organizer-avatar, .sponsor-logo, .member-avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-
-  .organizer-avatar img, .sponsor-logo img, .member-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .avatar-placeholder, .logo-placeholder {
-    width: 100%;
-    height: 100%;
-    background-color: var(--color-neutral-200);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     font-weight: 600;
-    color: var(--color-neutral-600);
-    font-size: 1.5rem;
-  }
-
-  .organizer-details, .sponsor-details, .member-details {
-    flex: 1;
-  }
-
-  .organizer-name, .sponsor-name, .member-name {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0 0 var(--space-1) 0;
+    margin: 0 0 var(--space-4) 0;
     color: var(--text-color);
   }
 
-  .organizer-bio, .sponsor-bio, .member-bio {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-    margin: 0;
-    line-height: 1.5;
-  }
-
-  .sponsor-link {
-    display: inline-block;
-    margin-top: var(--space-2);
-    margin-right: var(--space-2);
-    color: var(--color-primary-600);
-    text-decoration: none;
-    font-size: 0.875rem;
-    font-weight: 500;
-  }
-
-  .sponsor-link:hover {
-    text-decoration: underline;
-  }
-
-  .sponsor-additional-links {
-    margin-top: var(--space-2);
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-  }
-
-  /* Section Styling */
-  .section-title {
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0 0 35px 0;
-    color: var(--text-color);
-    position: relative;
-    padding-bottom: var(--space-2);
-    font-family: var(--font-instrument-serif);
-  }
-
-
-  .about-section, .timeline-section, .team-section, .comments-section {
-    padding: var(--space-6) 0;
-    background: transparent;
-    border-radius: 0px;
-    border-top: 1px solid var(--border-color);
-  }
-
-  .project-overview {
-    font-size: 1rem;
-    line-height: 1.7;
-    color: var(--text-color);
-    margin-bottom: var(--space-6);
-  }
-
-  .project-overview :global(p) {
-    margin-bottom: 1rem;
-  }
-
-  .project-overview :global(ul), .project-overview :global(ol) {
-    margin-bottom: 1rem;
-    padding-left: 1.5rem;
-  }
-
-  .project-overview :global(li) {
-    margin-bottom: 0.5rem;
-  }
-
-  .project-overview :global(a) {
-    color: var(--color-primary-600);
-    text-decoration: none;
-  }
-
-  .project-overview :global(a:hover) {
-    text-decoration: underline;
-  }
-
-  .project-overview :global(strong) {
-    font-weight: 600;
-  }
-
-  .project-overview :global(em) {
-    font-style: italic;
-  }
-
-  .seeking-section h3, .collaboration-section h3, .deliverable-section h3, .compensation-section h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: var(--space-4) 0 var(--space-2) 0;
-    color: var(--text-color);
-  }
-
-  .seeking-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .seeking-list li {
-    position: relative;
-    padding-left: var(--space-4);
-    margin-bottom: var(--space-2);
-    line-height: 1.5;
-  }
-
-  .seeking-list li::before {
-    content: '•';
-    position: absolute;
-    left: 0;
-    color: var(--color-primary-600);
-    font-weight: bold;
-  }
-
-  /* Timeline Styling */
   .timeline {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-1);
   }
 
   .timeline-item {
     display: flex;
-    gap: var(--space-4);
-  }
-
-  .timeline-date {
-    min-width: 60px;
-    text-align: center;
-  }
-
-  .date-month {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    font-weight: 500;
-  }
-
-  .date-day {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text-color);
-  }
-
-  .timeline-content {
-    display: flex;
     gap: var(--space-3);
-    flex: 1;
   }
 
   .timeline-marker {
@@ -1335,488 +1383,103 @@
     height: 16px;
     border-radius: 50%;
     background-color: var(--color-neutral-300);
-    border: 3px solid var(--bg-color);
-    z-index: 1;
+    border: 2px solid var(--color-neutral-400);
+    margin-top: 4px;
   }
 
   .timeline-item.completed .marker-dot {
-    background-color: var(--color-success-600);
+    background-color: var(--color-success-500);
+    border-color: var(--color-success-600);
   }
 
   .marker-line {
     width: 2px;
     height: 100%;
     background-color: var(--color-neutral-300);
-    margin-top: -2px;
+    margin-top: 4px;
     flex: 1;
   }
 
   .timeline-item.completed .marker-line {
-    background-color: var(--color-success-600);
+    background-color: var(--color-success-500);
   }
 
-  .timeline-details {
+  .timeline-content {
     flex: 1;
     padding-bottom: var(--space-4);
   }
 
   .timeline-title {
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: 600;
     margin: 0 0 var(--space-1) 0;
     color: var(--text-color);
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
   }
 
-  .completed-icon {
-    color: var(--color-success-600);
+  .timeline-item.completed .timeline-title {
+    color: var(--color-success-700);
   }
 
   .timeline-description {
     font-size: 0.875rem;
     color: var(--text-muted);
-    margin: 0;
-    line-height: 1.5;
-  }
-
-  /* Team Section */
-  .team-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: var(--space-6);
-  }
-
-  .team-member {
-    display: flex;
-    gap: var(--space-4);
-    align-items: flex-start;
-  }
-
-  .member-role {
-    font-size: 0.875rem;
-    color: var(--color-primary-600);
-    font-weight: 500;
-    margin-bottom: var(--space-2);
-  }
-
-  /* Comments Section */
-  .comment-form {
-    margin-bottom: var(--space-6);
-    padding-bottom: var(--space-6);
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .comment-form textarea {
-    width: 100%;
-    margin-bottom: var(--space-3);
-    resize: vertical;
-    min-height: 80px;
-  }
-
-  .donation-required-prompt {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-4);
-    background-color: var(--color-warning-50);
-    border: 1px solid var(--color-warning-200);
-    border-radius: var(--radius-lg);
-    padding: var(--space-6);
-    margin-bottom: var(--space-6);
-  }
-
-  .prompt-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    background-color: var(--color-warning-100);
-    color: var(--color-warning-600);
-    border-radius: var(--radius-lg);
-    flex-shrink: 0;
-  }
-
-  .prompt-content {
-    flex: 1;
-  }
-
-  .prompt-content h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
     margin: 0 0 var(--space-2) 0;
-    color: var(--color-warning-800);
+    line-height: 1.4;
   }
 
-  .prompt-content p {
-    color: var(--color-warning-700);
-    margin: 0 0 var(--space-4) 0;
-    line-height: 1.5;
-  }
-
-  .checking-donation {
+  .timeline-date {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-4);
-    background-color: var(--color-neutral-50);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--space-6);
-  }
-
-  .checking-donation p {
-    color: var(--text-muted);
-    margin: 0;
-  }
-
-  .auth-prompt {
-    text-align: center;
-    padding: var(--space-6);
-    background-color: var(--color-neutral-50);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--space-6);
-  }
-
-  .auth-prompt a {
-    color: var(--color-primary-600);
-    text-decoration: none;
-  }
-
-  .auth-prompt a:hover {
-    text-decoration: underline;
-  }
-
-  .comments-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-  }
-
-  .comment {
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: var(--space-4);
-  }
-
-  .comment:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-  }
-
-  .comment-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-2);
-  }
-
-  .comment-author {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-  }
-
-  .comment-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-
-  .comment-avatar-placeholder {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: var(--color-neutral-200);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    color: var(--color-neutral-600);
-  }
-
-  .comment-username {
-    font-weight: 500;
-  }
-
-  .comment-date {
-    font-size: 0.875rem;
+    gap: var(--space-1);
+    font-size: 0.75rem;
     color: var(--text-muted);
   }
 
-  .comment-content p {
-    margin: 0;
-    line-height: 1.5;
+  .spinner {
+    animation: spin 1s linear infinite;
   }
 
-  .empty-comments {
-    text-align: center;
-    padding: var(--space-8);
-    color: var(--text-muted);
-  }
-
-  /* Info Panel */
-  .piece-info-panel {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-  }
-
-  .info-card, .edit-card {
-    background: var(--card-bg);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-color);
-    overflow: hidden;
-  }
-
-  .funding-info {
-    padding: var(--space-6);
-    text-align: center;
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .funding-amount {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--text-color);
-    margin-bottom: var(--space-1);
-    font-family: var(--font-instrument-serif);
-  }
-
-  .funding-goal {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-    margin-bottom: var(--space-4);
-  }
-
-  .progress-container {
-    height: 8px;
-    background-color: var(--color-neutral-100);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: var(--space-4);
-  }
-
-  .progress-bar {
-    height: 100%;
-    background-color: var(--color-success-600);
-    border-radius: 4px;
-    transition: width 0.3s ease;
-  }
-
-  .countdown {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-  }
-
-  .countdown-number {
-    font-weight: 600;
-    color: var(--text-color);
-  }
-
-  .action-buttons {
-    padding: var(--space-4);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-  }
-
-  .action-button {
-    width: 100%;
-    padding: var(--space-3);
-    border-radius: var(--radius-md);
-    font-weight: 500;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .action-button.primary {
-    background: var(--color-primary-600);
-    color: white;
-    border: none;
-  }
-
-  .action-button.primary:hover {
-    background: var(--color-success-600);
-  }
-
-  .action-button.secondary {
-    background: var(--bg-color);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-  }
-
-  .action-button.secondary:hover {
-    background-color: var(--bg-color);
-  }
-
-  .action-button.secondary:disabled,
-  .action-button.secondary.disabled {
-    cursor: not-allowed;
-    opacity: 0.7;
-  }
-
-  .view-artwork-button {
-    background-color: var(--color-success-100);
-    color: var(--color-success-700);
-    border-color: var(--color-success-200);
-  }
-
-  .view-artwork-button:hover:not(.disabled) {
-    background-color: var(--color-success-200);
-    color: var(--color-success-800);
-  }
-
-  .view-artwork-button.disabled {
-    background-color: var(--color-neutral-100);
-    color: var(--color-neutral-500);
-    border-color: var(--color-neutral-200);
-    pointer-events: none;
-  }
-
-  .minor-actions {
-    display: flex;
-    gap: var(--space-2);
-  }
-
-  .minor-action-button {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    padding: var(--space-2);
-    background: var(--bg-color);
-    color: var(--text-muted);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .minor-action-button:hover {
-    background: var(--bg-color);
-    color: var(--text-color);
-  }
-
-  .minor-action-button.active {
-    color: var(--color-primary-600);
-    border-color: var(--color-primary-300);
-    background: var(--bg-color);
-  }
-
-  .donation-summary {
-    padding: var(--space-4);
-    border-top: 1px solid var(--border-color);
-    text-align: center;
-  }
-
-  .donation-amount {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-color);
-    margin-bottom: var(--space-1);
-    font-family: var(--font-instrument-serif);
-  }
-
-  .donation-cause {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-    margin-bottom: var(--space-3);
-  }
-
-  .cause-button {
-    width: 100%;
-    padding: var(--space-2);
-    background: var(--bg-color);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .cause-button:hover {
-    background: var(--bg-color);
-  }
-
-  .edit-card {
-    padding: var(--space-4);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-  }
-
-  .edit-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    padding: var(--space-3);
-    background: var(--bg-color);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.2s;
-  }
-
-  .edit-button:hover {
-    background: var(--bg-color);
-  }
-
-  /* Responsive Adjustments */
   @media (max-width: 1024px) {
-    .piece-layout {
-      grid-template-columns: 1fr 300px;
+    .piece-content {
+      grid-template-columns: 1fr;
     }
   }
 
   @media (max-width: 768px) {
-    .piece-layout {
-      grid-template-columns: 1fr;
+    .piece-detail {
+      padding: var(--space-4);
     }
 
-    .team-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .team-member {
+    .piece-header {
       flex-direction: column;
-      align-items: center;
-      text-align: center;
+      gap: var(--space-4);
     }
 
-    .member-avatar {
-      margin-bottom: var(--space-3);
-    }
-  }
-
-  @media (max-width: 480px) {
-    .piece-title {
-      font-size: 1.75rem;
-    }
-
-    .section-title {
-      font-size: 1.5rem;
-    }
-
-    .funding-amount {
+    .piece-header h1 {
       font-size: 2rem;
     }
 
-    .minor-actions {
+    .piece-meta {
       flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-3);
+    }
+
+    .header-actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .funding-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-2);
+    }
+
+    .draft-content {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
     }
   }
 </style>

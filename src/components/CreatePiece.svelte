@@ -1,457 +1,227 @@
 <script lang="ts">
-import { onMount } from 'svelte';
-import { push, link } from 'svelte-spa-router';
-import { supabase } from '../lib/supabase';
-import { user } from '../stores/authStore';
-import { fade, fly } from 'svelte/transition';
-import { products } from '../stripe-config';
-import RichTextEditor from './RichTextEditor.svelte';
-  
-let title = '';
-let pieceDescription = '';
-let projectMission = '';
-let imageFile: File | null = null;
-let audioFile: File | null = null;
-let videoFile: File | null = null;
-let loading = false;
-let message = '';
-let messageTimeout: number;
-  
-// Organizer variables
-let organizers: any[] = [];
-let organizerId = '';
-let newOrganizerName = '';
-let newOrganizerDescription = '';
-let creatingNewOrganizer = false;
+  import { onMount } from 'svelte';
+  import { push, link } from 'svelte-spa-router';
+  import { supabase } from '../lib/supabase';
+  import { user } from '../stores/authStore';
+  import { fade, fly } from 'svelte/transition';
+  import RichTextEditor from './RichTextEditor.svelte';
 
-// Sponsor variables
-let sponsors: any[] = [];
-let selectedSponsorId = '';
-let creatingNewSponsor = false;
-let newSponsorName = '';
-let newSponsorLogoUrl = '';
-let newSponsorWebsite = '';
-let newSponsorBio = '';
-let newSponsorAmount = '';
-let newSponsorAdditionalLinks: { name: string, url: string }[] = [{ name: '', url: '' }];
+  let title = '';
+  let projectMission = '';
+  let pieceDescription = '';
+  let imageFile: File | null = null;
+  let audioFile: File | null = null;
+  let loading = false;
+  let message = '';
+  let messageTimeout: number;
+  let organizerId = '';
+  let organizers: any[] = [];
+  let artists: any[] = [];
+  let selectedArtists: { id: string, role: string }[] = [];
   
-// Form fields
-let causeTags: string[] = [];
-let acceptedMediums: string[] = [];
-let fullProjectOverview = '';
-let collaborationStructure = '';
-let deliverableFormat = '';
-let artistsNeeded = 1;
-let projectVisibility = 'open';
-let compensationDetails = '';
-let fundingGoal = '';
-let donationCtaType = 'project';
-let preliminarySponsorInfo = '';
+  // Project status and milestones
+  let projectStatus: 'submitted_for_approval' | 'open_to_applications' | 'seeking_funding' | 'published' = 'submitted_for_approval';
+  let milestones: { title: string, description: string, completed: boolean, due_date?: string }[] = [];
   
-// Timeline dates
-let applicationStartDate = '';
-let applicationEndDate = '';
-let kickoffDate = '';
-let submissionDueDate = '';
-let feedbackWindowEndDate = '';
-let publicationTargetDate = '';
+  // Cause tags and accepted mediums
+  let causeTags: string[] = [];
+  let acceptedMediums: string[] = [];
+  let newCauseTag = '';
+  let newAcceptedMedium = '';
+  
+  // Additional project fields
+  let fullProjectOverview = '';
+  let collaborationStructure = '';
+  let deliverableFormat = '';
+  let compensationDetails = '';
+  let fundingGoal: number | null = null;
 
-// Project status and milestones
-let projectStatus: 'open_to_applications' | 'seeking_funding' | 'published' = 'open_to_applications';
-let milestones: { title: string, description: string, completed: boolean, due_date?: string }[] = [];
-  
-// Step management
-let currentStep = 1;
-const totalSteps = 5; // Increased from 4 to 5 to include milestones
-  
-const causeTagOptions = [
-  'Education', 'Environment', 'Health', 'Poverty', 'Equality', 
-  'Peace', 'Justice', 'Community', 'Arts', 'Culture', 'Human Rights'
-];
-  
-const mediumOptions = [
-  'Visual Art', 'Poetry', 'Music', 'Dance', 'Photography', 
-  'Film', 'Digital Art', 'Sculpture', 'Performance', 'Mixed Media'
-];
-  
-const collaborationOptions = [
-  { value: 'interwoven', label: 'Interwoven (consecutive contributions)' },
-  { value: 'collaborative', label: 'Collaborative (artists work together)' }
-];
-  
-const deliverableOptions = [
-  { value: 'image', label: 'Image with audio' },
-  { value: 'video', label: 'Video with audio' },
-];
-  
-const visibilityOptions = [
-  { value: 'open', label: 'Open' },
-  { value: 'invite_only', label: 'Invite-Only' }
-];
-  
-const donationCtaOptions = [
-  { value: 'cause', label: 'Direct to cause' },
-  { value: 'project', label: 'Direct to project' },
-  { value: 'both_cta', label: 'Both (Cause & Project)' }
-];
+  // Project status options
+  const projectStatusOptions = [
+    { value: 'submitted_for_approval', label: 'Submit for Approval' },
+    { value: 'open_to_applications', label: 'Open to Applications' },
+    { value: 'seeking_funding', label: 'Seeking Funding' },
+    { value: 'published', label: 'Published' }
+  ];
 
-const compensationOptions = [
-  { 
-    value: 'artist_fee', 
-    label: 'Artist Fee', 
-    description: 'Artists receives a fixed fee for their work. Donations go directly to the cause.',
-    forceDonationCta: 'cause'
-  },
-  { 
-    value: 'equal_share', 
-    label: 'Equal Share of Donations', 
-    description: 'Artists receive an equal share of donations made to the project.',
-    forceDonationCta: 'project'
-  },
-  { 
-    value: 'artist_fee_and_equal_share', 
-    label: 'Artist Fee + Equal Share', 
-    description: 'Artists receive both a fixed fee and a share of project donations.',
-    forceDonationCta: 'both_cta'
-  }
-];
-
-// Project status options
-const projectStatusOptions = [
-  { value: 'open_to_applications', label: 'Open to Applications' },
-  { value: 'seeking_funding', label: 'Seeking Funding' },
-  { value: 'published', label: 'Published' }
-];
-
-// Reactive variables for donation CTA type disabling
-$: disableDonationCtaCause = compensationDetails === 'equal_share' || compensationDetails === 'artist_fee_and_equal_share';
-$: disableDonationCtaProject = compensationDetails === 'artist_fee' || compensationDetails === 'artist_fee_and_equal_share';
-$: disableDonationCtaBoth = compensationDetails !== 'artist_fee_and_equal_share';
-
-// Reactive logic to handle compensation selection and donation CTA type
-$: {
-  if (compensationDetails === 'artist_fee') {
-    donationCtaType = 'cause';
-  } else if (compensationDetails === 'equal_share') {
-    donationCtaType = 'project';
-  } else if (compensationDetails === 'artist_fee_and_equal_share') {
-    donationCtaType = 'both_cta';
-  }
-}
-
-async function loadOrganizers() {
-  if (!$user) return;
-  
-  try {
-    const { data, error } = await supabase
+  async function loadOrganizers() {
+    if (!$user) return;
+    
+    const { data } = await supabase
       .from('organizers')
       .select('id, name')
       .eq('user_id', $user.id);
+    
+    if (data) {
+      organizers = data;
+      
+      // If user has only one organizer, select it by default
+      if (data.length === 1) {
+        organizerId = data[0].id;
+      }
+    }
+  }
+
+  async function loadArtists() {
+    const { data } = await supabase
+      .from('artists')
+      .select('id, name');
+    
+    if (data) {
+      artists = data;
+    }
+  }
+
+  async function uploadFile(file: File, bucket: string) {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${crypto.randomUUID()}.${fileExt}`;
+    
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(fileName, file);
       
     if (error) throw error;
     
-    organizers = data || [];
-    
-    // If user has organizers, use the first one by default
-    if (organizers.length > 0) {
-      organizerId = organizers[0].id;
-      creatingNewOrganizer = false;
-    } else {
-      // If no organizers exist, default to creating a new one
-      creatingNewOrganizer = true;
-      // Pre-fill with user's profile name as a default organizer name
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', $user.id)
+    const { data: { publicUrl } } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(fileName);
+      
+    return publicUrl;
+  }
+
+  async function handleSubmit() {
+    try {
+      loading = true;
+      message = '';
+
+      if (!title || !organizerId) {
+        throw new Error('Title and organizer are required');
+      }
+
+      let imageUrl = '';
+      let audioUrl = '';
+
+      if (imageFile) {
+        imageUrl = await uploadFile(imageFile, 'pieces');
+      }
+
+      if (audioFile) {
+        audioUrl = await uploadFile(audioFile, 'audio');
+      }
+
+      const { data, error: pieceError } = await supabase
+        .from('pieces')
+        .insert({
+          title,
+          mission: projectMission,
+          piece_description: pieceDescription,
+          image_url: imageUrl,
+          audio_url: audioUrl,
+          organizer_id: organizerId,
+          project_status: projectStatus,
+          milestones: milestones,
+          cause_tags: causeTags,
+          accepted_mediums: acceptedMediums,
+          full_project_overview: fullProjectOverview,
+          collaboration_structure: collaborationStructure,
+          deliverable_format: deliverableFormat,
+          compensation_details: compensationDetails,
+          funding_goal: fundingGoal,
+          approved: false // New pieces are not approved by default
+        })
+        .select('id')
         .single();
-        
-      if (profile && profile.username) {
-        newOrganizerName = profile.username;
-      } else if ($user.email) {
-        const emailName = $user.email.split('@')[0];
-        newOrganizerName = emailName.charAt(0).toUpperCase() + emailName.slice(1) + " Productions";
-      }
-    }
-  } catch (error) {
-    console.error('Error loading organizers:', error);
-  }
-}
 
-async function loadSponsors() {
-  try {
-    const { data, error } = await supabase
-      .from('sponsors')
-      .select('*');
-      
-    if (error) throw error;
-    
-    sponsors = data || [];
-  } catch (error) {
-    console.error('Error loading sponsors:', error);
-  }
-}
+      if (pieceError) throw pieceError;
 
-async function createOrganizer() {
-  if (!$user || !newOrganizerName.trim()) return null;
-  
-  try {
-    const { data, error } = await supabase
-      .from('organizers')
-      .insert({
-        name: newOrganizerName.trim(),
-        description: newOrganizerDescription.trim(),
-        user_id: $user.id
-      })
-      .select('id')
-      .single();
-      
-    if (error) throw error;
-    
-    return data.id;
-  } catch (error) {
-    console.error('Error creating organizer:', error);
-    throw error;
-  }
-}
+      // Insert contributors
+      if (selectedArtists.length > 0 && data?.id) {
+        const artistInserts = selectedArtists
+          .filter(artist => artist.id && artist.role)
+          .map(artist => ({
+            piece_id: data.id,
+            artist_id: artist.id,
+            role: artist.role
+          }));
 
-async function createSponsor() {
-  if (!newSponsorName.trim()) return null;
-  
-  try {
-    const { data, error } = await supabase
-      .from('sponsors')
-      .insert({
-        name: newSponsorName.trim(),
-        logo_url: newSponsorLogoUrl.trim(),
-        website: newSponsorWebsite.trim(),
-        bio: newSponsorBio.trim(),
-        additional_links: newSponsorAdditionalLinks.filter(link => link.name.trim() && link.url.trim())
-      })
-      .select('id')
-      .single();
-      
-    if (error) throw error;
-    
-    return data.id;
-  } catch (error) {
-    console.error('Error creating sponsor:', error);
-    throw error;
-  }
-}
+        if (artistInserts.length > 0) {
+          const { error: artistError } = await supabase
+            .from('piece_artists')
+            .insert(artistInserts);
 
-async function uploadFile(file: File, bucket: string) {
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${crypto.randomUUID()}.${fileExt}`;
-  
-  const { data, error } = await supabase.storage
-    .from(bucket)
-    .upload(fileName, file);
-    
-  if (error) throw error;
-  
-  const { data: { publicUrl } } = supabase.storage
-    .from(bucket)
-    .getPublicUrl(fileName);
-    
-  return publicUrl;
-}
-
-async function handleSubmit() {
-  try {
-    loading = true;
-    message = '';
-
-    if (!title) {
-      throw new Error('Title is required');
-    }
-
-    // Handle organizer selection/creation
-    let finalOrganizerId;
-    
-    if (creatingNewOrganizer) {
-      if (!newOrganizerName.trim()) {
-        throw new Error('Organizer name is required');
-      }
-      finalOrganizerId = await createOrganizer();
-    } else {
-      if (!organizerId) {
-        throw new Error('Please select an organizer');
-      }
-      finalOrganizerId = organizerId;
-    }
-
-    // Upload files if provided
-    let imageUrl = null;
-    let audioUrl = null;
-    let videoUrl = null;
-
-    if (imageFile) {
-      imageUrl = await uploadFile(imageFile, 'pieces');
-    }
-
-    if (audioFile) {
-      audioUrl = await uploadFile(audioFile, 'audio');
-    }
-
-    if (videoFile) {
-      videoUrl = await uploadFile(videoFile, 'videos');
-    }
-
-    // Prepare piece data
-    const pieceData = {
-      title,
-      piece_description: pieceDescription,
-      mission: projectMission,
-      image_url: imageUrl,
-      audio_url: audioUrl,
-      video_url: videoUrl,
-      organizer_id: finalOrganizerId,
-      cause_tags: causeTags,
-      accepted_mediums: acceptedMediums,
-      full_project_overview: fullProjectOverview,
-      collaboration_structure: collaborationStructure,
-      deliverable_format: deliverableFormat,
-      application_start_date: applicationStartDate ? new Date(applicationStartDate).toISOString() : null,
-      application_end_date: applicationEndDate ? new Date(applicationEndDate).toISOString() : null,
-      kickoff_date: kickoffDate ? new Date(kickoffDate).toISOString() : null,
-      submission_due_date: submissionDueDate ? new Date(submissionDueDate).toISOString() : null,
-      feedback_window_end_date: feedbackWindowEndDate ? new Date(feedbackWindowEndDate).toISOString() : null,
-      publication_target_date: publicationTargetDate ? new Date(publicationTargetDate).toISOString() : null,
-      artists_needed: artistsNeeded,
-      project_visibility: projectVisibility,
-      compensation_details: compensationDetails,
-      funding_goal: fundingGoal ? parseInt(fundingGoal) : null,
-      donation_cta_type: donationCtaType,
-      preliminary_sponsor_info: preliminarySponsorInfo,
-      project_status: projectStatus,
-      milestones: milestones
-    };
-
-    // Insert the piece
-    const { data, error } = await supabase
-      .from('pieces')
-      .insert(pieceData)
-      .select('id')
-      .single();
-
-    if (error) throw error;
-
-    // Handle sponsor if provided
-    if ((creatingNewSponsor && newSponsorName.trim()) || (!creatingNewSponsor && selectedSponsorId)) {
-      let sponsorId;
-      
-      if (creatingNewSponsor) {
-        sponsorId = await createSponsor();
-      } else {
-        sponsorId = selectedSponsorId;
-      }
-      
-      if (sponsorId && newSponsorAmount) {
-        const amount = parseInt(newSponsorAmount);
-        if (amount > 0) {
-          const { error: sponsorError } = await supabase
-            .from('piece_sponsors')
-            .insert({
-              piece_id: data.id,
-              sponsor_id: sponsorId,
-              amount: amount
-            });
-            
-          if (sponsorError) {
-            console.error('Error linking sponsor:', sponsorError);
-          }
+          if (artistError) throw artistError;
         }
       }
+
+      message = 'Peace Piece created successfully! It will be reviewed before being published.';
+      
+      if (messageTimeout) clearTimeout(messageTimeout);
+      messageTimeout = setTimeout(() => {
+        push(`/piece/${data.id}`);
+      }, 2000);
+
+    } catch (error: any) {
+      message = error.message;
+    } finally {
+      loading = false;
     }
-
-    message = 'Peace Piece created successfully!';
-    
-    if (messageTimeout) clearTimeout(messageTimeout);
-    messageTimeout = setTimeout(() => {
-      push(`/piece/${data.id}`);
-    }, 2000);
-
-  } catch (error: any) {
-    message = error.message;
-  } finally {
-    loading = false;
   }
-}
 
-function toggleCauseTag(tag: string) {
-  if (causeTags.includes(tag)) {
+  function addArtist() {
+    selectedArtists = [...selectedArtists, { id: '', role: '' }];
+  }
+
+  function removeArtist(index: number) {
+    selectedArtists = selectedArtists.filter((_, i) => i !== index);
+  }
+  
+  function addMilestone() {
+    milestones = [...milestones, { title: '', description: '', completed: false }];
+  }
+  
+  function removeMilestone(index: number) {
+    milestones = milestones.filter((_, i) => i !== index);
+  }
+  
+  function updateMilestone(index: number, field: string, value: any) {
+    milestones = milestones.map((milestone, i) => {
+      if (i === index) {
+        return { ...milestone, [field]: value };
+      }
+      return milestone;
+    });
+  }
+  
+  function addCauseTag() {
+    if (newCauseTag.trim() && !causeTags.includes(newCauseTag.trim())) {
+      causeTags = [...causeTags, newCauseTag.trim()];
+      newCauseTag = '';
+    }
+  }
+  
+  function removeCauseTag(tag: string) {
     causeTags = causeTags.filter(t => t !== tag);
-  } else {
-    causeTags = [...causeTags, tag];
   }
-}
-
-function toggleMedium(medium: string) {
-  if (acceptedMediums.includes(medium)) {
-    acceptedMediums = acceptedMediums.filter(m => m !== medium);
-  } else {
-    acceptedMediums = [...acceptedMediums, medium];
-  }
-}
-
-function nextStep() {
-  if (currentStep < totalSteps) {
-    currentStep++;
-    window.scrollTo(0, 0);
-  }
-}
-
-function prevStep() {
-  if (currentStep > 1) {
-    currentStep--;
-    window.scrollTo(0, 0);
-  }
-}
-
-function toggleOrganizerCreation() {
-  creatingNewOrganizer = !creatingNewOrganizer;
-}
-
-function toggleSponsorCreation() {
-  creatingNewSponsor = !creatingNewSponsor;
-}
-
-function addSponsorLink() {
-  newSponsorAdditionalLinks = [...newSponsorAdditionalLinks, { name: '', url: '' }];
-}
-
-function removeSponsorLink(index: number) {
-  newSponsorAdditionalLinks = newSponsorAdditionalLinks.filter((_, i) => i !== index);
-}
-
-function addMilestone() {
-  milestones = [...milestones, { title: '', description: '', completed: false }];
-}
-
-function removeMilestone(index: number) {
-  milestones = milestones.filter((_, i) => i !== index);
-}
-
-function updateMilestone(index: number, field: string, value: any) {
-  milestones = milestones.map((milestone, i) => {
-    if (i === index) {
-      return { ...milestone, [field]: value };
+  
+  function addAcceptedMedium() {
+    if (newAcceptedMedium.trim() && !acceptedMediums.includes(newAcceptedMedium.trim())) {
+      acceptedMediums = [...acceptedMediums, newAcceptedMedium.trim()];
+      newAcceptedMedium = '';
     }
-    return milestone;
-  });
-}
-
-function handleMissionUpdate(event: CustomEvent<string>) {
-  projectMission = event.detail;
-}
-
-onMount(() => {
-  if ($user) {
-    loadOrganizers();
-    loadSponsors();
   }
-});
+  
+  function removeAcceptedMedium(medium: string) {
+    acceptedMediums = acceptedMediums.filter(m => m !== medium);
+  }
+
+  function handleMissionUpdate(event: CustomEvent<string>) {
+    projectMission = event.detail;
+  }
+
+  onMount(() => {
+    loadOrganizers();
+    loadArtists();
+  });
 </script>
 
 <div class="create-piece">
@@ -462,34 +232,7 @@ onMount(() => {
         <a href="/dashboard" use:link>← Back to Dashboard</a>
       </div>
       <h1>Create New Peace Piece</h1>
-      <p>Share your vision and invite artists to collaborate</p>
-    </div>
-
-    <!-- Progress Indicator -->
-    <div class="progress-container">
-      <div class="progress-bar">
-        <div class="progress-fill" style="width: {(currentStep / totalSteps) * 100}%"></div>
-      </div>
-      <div class="progress-steps">
-        {#each Array(totalSteps) as _, i}
-          <div class="progress-step" class:active={currentStep >= i + 1} class:completed={currentStep > i + 1}>
-            <div class="step-number">{i + 1}</div>
-            <div class="step-label">
-              {#if i === 0}
-                Basic Info
-              {:else if i === 1}
-                Project Details
-              {:else if i === 2}
-                Timeline
-              {:else if i === 3}
-                Milestones
-              {:else if i === 4}
-                Funding
-              {/if}
-            </div>
-          </div>
-        {/each}
-      </div>
+      <p>Share your creative work with the world</p>
     </div>
 
     <!-- Form -->
@@ -505,824 +248,473 @@ onMount(() => {
       {/if}
 
       <form on:submit|preventDefault={handleSubmit}>
-        <!-- Step 1: Basic Information -->
-        {#if currentStep === 1}
-          <section class="form-section">
-            <h2>Basic Information</h2>
-            
+        <!-- Basic Information -->
+        <section class="form-section">
+          <h2>Basic Information</h2>
+          
+          <div class="form-grid">
             <div class="form-group">
-              <label for="title">Project Title *</label>
+              <label for="title">Title *</label>
               <input
                 type="text"
                 id="title"
                 bind:value={title}
                 required
                 disabled={loading}
-                placeholder="Enter a title for your peace piece"
+                placeholder="Enter the title of your piece"
               />
             </div>
 
             <div class="form-group">
-              <label for="pieceDescription">Short Description (1-2 sentences, for previews)</label>
-              <textarea
-                id="pieceDescription"
-                bind:value={pieceDescription}
-                rows="3"
-                disabled={loading}
-                placeholder="Briefly describe your peace piece in 1-2 sentences"
-              ></textarea>
-            </div>
-
-            <div class="form-group">
-              <label for="projectMission">Project Mission</label>
-              <RichTextEditor 
-                content={projectMission} 
-                on:update={handleMissionUpdate}
-                placeholder="Share your project's mission, goals, and inspiring content..."
-                minHeight="200px"
-              />
-            </div>
-            
-            <div class="form-group">
-              <label for="projectStatus">Project Status *</label>
+              <label for="organizer">Organizer *</label>
               <select
-                id="projectStatus"
-                bind:value={projectStatus}
+                id="organizer"
+                bind:value={organizerId}
                 required
                 disabled={loading}
               >
-                {#each projectStatusOptions as option}
-                  <option value={option.value}>{option.label}</option>
+                <option value="">Select an organizer</option>
+                {#each organizers as organizer}
+                  <option value={organizer.id}>{organizer.name}</option>
                 {/each}
               </select>
-              <div class="field-help">
-                <p>Select the current status of your project:</p>
-                <ul>
-                  <li><strong>Open to Applications:</strong> Artists can apply to contribute</li>
-                  <li><strong>Seeking Funding:</strong> Project is looking for sponsors and donations</li>
-                  <li><strong>Published:</strong> Project is complete and published</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Organizer *</label>
-              
-              <div class="organizer-options">
-                {#if organizers.length > 0}
-                  <label class="radio-option">
-                    <input
-                      type="radio"
-                      name="organizer-type"
-                      checked={!creatingNewOrganizer}
-                      on:change={() => creatingNewOrganizer = false}
-                      disabled={loading}
-                    />
-                    <span>Use Existing Organizer</span>
-                  </label>
-                {/if}
-                
-                <label class="radio-option">
-                  <input
-                    type="radio"
-                    name="organizer-type"
-                    checked={creatingNewOrganizer}
-                    on:change={() => creatingNewOrganizer = true}
-                    disabled={loading}
-                  />
-                  <span>Create New Organizer</span>
-                </label>
-              </div>
-
-              {#if creatingNewOrganizer}
-                <div class="nested-fields" in:fly={{ y: 10, duration: 200 }}>
-                  <div class="form-group">
-                    <label for="newOrganizerName">Organizer Name *</label>
-                    <input
-                      type="text"
-                      id="newOrganizerName"
-                      bind:value={newOrganizerName}
-                      required={creatingNewOrganizer}
-                      disabled={loading}
-                      placeholder="Enter organizer name"
-                    />
-                  </div>
-                  
-                  <div class="form-group">
-                    <label for="newOrganizerDescription">Organizer Description</label>
-                    <textarea
-                      id="newOrganizerDescription"
-                      bind:value={newOrganizerDescription}
-                      rows="3"
-                      disabled={loading}
-                      placeholder="Describe the organizing entity or individual"
-                    ></textarea>
-                  </div>
-                </div>
-              {:else if organizers.length > 0}
-                <div class="form-group" in:fly={{ y: 10, duration: 200 }}>
-                  <select
-                    bind:value={organizerId}
-                    disabled={loading}
-                    required={!creatingNewOrganizer}
-                  >
-                    <option value="">Select an organizer</option>
-                    {#each organizers as organizer}
-                      <option value={organizer.id}>{organizer.name}</option>
-                    {/each}
-                  </select>
-                </div>
+              {#if organizers.length === 0}
+                <p class="field-help">
+                  <a href="/settings/organizer-profile" use:link>Create an organizer profile</a> before creating a piece.
+                </p>
               {/if}
             </div>
+          </div>
 
-            <div class="media-grid">
-              <div class="form-group">
-                <label for="image">Cover Image (optional)</label>
-                <input
-                  type="file"
-                  id="image"
-                  accept="image/*"
-                  on:change={(e) => imageFile = e.target.files?.[0] || null}
-                  disabled={loading}
-                  class="file-input"
-                />
-                {#if imageFile}
-                  <div class="file-preview">
-                    <div class="preview-label">Selected image:</div>
-                    <div class="file-name">{imageFile.name}</div>
-                  </div>
-                {/if}
-              </div>
+          <div class="form-group">
+            <label for="pieceDescription">Description (Markdown supported)</label>
+            <textarea
+              id="pieceDescription"
+              bind:value={pieceDescription}
+              rows="6"
+              disabled={loading}
+              placeholder="Describe your piece using markdown formatting. You can use **bold**, *italic*, and [links](url)..."
+            ></textarea>
+            <div class="field-help">
+              <p>You can use markdown formatting:</p>
+              <ul>
+                <li><code>**bold text**</code> for <strong>bold text</strong></li>
+                <li><code>*italic text*</code> for <em>italic text</em></li>
+                <li><code>[link text](url)</code> for links</li>
+              </ul>
             </div>
-          </section>
-        {/if}
+          </div>
 
-        <!-- Step 2: Project Details -->
-        {#if currentStep === 2}
-          <section class="form-section">
-            <h2>Project Details</h2>
-            
-            <div class="form-group">
-              <label>Cause Tags (select all that apply)</label>
-              <div class="tags-grid">
-                {#each causeTagOptions as tag}
-                  <label class="tag-option">
-                    <input 
-                      type="checkbox" 
-                      checked={causeTags.includes(tag)} 
-                      on:change={() => toggleCauseTag(tag)}
-                    />
-                    <span>{tag}</span>
-                  </label>
-                {/each}
-              </div>
+          <div class="form-group">
+            <label for="projectMission">Project Mission</label>
+            <RichTextEditor 
+              content={projectMission} 
+              on:update={handleMissionUpdate}
+              placeholder="Share your project's mission, goals, and inspiring content..."
+              minHeight="200px"
+            />
+          </div>
+          
+          <!-- Project Status -->
+          <div class="form-group">
+            <label for="projectStatus">Project Status *</label>
+            <select
+              id="projectStatus"
+              bind:value={projectStatus}
+              required
+              disabled={loading}
+            >
+              {#each projectStatusOptions as option}
+                <option value={option.value}>{option.label}</option>
+              {/each}
+            </select>
+            <div class="field-help">
+              <p>Select the current status of your project:</p>
+              <ul>
+                <li><strong>Submit for Approval:</strong> Your piece will be reviewed before being published</li>
+                <li><strong>Open to Applications:</strong> Artists can apply to contribute</li>
+                <li><strong>Seeking Funding:</strong> Project is looking for sponsors and donations</li>
+                <li><strong>Published:</strong> Project is complete and published</li>
+              </ul>
             </div>
-
-            <div class="form-group">
-              <label>Accepted Mediums (select all that apply)</label>
-              <div class="tags-grid">
-                {#each mediumOptions as medium}
-                  <label class="tag-option">
-                    <input 
-                      type="checkbox" 
-                      checked={acceptedMediums.includes(medium)} 
-                      on:change={() => toggleMedium(medium)}
-                    />
-                    <span>{medium}</span>
-                  </label>
-                {/each}
-              </div>
+          </div>
+          
+          <!-- Funding Goal -->
+          <div class="form-group">
+            <label for="fundingGoal">Funding Goal ($)</label>
+            <input
+              type="number"
+              id="fundingGoal"
+              bind:value={fundingGoal}
+              min="0"
+              step="100"
+              disabled={loading}
+              placeholder="Enter your funding goal amount (e.g., 5000)"
+            />
+            <div class="field-help">
+              <p>Set a realistic funding goal for your project. This will be displayed on your project page with a progress bar.</p>
             </div>
-
-            <div class="form-group">
-              <label for="fullProjectOverview">Full Project Overview (for artists)</label>
-              <textarea
-                id="fullProjectOverview"
-                bind:value={fullProjectOverview}
-                rows="6"
-                disabled={loading}
-                placeholder="Describe your vision, theme, personal motivation, why this matters to the community and who would be good artists to contribute..."
-              ></textarea>
-            </div>
-
-            <div class="form-group">
-              <label>Collaboration Structure</label>
-              <div class="radio-options">
-                {#each collaborationOptions as option}
-                  <label class="radio-card">
-                    <input 
-                      type="radio" 
-                      name="collaboration" 
-                      value={option.value}
-                      bind:group={collaborationStructure}
-                    />
-                    <div class="radio-card-content">
-                      <div class="radio-card-title">{option.label}</div>
-                    </div>
-                  </label>
-                {/each}
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Deliverable Format</label>
-              <div class="radio-options">
-                {#each deliverableOptions as option}
-                  <label class="radio-card">
-                    <input 
-                      type="radio" 
-                      name="deliverable" 
-                      value={option.value}
-                      bind:group={deliverableFormat}
-                    />
-                    <div class="radio-card-content">
-                      <div class="radio-card-title">{option.label}</div>
-                    </div>
-                  </label>
-                {/each}
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="artistsNeeded">Number of Artists Needed</label>
-              <input
-                type="number"
-                id="artistsNeeded"
-                bind:value={artistsNeeded}
-                min="1"
-                max="100"
-                disabled={loading}
-              />
-            </div>
-
-            <div class="form-group">
-              <label>Project Visibility</label>
-              <div class="radio-options">
-                {#each visibilityOptions as option}
-                  <label class="radio-card">
-                    <input 
-                      type="radio" 
-                      name="visibility" 
-                      value={option.value}
-                      bind:group={projectVisibility}
-                    />
-                    <div class="radio-card-content">
-                      <div class="radio-card-title">{option.label}</div>
-                    </div>
-                  </label>
-                {/each}
-              </div>
-            </div>
-          </section>
-        {/if}
-
-        <!-- Step 3: Timeline -->
-        {#if currentStep === 3}
-          <section class="form-section">
-            <h2>Timeline</h2>
-            
-            <div class="date-grid">
-              <div class="form-group">
-                <label for="applicationStartDate">Application Start Date</label>
-                <input
-                  type="date"
-                  id="applicationStartDate"
-                  bind:value={applicationStartDate}
-                  disabled={loading}
-                />
-              </div>
-              
-              <div class="form-group">
-                <label for="applicationEndDate">Application End Date</label>
-                <input
-                  type="date"
-                  id="applicationEndDate"
-                  bind:value={applicationEndDate}
-                  disabled={loading}
-                />
-              </div>
-              
-              <div class="form-group">
-                <label for="kickoffDate">Kickoff Date</label>
-                <input
-                  type="date"
-                  id="kickoffDate"
-                  bind:value={kickoffDate}
-                  disabled={loading}
-                />
-              </div>
-              
-              <div class="form-group">
-                <label for="submissionDueDate">Submission Due Date</label>
-                <input
-                  type="date"
-                  id="submissionDueDate"
-                  bind:value={submissionDueDate}
-                  disabled={loading}
-                />
-              </div>
-              
-              <div class="form-group">
-                <label for="feedbackWindowEndDate">Feedback Window End Date</label>
-                <input
-                  type="date"
-                  id="feedbackWindowEndDate"
-                  bind:value={feedbackWindowEndDate}
-                  disabled={loading}
-                />
-              </div>
-              
-              <div class="form-group">
-                <label for="publicationTargetDate">Publication Target Date</label>
-                <input
-                  type="date"
-                  id="publicationTargetDate"
-                  bind:value={publicationTargetDate}
-                  disabled={loading}
-                />
-              </div>
-            </div>
-            
-            <div class="timeline-visualization">
-              <div class="timeline-line"></div>
-              {#if applicationStartDate}
-                <div class="timeline-marker" style="left: 0%">
-                  <div class="marker-label">Applications Open</div>
-                </div>
-              {/if}
-              {#if applicationEndDate}
-                <div class="timeline-marker" style="left: 20%">
-                  <div class="marker-label">Applications Close</div>
-                </div>
-              {/if}
-              {#if kickoffDate}
-                <div class="timeline-marker" style="left: 40%">
-                  <div class="marker-label">Project Kickoff</div>
-                </div>
-              {/if}
-              {#if submissionDueDate}
-                <div class="timeline-marker" style="left: 60%">
-                  <div class="marker-label">Submissions Due</div>
-                </div>
-              {/if}
-              {#if feedbackWindowEndDate}
-                <div class="timeline-marker" style="left: 80%">
-                  <div class="marker-label">Feedback Ends</div>
-                </div>
-              {/if}
-              {#if publicationTargetDate}
-                <div class="timeline-marker" style="left: 100%">
-                  <div class="marker-label">Publication</div>
-                </div>
-              {/if}
-            </div>
-          </section>
-        {/if}
+          </div>
+        </section>
         
-        <!-- Step 4: Milestones -->
-        {#if currentStep === 4}
-          <section class="form-section">
-            <div class="section-header">
-              <h2>Project Milestones</h2>
-              <button type="button" class="add-button" on:click={addMilestone}>
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                Add Milestone
+        <!-- Cause Tags Section -->
+        <section class="form-section">
+          <div class="section-header">
+            <h2>Cause Tags</h2>
+            <div class="tag-input-container">
+              <input
+                type="text"
+                bind:value={newCauseTag}
+                placeholder="Add a cause tag..."
+                disabled={loading}
+                class="tag-input"
+              />
+              <button 
+                type="button" 
+                class="add-tag-button" 
+                on:click={addCauseTag}
+                disabled={loading || !newCauseTag.trim()}
+              >
+                Add
               </button>
             </div>
-            
-            <div class="field-help">
-              <p>Create milestones to track your project's progress. Milestones help artists and supporters understand the project timeline and current status.</p>
+          </div>
+          
+          {#if causeTags.length > 0}
+            <div class="tags-container">
+              {#each causeTags as tag}
+                <div class="tag-item">
+                  <span class="tag-text">{tag}</span>
+                  <button 
+                    type="button" 
+                    class="remove-tag-button" 
+                    on:click={() => removeCauseTag(tag)}
+                    disabled={loading}
+                  >
+                    ×
+                  </button>
+                </div>
+              {/each}
             </div>
-            
-            {#if milestones.length > 0}
-              <div class="milestones-list">
-                {#each milestones as milestone, i}
-                  <div class="milestone-row" in:fly={{ y: 20, duration: 300 }}>
-                    <div class="milestone-header">
-                      <div class="milestone-checkbox">
-                        <label class="checkbox-container">
-                          <input 
-                            type="checkbox" 
-                            checked={milestone.completed} 
-                            on:change={(e) => updateMilestone(i, 'completed', e.target.checked)}
-                            disabled={loading}
-                          />
-                          <span class="checkmark"></span>
-                        </label>
-                      </div>
-                      
-                      <div class="milestone-title-container">
-                        <input
-                          type="text"
-                          placeholder="Milestone title"
-                          value={milestone.title}
-                          on:input={(e) => updateMilestone(i, 'title', e.target.value)}
+          {:else}
+            <div class="empty-tags">
+              <p>No cause tags added yet. Add tags to help categorize your project.</p>
+            </div>
+          {/if}
+        </section>
+        
+        <!-- Accepted Mediums Section -->
+        <section class="form-section">
+          <div class="section-header">
+            <h2>Accepted Artistic Mediums</h2>
+            <div class="tag-input-container">
+              <input
+                type="text"
+                bind:value={newAcceptedMedium}
+                placeholder="Add an artistic medium..."
+                disabled={loading}
+                class="tag-input"
+              />
+              <button 
+                type="button" 
+                class="add-tag-button" 
+                on:click={addAcceptedMedium}
+                disabled={loading || !newAcceptedMedium.trim()}
+              >
+                Add
+              </button>
+            </div>
+          </div>
+          
+          {#if acceptedMediums.length > 0}
+            <div class="tags-container">
+              {#each acceptedMediums as medium}
+                <div class="tag-item medium-tag">
+                  <span class="tag-text">{medium}</span>
+                  <button 
+                    type="button" 
+                    class="remove-tag-button" 
+                    on:click={() => removeAcceptedMedium(medium)}
+                    disabled={loading}
+                  >
+                    ×
+                  </button>
+                </div>
+              {/each}
+            </div>
+          {:else}
+            <div class="empty-tags">
+              <p>No artistic mediums added yet. Add mediums to specify what types of art you're looking for.</p>
+            </div>
+          {/if}
+        </section>
+        
+        <!-- Project Details Section -->
+        <section class="form-section">
+          <h2>Project Details</h2>
+          
+          <div class="form-group">
+            <label for="fullProjectOverview">Full Project Overview</label>
+            <textarea
+              id="fullProjectOverview"
+              bind:value={fullProjectOverview}
+              rows="8"
+              disabled={loading}
+              placeholder="Provide a comprehensive overview of your project, its goals, and its significance..."
+            ></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="collaborationStructure">Collaboration Structure</label>
+            <textarea
+              id="collaborationStructure"
+              bind:value={collaborationStructure}
+              rows="4"
+              disabled={loading}
+              placeholder="Explain how artists will collaborate on this project..."
+            ></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="deliverableFormat">Deliverable Format</label>
+            <textarea
+              id="deliverableFormat"
+              bind:value={deliverableFormat}
+              rows="4"
+              disabled={loading}
+              placeholder="Describe the final format of the piece (e.g., digital exhibition, printed book, etc.)..."
+            ></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="compensationDetails">Compensation Details</label>
+            <textarea
+              id="compensationDetails"
+              bind:value={compensationDetails}
+              rows="4"
+              disabled={loading}
+              placeholder="Explain how artists will be compensated for their contributions..."
+            ></textarea>
+          </div>
+        </section>
+
+        <!-- Media Section -->
+        <section class="form-section">
+          <h2>Media</h2>
+          
+          <div class="media-grid">
+            <div class="form-group">
+              <label for="image">Image</label>
+              <input
+                type="file"
+                id="image"
+                accept="image/*"
+                on:change={(e) => imageFile = e.target.files?.[0] || null}
+                disabled={loading}
+                class="file-input"
+              />
+              {#if imageFile}
+                <div class="new-file-indicator">
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Selected: {imageFile.name}
+                </div>
+              {/if}
+            </div>
+
+            <div class="form-group">
+              <label for="audio">Audio (optional)</label>
+              <input
+                type="file"
+                id="audio"
+                accept="audio/*"
+                on:change={(e) => audioFile = e.target.files?.[0] || null}
+                disabled={loading}
+                class="file-input"
+              />
+              {#if audioFile}
+                <div class="new-file-indicator">
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Selected: {audioFile.name}
+                </div>
+              {/if}
+            </div>
+          </div>
+        </section>
+        
+        <!-- Milestones Section -->
+        <section class="form-section">
+          <div class="section-header">
+            <h2>Project Milestones</h2>
+            <button type="button" class="add-button" on:click={addMilestone}>
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Add Milestone
+            </button>
+          </div>
+          
+          {#if milestones.length > 0}
+            <div class="milestones-list">
+              {#each milestones as milestone, i}
+                <div class="milestone-row" in:fly={{ y: 20, duration: 300 }}>
+                  <div class="milestone-header">
+                    <div class="milestone-checkbox">
+                      <label class="checkbox-container">
+                        <input 
+                          type="checkbox" 
+                          checked={milestone.completed} 
+                          on:change={(e) => updateMilestone(i, 'completed', e.target.checked)}
                           disabled={loading}
-                          class="milestone-title-input"
                         />
-                      </div>
-                      
-                      <button 
-                        type="button"
-                        class="remove-button"
-                        on:click={() => removeMilestone(i)}
-                        disabled={loading}
-                        title="Remove milestone"
-                      >
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                          <line x1="18" y1="6" x2="6" y2="18"></line>
-                          <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                      </button>
+                        <span class="checkmark"></span>
+                      </label>
                     </div>
                     
-                    <div class="milestone-details">
-                      <textarea
-                        placeholder="Milestone description"
-                        value={milestone.description}
-                        on:input={(e) => updateMilestone(i, 'description', e.target.value)}
+                    <div class="milestone-title-container">
+                      <input
+                        type="text"
+                        placeholder="Milestone title"
+                        value={milestone.title}
+                        on:input={(e) => updateMilestone(i, 'title', e.target.value)}
                         disabled={loading}
-                        rows="2"
-                        class="milestone-description"
-                      ></textarea>
-                      
-                      <div class="milestone-date-container">
-                        <label for={`due-date-${i}`} class="date-label">Due Date:</label>
-                        <input
-                          type="date"
-                          id={`due-date-${i}`}
-                          value={milestone.due_date}
-                          on:input={(e) => updateMilestone(i, 'due_date', e.target.value)}
-                          disabled={loading}
-                          class="milestone-date"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                {/each}
-              </div>
-            {:else}
-              <div class="empty-milestones">
-                <p>No milestones added yet. Click "Add Milestone" to create project milestones.</p>
-              </div>
-            {/if}
-            
-            <div class="milestone-examples">
-              <h3>Example Milestones</h3>
-              <div class="examples-grid">
-                <div class="example-card">
-                  <h4>Artist Selection</h4>
-                  <p>Review applications and select artists for the project</p>
-                  <button 
-                    type="button" 
-                    class="use-example-btn"
-                    on:click={() => {
-                      milestones = [...milestones, {
-                        title: 'Artist Selection',
-                        description: 'Review applications and select artists for the project',
-                        completed: false
-                      }];
-                    }}
-                  >
-                    Use This
-                  </button>
-                </div>
-                
-                <div class="example-card">
-                  <h4>Initial Drafts</h4>
-                  <p>Artists submit initial drafts for review and feedback</p>
-                  <button 
-                    type="button" 
-                    class="use-example-btn"
-                    on:click={() => {
-                      milestones = [...milestones, {
-                        title: 'Initial Drafts',
-                        description: 'Artists submit initial drafts for review and feedback',
-                        completed: false
-                      }];
-                    }}
-                  >
-                    Use This
-                  </button>
-                </div>
-                
-                <div class="example-card">
-                  <h4>Final Submissions</h4>
-                  <p>Artists submit final versions of their contributions</p>
-                  <button 
-                    type="button" 
-                    class="use-example-btn"
-                    on:click={() => {
-                      milestones = [...milestones, {
-                        title: 'Final Submissions',
-                        description: 'Artists submit final versions of their contributions',
-                        completed: false
-                      }];
-                    }}
-                  >
-                    Use This
-                  </button>
-                </div>
-                
-                <div class="example-card">
-                  <h4>Project Publication</h4>
-                  <p>Final piece is published and shared with the community</p>
-                  <button 
-                    type="button" 
-                    class="use-example-btn"
-                    on:click={() => {
-                      milestones = [...milestones, {
-                        title: 'Project Publication',
-                        description: 'Final piece is published and shared with the community',
-                        completed: false
-                      }];
-                    }}
-                  >
-                    Use This
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-        {/if}
-
-        <!-- Step 5: Funding -->
-        {#if currentStep === 5}
-          <section class="form-section">
-            <h2>Funding & Support</h2>
-            
-            <div class="form-group">
-              <label>Compensation Details</label>
-              <div class="radio-options">
-                {#each compensationOptions as option}
-                  <label class="radio-card">
-                    <input 
-                      type="radio" 
-                      name="compensation" 
-                      value={option.value}
-                      bind:group={compensationDetails}
-                    />
-                    <div class="radio-card-content">
-                      <div class="radio-card-title">{option.label}</div>
-                      <div class="radio-card-description">{option.description}</div>
-                    </div>
-                  </label>
-                {/each}
-              </div>
-            </div>
-            
-            <div class="form-group">
-              <label>Donation CTA Type</label>
-              <div class="radio-options">
-                {#each donationCtaOptions as option}
-                  {#if option.value !== 'both_cta' || compensationDetails === 'artist_fee_and_equal_share'}
-                    <label class="radio-card" class:disabled={
-                      (option.value === 'cause' && disableDonationCtaCause) || 
-                      (option.value === 'project' && disableDonationCtaProject) ||
-                      (option.value === 'both_cta' && disableDonationCtaBoth)
-                    }>
-                      <input 
-                        type="radio" 
-                        name="donationCta" 
-                        value={option.value}
-                        bind:group={donationCtaType}
-                        disabled={
-                          (option.value === 'cause' && disableDonationCtaCause) || 
-                          (option.value === 'project' && disableDonationCtaProject) ||
-                          (option.value === 'both_cta' && disableDonationCtaBoth)
-                        }
+                        class="milestone-title-input"
                       />
-                      <div class="radio-card-content">
-                        <div class="radio-card-title">{option.label}</div>
-                        {#if option.value === 'cause' && disableDonationCtaCause}
-                          <div class="radio-card-description disabled-message">Not available with selected compensation model</div>
-                        {/if}
-                        {#if option.value === 'project' && disableDonationCtaProject}
-                          <div class="radio-card-description disabled-message">Not available with selected compensation model</div>
-                        {/if}
-                        {#if option.value === 'both_cta' && compensationDetails === 'artist_fee_and_equal_share'}
-                          <div class="radio-card-description">Required for Artist Fee + Equal Share compensation</div>
-                        {/if}
-                      </div>
-                    </label>
-                  {/if}
-                {/each}
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="fundingGoal">Funding Goal (USD, optional)</label>
-              <input
-                type="number"
-                id="fundingGoal"
-                bind:value={fundingGoal}
-                min="0"
-                step="100"
-                disabled={loading}
-                placeholder="e.g., 1000"
-              />
-            </div>
-            
-            <!-- Sponsor Section -->
-            <div class="form-group">
-              <div class="section-header">
-                <label>Sponsor Information</label>
-              </div>
-              
-              <div class="sponsor-options">
-                {#if sponsors.length > 0}
-                  <label class="radio-option">
-                    <input
-                      type="radio"
-                      name="sponsor-type"
-                      checked={!creatingNewSponsor}
-                      on:change={() => creatingNewSponsor = false}
-                      disabled={loading}
-                    />
-                    <span>Select Existing Sponsor</span>
-                  </label>
-                {/if}
-                
-                <label class="radio-option">
-                  <input
-                    type="radio"
-                    name="sponsor-type"
-                    checked={creatingNewSponsor}
-                    on:change={() => creatingNewSponsor = true}
-                    disabled={loading}
-                  />
-                  <span>Create New Sponsor</span>
-                </label>
-              </div>
-
-              {#if creatingNewSponsor}
-                <div class="nested-fields" in:fly={{ y: 10, duration: 200 }}>
-                  <div class="form-group">
-                    <label for="newSponsorName">Sponsor Name</label>
-                    <input
-                      type="text"
-                      id="newSponsorName"
-                      bind:value={newSponsorName}
-                      disabled={loading}
-                      placeholder="Enter sponsor organization name"
-                    />
-                  </div>
-                  
-                  <div class="form-group">
-                    <label for="newSponsorLogoUrl">Logo URL</label>
-                    <input
-                      type="url"
-                      id="newSponsorLogoUrl"
-                      bind:value={newSponsorLogoUrl}
-                      disabled={loading}
-                      placeholder="https://example.com/logo.png"
-                    />
-                  </div>
-                  
-                  <div class="form-group">
-                    <label for="newSponsorWebsite">Website</label>
-                    <input
-                      type="url"
-                      id="newSponsorWebsite"
-                      bind:value={newSponsorWebsite}
-                      disabled={loading}
-                      placeholder="https://example.com"
-                    />
-                  </div>
-                  
-                  <div class="form-group">
-                    <label for="newSponsorBio">Bio/Description</label>
-                    <textarea
-                      id="newSponsorBio"
-                      bind:value={newSponsorBio}
-                      rows="3"
-                      disabled={loading}
-                      placeholder="Describe the sponsor organization"
-                    ></textarea>
-                  </div>
-                  
-                  <div class="form-group">
-                    <label>Additional Links</label>
-                    {#each newSponsorAdditionalLinks as link, index}
-                      <div class="link-row">
-                        <input
-                          type="text"
-                          bind:value={link.name}
-                          placeholder="Link name (e.g., Twitter)"
-                          disabled={loading}
-                          class="link-name-input"
-                        />
-                        <input
-                          type="url"
-                          bind:value={link.url}
-                          placeholder="URL (e.g., https://twitter.com/sponsor)"
-                          disabled={loading}
-                          class="link-url-input"
-                        />
-                        <button 
-                          type="button" 
-                          class="remove-link-btn" 
-                          on:click={() => removeSponsorLink(index)}
-                          disabled={loading || newSponsorAdditionalLinks.length === 1}
-                          title="Remove link"
-                        >
-                          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                          </svg>
-                        </button>
-                      </div>
-                    {/each}
+                    </div>
+                    
                     <button 
-                      type="button" 
-                      class="add-link-btn" 
-                      on:click={addSponsorLink}
+                      type="button"
+                      class="remove-button"
+                      on:click={() => removeMilestone(i)}
                       disabled={loading}
+                      title="Remove milestone"
                     >
                       <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
                       </svg>
-                      Add Another Link
                     </button>
                   </div>
+                  
+                  <div class="milestone-details">
+                    <textarea
+                      placeholder="Milestone description"
+                      value={milestone.description}
+                      on:input={(e) => updateMilestone(i, 'description', e.target.value)}
+                      disabled={loading}
+                      rows="2"
+                      class="milestone-description"
+                    ></textarea>
+                    
+                    <div class="milestone-date-container">
+                      <label for={`due-date-${i}`} class="date-label">Due Date:</label>
+                      <input
+                        type="date"
+                        id={`due-date-${i}`}
+                        value={milestone.due_date ? milestone.due_date.split('T')[0] : ''}
+                        on:input={(e) => updateMilestone(i, 'due_date', e.target.value)}
+                        disabled={loading}
+                        class="milestone-date"
+                      />
+                    </div>
+                  </div>
                 </div>
-              {:else if sponsors.length > 0}
-                <div class="form-group" in:fly={{ y: 10, duration: 200 }}>
-                  <select
-                    bind:value={selectedSponsorId}
-                    disabled={loading}
-                  >
-                    <option value="">Select a sponsor (optional)</option>
-                    {#each sponsors as sponsor}
-                      <option value={sponsor.id}>{sponsor.name}</option>
-                    {/each}
-                  </select>
-                </div>
-              {/if}
-              
-              {#if (creatingNewSponsor && newSponsorName) || (!creatingNewSponsor && selectedSponsorId)}
-                <div class="form-group" in:fly={{ y: 10, duration: 200 }}>
-                  <label for="newSponsorAmount">Sponsorship Amount (USD)</label>
-                  <input
-                    type="number"
-                    id="newSponsorAmount"
-                    bind:value={newSponsorAmount}
-                    min="0"
-                    step="100"
-                    disabled={loading}
-                    placeholder="e.g., 1000"
-                  />
-                </div>
-              {/if}
+              {/each}
             </div>
-            
-            <div class="form-group">
-              <label for="preliminarySponsorInfo">Additional Sponsor Information</label>
-              <textarea
-                id="preliminarySponsorInfo"
-                bind:value={preliminarySponsorInfo}
-                rows="3"
-                disabled={loading}
-                placeholder="List any additional sponsors or potential sponsors you've already identified"
-              ></textarea>
+          {:else}
+            <div class="empty-milestones">
+              <p>No milestones added yet. Click "Add Milestone" to create project milestones.</p>
             </div>
-          </section>
-        {/if}
+          {/if}
+        </section>
 
-        <!-- Form Navigation -->
-        <div class="form-navigation">
-          {#if currentStep > 1}
-            <button type="button" class="secondary" on:click={prevStep} disabled={loading}>
-              Previous
+        <!-- Contributors Section -->
+        <section class="form-section">
+          <div class="section-header">
+            <h2>Contributors</h2>
+            <button type="button" class="add-button" on:click={addArtist}>
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Add Contributor
             </button>
+          </div>
+
+          {#if selectedArtists.length > 0}
+            <div class="contributors-list">
+              {#each selectedArtists as artist, i}
+                <div class="contributor-row" in:fly={{ y: 20, duration: 300 }}>
+                  <div class="contributor-fields">
+                    <select
+                      bind:value={artist.id}
+                      disabled={loading}
+                      class="artist-select"
+                    >
+                      <option value="">Select an artist</option>
+                      {#each artists as a}
+                        <option value={a.id}>{a.name}</option>
+                      {/each}
+                    </select>
+
+                    <input
+                      type="text"
+                      placeholder="Role (e.g., Poet, Musician, Artist)"
+                      bind:value={artist.role}
+                      disabled={loading}
+                      class="role-input"
+                    />
+                  </div>
+
+                  <button 
+                    type="button"
+                    class="remove-button"
+                    on:click={() => removeArtist(i)}
+                    disabled={loading}
+                    title="Remove contributor"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+              {/each}
+            </div>
           {:else}
-            <button type="button" class="secondary" on:click={() => push('/dashboard')} disabled={loading}>
-              Cancel
-            </button>
+            <div class="empty-contributors">
+              <p>No contributors added yet. Click "Add Contributor" to get started.</p>
+            </div>
           {/if}
+        </section>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button 
+            type="button" 
+            class="secondary"
+            on:click={() => push('/dashboard')}
+            disabled={loading}
+          >
+            Cancel
+          </button>
           
-          {#if currentStep < totalSteps}
-            <button type="button" class="primary" on:click={nextStep} disabled={loading}>
-              Next
-            </button>
-          {:else}
-            <button type="submit" class="primary" disabled={loading}>
-              {#if loading}
-                <svg class="spinner" viewBox="0 0 24 24" width="16" height="16">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="60" stroke-dashoffset="60" stroke-linecap="round">
-                    <animate attributeName="stroke-dashoffset" dur="2s" values="60;0" repeatCount="indefinite"/>
-                  </circle>
-                </svg>
-                Creating...
-              {:else}
-                Create Peace Piece
-              {/if}
-            </button>
-          {/if}
+          <button type="submit" class="primary" disabled={loading}>
+            {#if loading}
+              <svg class="spinner" viewBox="0 0 24 24" width="16" height="16">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="60" stroke-dashoffset="60" stroke-linecap="round">
+                  <animate attributeName="stroke-dashoffset" dur="2s" values="60;0" repeatCount="indefinite"/>
+                </circle>
+              </svg>
+              Creating...
+            {:else}
+              Create Peace Piece
+            {/if}
+          </button>
         </div>
       </form>
     </div>
@@ -1376,98 +768,6 @@ onMount(() => {
     margin: 0;
   }
 
-  .progress-container {
-    margin-bottom: var(--space-4);
-  }
-
-  .progress-bar {
-    height: 8px;
-    background-color: var(--color-neutral-100);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: var(--space-4);
-  }
-
-  .progress-fill {
-    height: 100%;
-    background-color: var(--color-primary-500);
-    transition: width 0.3s ease;
-  }
-
-  .progress-steps {
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .progress-step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    flex: 1;
-  }
-
-  .progress-step::before {
-    content: '';
-    position: absolute;
-    top: 12px;
-    left: -50%;
-    width: 100%;
-    height: 2px;
-    background-color: var(--color-neutral-200);
-    z-index: 1;
-  }
-
-  .progress-step:first-child::before {
-    display: none;
-  }
-
-  .progress-step.active::before,
-  .progress-step.completed::before {
-    background-color: var(--color-primary-600);
-  }
-
-  .step-number {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background-color: var(--color-neutral-200);
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.875rem;
-    font-weight: 600;
-    margin-bottom: var(--space-2);
-    position: relative;
-    z-index: 2;
-  }
-
-  .progress-step.active .step-number {
-    background-color: var(--color-primary-600);
-    color: white;
-  }
-
-  .progress-step.completed .step-number {
-    background-color: var(--color-success-600);
-    color: white;
-  }
-
-  .step-label {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    text-align: center;
-  }
-
-  .progress-step.active .step-label {
-    color: var(--color-primary-500);
-    font-weight: 500;
-  }
-
-  .progress-step.completed .step-label {
-    color: var(--color-success-500);
-  }
-
   .create-form {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
@@ -1491,38 +791,65 @@ onMount(() => {
   }
 
   .form-section {
-    margin-bottom: var(--space-6);
+    margin-bottom: var(--space-8);
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
   }
 
   .form-section h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
     margin: 0 0 var(--space-4) 0;
     color: var(--text-color);
   }
 
-  .form-group {
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: var(--space-4);
   }
 
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+
+  .media-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
   .form-group label {
-    display: block;
     font-weight: 500;
-    margin-bottom: var(--space-2);
     color: var(--text-color);
   }
 
-  .nested-fields {
-    margin-top: var(--space-3);
-    padding: var(--space-3);
-    background: var(--bg-color);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    transition: border-color 0.2s, box-shadow 0.2s;
   }
-  
+
   .field-help {
     background: transparent;
     border-radius: var(--radius-md);
     padding: var(--space-3);
-    margin-bottom: var(--space-4);
+    margin-top: var(--space-2);
   }
 
   .field-help p {
@@ -1548,16 +875,12 @@ onMount(() => {
     margin-bottom: 0;
   }
 
-  .field-note {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-    margin-top: var(--space-2);
-  }
-
-  .media-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-4);
+  .field-help code {
+    background-color: var(--color-neutral-200);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.8rem;
   }
 
   .file-input {
@@ -1574,164 +897,114 @@ onMount(() => {
     background-color: var(--color-primary-50);
   }
 
-  .file-preview {
+  .new-file-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
     margin-top: var(--space-2);
     font-size: 0.875rem;
+    color: var(--color-success-600);
   }
 
-  .preview-label {
-    font-weight: 500;
-    color: var(--color-primary-600);
-  }
-
-  .file-name {
-    color: var(--text-muted);
-    word-break: break-all;
-  }
-
-  .tags-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: var(--space-2);
-  }
-
-  .tag-option {
+  .add-button {
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    padding: var(--space-2);
-    border: 1px solid var(--border-color);
+    background: var(--color-primary-100);
+    color: var(--color-primary-700);
+    border: 1px solid var(--color-primary-200);
+    padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
   }
 
-  .tag-option:hover {
-    background: var(--bg-color);
+  .add-button:hover {
+    background-color: var(--color-primary-200);
   }
-
-  .tag-option input {
-    margin: 0;
-    width: fit-content;
-    margin-right: 7px;
-  }
-
-  .organizer-options,
-  .sponsor-options {
+  
+  /* Tags Styling */
+  .tag-input-container {
     display: flex;
-    gap: var(--space-4);
-    margin-bottom: var(--space-3);
-  }
-
-  .radio-option {
-    display: flex;
-    align-items: center;
     gap: var(--space-2);
+  }
+  
+  .tag-input {
+    flex: 1;
+  }
+  
+  .add-tag-button {
+    background-color: var(--color-primary-600);
+    color: white;
+    border: none;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
     cursor: pointer;
+    transition: background-color 0.2s;
   }
-
-  .radio-option input[type="radio"] {
-    width: fit-content;
+  
+  .add-tag-button:hover:not(:disabled) {
+    background-color: var(--color-primary-700);
   }
-
-  .radio-options {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-3);
-  }
-
-  .radio-card {
-    position: relative;
-    cursor: pointer;
-  }
-
-  .radio-card.disabled {
-    opacity: 0.6;
+  
+  .add-tag-button:disabled {
+    background-color: var(--color-neutral-300);
     cursor: not-allowed;
   }
-
-  .radio-card input {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
+  
+  .tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
   }
-
-  .radio-card-content {
-    padding: var(--space-3);
-    border: 1px solid var(--border-color);
+  
+  .tag-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    background-color: var(--color-primary-100);
+    color: var(--color-primary-700);
+    padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-md);
-    transition: all 0.2s;
-  }
-
-  .radio-card input:checked + .radio-card-content {
-    border-color: var(--color-primary-600);
-    background: var(--bg-color);
-  }
-
-  .radio-card-title {
-    font-weight: 500;
-    color: var(--text-color);
-    margin-bottom: var(--space-1);
-  }
-
-  .radio-card-description {
     font-size: 0.875rem;
-    color: var(--text-muted);
-    line-height: 1.4;
   }
-
-  .disabled-message {
-    color: var(--color-error-600);
-    font-style: italic;
+  
+  .tag-item.medium-tag {
+    background-color: var(--color-success-100);
+    color: var(--color-success-700);
   }
-
-  .date-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: var(--space-4);
-  }
-
-  .timeline-visualization {
-    position: relative;
-    height: 100px;
-    margin: var(--space-6) 0;
-  }
-
-  .timeline-line {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background-color: var(--color-neutral-200);
-    transform: translateY(-50%);
-  }
-
-  .timeline-marker {
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
+  
+  .remove-tag-button {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
     width: 16px;
     height: 16px;
-    background-color: var(--color-primary-600);
     border-radius: 50%;
+    transition: background-color 0.2s;
   }
-
-  .marker-label {
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    white-space: nowrap;
-    font-size: 0.75rem;
+  
+  .remove-tag-button:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .empty-tags {
+    text-align: center;
+    padding: var(--space-4);
     color: var(--text-muted);
-  }
-
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-3);
+    background-color: var(--color-neutral-50);
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--border-color);
+    margin-top: var(--space-4);
   }
   
   /* Milestones styles */
@@ -1739,7 +1012,6 @@ onMount(() => {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
-    margin-bottom: var(--space-6);
   }
   
   .milestone-row {
@@ -1868,169 +1140,80 @@ onMount(() => {
     background-color: var(--color-neutral-50);
     border-radius: var(--radius-md);
     border: 1px dashed var(--border-color);
-    margin-bottom: var(--space-6);
   }
-  
-  .milestone-examples {
-    background-color: var(--color-primary-50);
-    border-radius: var(--radius-md);
-    padding: var(--space-4);
-    border: 1px solid var(--color-primary-100);
-  }
-  
-  .milestone-examples h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    margin: 0 0 var(--space-3) 0;
-    color: var(--color-primary-700);
-  }
-  
-  .examples-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+
+  .contributors-list {
+    display: flex;
+    flex-direction: column;
     gap: var(--space-3);
   }
-  
-  .example-card {
-    background-color: white;
-    border-radius: var(--radius-md);
-    padding: var(--space-3);
-    border: 1px solid var(--color-primary-200);
-  }
-  
-  .example-card h4 {
-    font-size: 0.875rem;
-    font-weight: 600;
-    margin: 0 0 var(--space-1) 0;
-    color: var(--color-primary-700);
-  }
-  
-  .example-card p {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    margin: 0 0 var(--space-2) 0;
-    line-height: 1.4;
-  }
-  
-  .use-example-btn {
-    font-size: 0.75rem;
-    padding: var(--space-1) var(--space-2);
-    background: var(--color-primary-100);
-    color: var(--color-primary-700);
-    border: 1px solid var(--color-primary-200);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .use-example-btn:hover {
-    background: var(--color-primary-200);
-  }
 
-  .link-row {
+  .contributor-row {
     display: flex;
-    gap: var(--space-2);
-    margin-bottom: var(--space-2);
-    align-items: center;
+    gap: var(--space-3);
+    align-items: flex-start;
+    padding: var(--space-3);
+    background-color: var(--color-neutral-50);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
   }
 
-  .link-name-input {
+  .contributor-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
     flex: 1;
   }
 
-  .link-url-input {
-    flex: 2;
+  .artist-select,
+  .role-input {
+    margin: 0;
   }
 
-  .remove-link-btn {
-    background-color: var(--color-error-50);
-    color: var(--color-error-600);
-    border: 1px solid var(--color-error-100);
-    border-radius: var(--radius-md);
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    flex-shrink: 0;
-    padding: 0;
-  }
-
-  .remove-link-btn:hover:not(:disabled) {
-    background-color: var(--color-error-100);
-  }
-
-  .remove-link-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .add-link-btn {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    background: var(--color-primary-50);
-    color: var(--color-primary-600);
-    border: 1px solid var(--color-primary-100);
-    border-radius: var(--radius-md);
-    padding: var(--space-2) var(--space-3);
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: var(--space-2);
-  }
-
-  .add-link-btn:hover:not(:disabled) {
-    background-color: var(--color-primary-100);
-  }
-  
-  .add-button {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    background: var(--color-primary-100);
-    color: var(--color-primary-700);
-    border: 1px solid var(--color-primary-200);
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .add-button:hover {
-    background-color: var(--color-primary-200);
-  }
-  
   .remove-button {
     background-color: var(--color-error-50);
     color: var(--color-error-600);
-    border: 1px solid var(--color-error-100);
+    border: 1px solid var(--color-error-200);
+    padding: var(--space-2);
     border-radius: var(--radius-md);
-    width: 32px;
-    height: 32px;
+    cursor: pointer;
+    transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
     flex-shrink: 0;
-    padding: 0;
   }
 
-  .remove-button:hover:not(:disabled) {
+  .remove-button:hover {
     background-color: var(--color-error-100);
   }
 
-  .form-navigation {
+  .empty-contributors {
+    text-align: center;
+    padding: var(--space-6);
+    color: var(--text-muted);
+    background-color: var(--color-neutral-50);
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--border-color);
+  }
+
+  .form-actions {
     display: flex;
-    justify-content: space-between;
+    gap: var(--space-3);
+    justify-content: flex-end;
     margin-top: var(--space-6);
     padding-top: var(--space-6);
     border-top: 1px solid var(--border-color);
+  }
+
+  .secondary {
+    background: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+  }
+
+  .secondary:hover {
+    background-color: var(--color-neutral-100);
   }
 
   .spinner {
@@ -2051,17 +1234,25 @@ onMount(() => {
       font-size: 2rem;
     }
 
-    .media-grid,
-    .date-grid {
+    .form-grid,
+    .media-grid {
       grid-template-columns: 1fr;
     }
 
-    .tags-grid {
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    .contributor-fields {
+      grid-template-columns: 1fr;
     }
 
-    .step-label {
-      display: none;
+    .contributor-row {
+      flex-direction: column;
+    }
+
+    .remove-button {
+      align-self: flex-end;
+    }
+
+    .form-actions {
+      flex-direction: column-reverse;
     }
     
     .milestone-header {
@@ -2086,10 +1277,6 @@ onMount(() => {
     .milestone-date {
       max-width: none;
       width: 100%;
-    }
-    
-    .examples-grid {
-      grid-template-columns: 1fr;
     }
   }
 </style>

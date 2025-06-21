@@ -28,6 +28,8 @@
       let query = supabase
         .from('piece_details')
         .select('*')
+        .eq('approved', true) // Only show approved pieces
+        .neq('project_status', 'submitted_for_approval') // Don't show pieces in review
         .order('created_at', { ascending: false });
 
       const { data, error: fetchError } = await query;
@@ -154,14 +156,31 @@
                 {/if}
 
                 <div class="card-content">
-                  <div class="project-status">Project Status</div>
+                  <div class="project-status">
+                    {#if piece.project_status === 'open_to_applications'}
+                      Open to Applications
+                    {:else if piece.project_status === 'seeking_funding'}
+                      Seeking Funding
+                    {:else if piece.project_status === 'published'}
+                      Published
+                    {/if}
+                  </div>
                   <h3 class="project-title">{piece.title}</h3>
                   <p class="project-organizer">Organized by {piece.organizer_name}</p>
                   <p class="project-sponsor">Sponsored by Community</p>
                   
                   <div class="project-tags">
-                    <span class="tag social-cause">Social Cause</span>
-                    <span class="tag artistic-medium">Artistic Medium</span>
+                    {#if piece.cause_tags && piece.cause_tags.length > 0}
+                      <span class="tag social-cause">{piece.cause_tags[0]}</span>
+                    {:else}
+                      <span class="tag social-cause">Social Cause</span>
+                    {/if}
+                    
+                    {#if piece.accepted_mediums && piece.accepted_mediums.length > 0}
+                      <span class="tag artistic-medium">{piece.accepted_mediums[0]}</span>
+                    {:else}
+                      <span class="tag artistic-medium">Artistic Medium</span>
+                    {/if}
                   </div>
                 </div>
               </a>
@@ -205,14 +224,31 @@
                   {/if}
 
                   <div class="card-content">
-                    <div class="project-status">Project Status</div>
+                    <div class="project-status">
+                      {#if piece.project_status === 'open_to_applications'}
+                        Open to Applications
+                      {:else if piece.project_status === 'seeking_funding'}
+                        Seeking Funding
+                      {:else if piece.project_status === 'published'}
+                        Published
+                      {/if}
+                    </div>
                     <h3 class="project-title">{piece.title}</h3>
                     <p class="project-organizer">Organized by {piece.organizer_name}</p>
                     <p class="project-sponsor">Sponsored by Community</p>
                     
                     <div class="project-tags">
-                      <span class="tag social-cause">Social Cause</span>
-                      <span class="tag artistic-medium">Artistic Medium</span>
+                      {#if piece.cause_tags && piece.cause_tags.length > 0}
+                        <span class="tag social-cause">{piece.cause_tags[0]}</span>
+                      {:else}
+                        <span class="tag social-cause">Social Cause</span>
+                      {/if}
+                      
+                      {#if piece.accepted_mediums && piece.accepted_mediums.length > 0}
+                        <span class="tag artistic-medium">{piece.accepted_mediums[0]}</span>
+                      {:else}
+                        <span class="tag artistic-medium">Artistic Medium</span>
+                      {/if}
                     </div>
                   </div>
                 </a>
