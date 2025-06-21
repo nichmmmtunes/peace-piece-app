@@ -849,7 +849,8 @@
   }
 
   .edit-button:hover {
-    background-color: var(--color-neutral-100);
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-900);
   }
 
   .follow-button {
