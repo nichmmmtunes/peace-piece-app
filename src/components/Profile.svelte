@@ -565,7 +565,7 @@
   }
 
   .website-link {
-    color: var(--color-primary-600);
+    color: var(--text-color);
     text-decoration: none;
   }
 
