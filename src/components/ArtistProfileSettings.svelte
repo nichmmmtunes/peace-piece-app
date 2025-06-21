@@ -387,7 +387,7 @@
   }
 
   .info-card h2 {
-    color: var(--color-primary-700);
+    color: var(--text-color);
   }
 
   .info-card ul {
