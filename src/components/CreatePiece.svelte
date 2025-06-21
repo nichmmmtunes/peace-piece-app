@@ -1648,7 +1648,7 @@
     background: var(--color-primary-50);
     color: var(--color-neutral-900);
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-primary-200);
+    border: none;
   }
   
   .submission-note p {
