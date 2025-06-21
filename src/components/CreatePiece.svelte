@@ -1034,7 +1034,7 @@
   .checkbox-container {
     display: block;
     position: relative;
-    padding-left: 30px;
+    padding-left: 18px;
     cursor: pointer;
     user-select: none;
     height: 24px;
