@@ -1773,7 +1773,7 @@
   
   .review-milestone {
     padding: var(--space-3);
-    background-color: var(--color-neutral-50);
+    background: var(--bg-color);
     border-radius: var(--radius-md);
   }
   
