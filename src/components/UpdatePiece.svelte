@@ -1833,7 +1833,8 @@
   .submission-note {
     margin-top: var(--space-6);
     padding: var(--space-4);
-    background-color: var(--color-primary-50);
+    background: var(--color-primary-50);
+    color: var(--color-neutral-900);
     border-radius: var(--radius-md);
     border: 1px solid var(--color-primary-200);
   }
