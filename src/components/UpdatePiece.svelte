@@ -1292,7 +1292,7 @@
     gap: var(--space-3);
     align-items: flex-start;
     padding: var(--space-3);
-    background-color: var(--color-neutral-50);
+    background: transparent;
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
   }
