@@ -397,7 +397,7 @@
 
   .info-card li {
     margin-bottom: var(--space-2);
-    color: var(--color-primary-800);
+    color: var(--text-color);
   }
 
   .message {
