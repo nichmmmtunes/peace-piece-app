@@ -999,11 +999,6 @@
     transition: all 0.2s;
   }
 
-  .file-input:hover {
-    border-color: var(--color-primary-400);
-    background-color: var(--color-primary-50);
-  }
-
   .current-media {
     margin-bottom: var(--space-3);
     padding: var(--space-3);
