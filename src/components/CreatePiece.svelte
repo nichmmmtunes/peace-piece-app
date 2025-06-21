@@ -887,14 +887,10 @@
     padding: var(--space-3);
     border: 2px dashed var(--border-color);
     border-radius: var(--radius-md);
-    background-color: var(--color-neutral-50);
+    background: var(--bg-color);
+    color: var(--text-muted);
     cursor: pointer;
     transition: all 0.2s;
-  }
-
-  .file-input:hover {
-    border-color: var(--color-primary-400);
-    background-color: var(--color-primary-50);
   }
 
   .new-file-indicator {
