@@ -79,21 +79,6 @@
     };
   });
 
-  // CRITICAL: Force clean URL if a hash is present on initial load
-  // This helps svelte-spa-router consistently use history mode
-  if (window.location.hash && window.location.hash !== '#') {
-    const cleanPath = window.location.hash.substring(1);
-    const cleanSearch = window.location.search;
-    const fullCleanUrl = cleanPath + cleanSearch;
-  
-    // Use replaceState to avoid adding an extra entry to browser history
-    window.history.replaceState({}, document.title, fullCleanUrl);
-  
-    // Explicitly push to the clean path to re-sync svelte-spa-router
-    // This is important if svelte-spa-router already processed the hash
-    push(fullCleanUrl);
-  }
-
   function toggleDarkMode() {
     darkMode = !darkMode;
     updateTheme(darkMode);
