@@ -1006,7 +1006,7 @@
   .current-media {
     margin-bottom: var(--space-3);
     padding: var(--space-3);
-    background-color: var(--color-neutral-50);
+    background: var(--bg-color);
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
   }
