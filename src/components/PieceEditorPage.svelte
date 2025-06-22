@@ -167,7 +167,7 @@
                 bucket = 'videos';
               }
               
-              console.log(`DEBUG: Selected bucket for clip ${clip.id}: ${bucket}`);
+              console.log(`DEBUG: Selected clip file for upload ${clip.file}`);
               
               // Upload the file and get the public URL
               const publicUrl = await uploadFileToStorage(clip.file, bucket);
