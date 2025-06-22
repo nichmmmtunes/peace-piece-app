@@ -736,7 +736,7 @@
     font-family: monospace;
     font-size: 0.9rem;
     z-index: 100;
-    visibility: visible;
+    visibility: hidden;
     opacity: 1;
   }
 
