@@ -470,9 +470,16 @@
                               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                             </svg>
-                            Edit Project
+                            Media
                           </a>
-                        {:else}
+                        {/if}
+                          <a href="/update/{project.id}" use:link class="action-button">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                            Details
+                          </a>
                           <a href="/piece/{project.id}" use:link class="action-button">
                             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
                               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -480,7 +487,6 @@
                             </svg>
                             View Project
                           </a>
-                        {/if}
                       </div>
                     </div>
                   </div>
@@ -821,7 +827,7 @@
     font-size: 0.875rem;
     padding: var(--space-1) var(--space-2);
     background: var(--bg-color);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     color: var(--text-muted);
   }
 
@@ -832,7 +838,7 @@
   .reminders-section,
   .impact-section {
     background: var(--card-bg);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-creative);
     padding: var(--space-6);
     border: none;
   }
@@ -846,10 +852,10 @@
   .project-card {
     display: flex;
     gap: var(--space-4);
-    padding: var(--space-4);
+    padding: var(--space-5) 0px;
     background: transparent;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
+    border-radius: 0px;
+    border-top: 1px solid var(--border-color);
   }
 
   .project-image {
@@ -1012,6 +1018,8 @@
   .project-actions {
     display: flex;
     justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
   }
 
   .action-button {
@@ -1020,8 +1028,8 @@
     gap: var(--space-2);
     padding: var(--space-2) var(--space-3);
     background: var(--bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border: none;
+    border-radius: var(--radius-sm);
     color: var(--text-color);
     font-size: 0.875rem;
     font-weight: 500;
@@ -1278,7 +1286,7 @@
     padding: var(--space-4);
     background: var(--bg-color);
     border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
+    border: none;
   }
 
   .reminder-header {

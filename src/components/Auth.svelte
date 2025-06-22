@@ -184,7 +184,7 @@
   }
 
   .auth-title h1 {
-    font-size: 1.75rem;
+    font-size: 2.2rem;
     font-weight: 700;
     margin: 0 0 var(--space-2) 0;
     color: var(--text-color);
@@ -205,6 +205,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    margin-bottom: 12px;
   }
 
   .form-group label {
@@ -240,7 +241,7 @@
   }
 
   .forgot-link {
-    color: var(--color-primary-600);
+    color: var(--text-color);
     text-decoration: none;
     font-size: 0.875rem;
     font-weight: 500;
@@ -248,7 +249,7 @@
   }
 
   .forgot-link:hover {
-    color: var(--color-primary-500);
+    color: var(--text-muted);
     text-decoration: underline;
   }
   
@@ -269,7 +270,7 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
-    padding: var(--space-3);
+    padding: var(--space-3) var(--space-6);
     font-size: 1rem;
     font-weight: 500;
     margin-top: var(--space-2);
@@ -300,16 +301,17 @@
   .link-button {
     background: none;
     border: none;
-    color: var(--color-primary-600);
+    color: var(--text-color);
     padding: 0;
     font: inherit;
     cursor: pointer;
     text-decoration: underline;
     margin-left: var(--space-1);
+    border-radius: 0px;
   }
   
   .link-button:hover {
-    color: var(--color-primary-500);
+    color: var(--color-primary-400);
   }
 
   /* Dark mode adjustments */

@@ -452,7 +452,12 @@
     font-size: 18px;
     font-weight: 400;
     margin-bottom: var(--space-4);
+    margin-top: -5px;
     color: var(--text-color);
+  }
+
+  .settings-card.danger-zone h2 {
+    margin-top: -5px;
   }
 
   .message {

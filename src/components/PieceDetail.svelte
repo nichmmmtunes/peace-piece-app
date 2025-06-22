@@ -325,14 +325,14 @@
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                 </svg>
-                Edit Piece
+                Edit Detiails
               </a>
               
               <a href="/edit/{piece.id}" use:link class="edit-button">
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
                   <path d="M15 10l4.553-2.276A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14M5 18h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z"></path>
                 </svg>
-                Editor
+                Media Editor
               </a>
             {/if}
           </div>
@@ -565,7 +565,7 @@
             <div class="funding-progress" in:fly={{ y: 20, duration: 300, delay: 200 }}>
               <div class="funding-header">
                 <h3>Funding Progress</h3>
-                <span class="total-raised">{formatAmount(piece.amount_raised || 0)}</span>
+                <span class="total-raised"><span class="dollar-sign">$</span>{piece.amount_raised || 0}</span>
                 <div class="funding-amounts">
                   <span class="amount-separator">raised of</span>
                   <span class="funding-goal">{formatAmount(piece.funding_goal)} goal</span>
@@ -708,12 +708,12 @@
   }
 
   :global(.dark-mode) .cause-tag {
-    background: #373E59;
-    color: #fff;
+    background: var(--color-primary-600);
+    color: var(--text-color);
   }
 
   :global(.light-mode) .cause-tag {
-    background: #C1CBEE;
+    background: var(--color-primary-300);
     color: var(--text-color);
   }
 
@@ -1197,19 +1197,16 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    background-color: var(--color-success-600);
-    color: white;
+    background-color: var(--text-color);
+    color: var(--bg-color);
     border: none;
     padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-md);
     text-decoration: none;
     font-weight: 500;
-    transition: background-color 0.2s;
-    width: fit-content;
-  }
-
-  .apply-button:hover {
-    background-color: var(--color-success-700);
+    width: 100%;
+    margin: .5rem auto 2.5rem;
+    text-align: center;
+    justify-content: center;
   }
 
   /* Funding Progress */
@@ -1237,6 +1234,13 @@
     font-weight: 600;
     color: var(--text-color);
     margin-bottom: 0px;
+    display: flex;
+  }
+
+  .funding-header .total-raised .dollar-sign {
+    font-size: 2.5rem;
+    position: relative;
+    top: .5rem;
   }
 
   .funding-header h3 {
@@ -1468,7 +1472,7 @@
   .tag {
     display: inline-block;
     padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     font-size: 0.875rem;
     font-weight: 500;
   }
@@ -1559,6 +1563,11 @@
     font-size: 0.75rem;
     color: var(--text-muted);
     width: 45px;
+  }
+
+  .timeline-date span {
+    position: relative;
+    top: 2px;
   }
 
   .spinner {

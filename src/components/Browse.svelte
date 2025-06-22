@@ -304,6 +304,7 @@
   .piece-card {
     overflow: hidden;
     transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: var(--radius-creative);
   }
 
   .piece-card:hover {

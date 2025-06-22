@@ -342,16 +342,17 @@
   .link-button {
     background: none;
     border: none;
-    color: var(--color-primary-600);
+    color: var(--text-color);
     padding: 0;
     font: inherit;
     cursor: pointer;
     text-decoration: underline;
     margin-left: var(--space-1);
+    border-radius: 0px;
   }
   
   .link-button:hover {
-    color: var(--color-primary-500);
+    color: var(--text-muted);
   }
 
   /* Dark mode adjustments */

@@ -388,15 +388,17 @@
     grid-template-rows: 1fr 1fr;
     gap: var(--space-4);
     height: 400px;
+    padding: var(--space-6) var(--space-4);
   }
 
   .featured-card.large {
     grid-row: 1 / 3;
+    border-radius: var(--radius-creative);
   }
 
   .featured-card.medium {
     grid-row: 1 / 3;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-creative);
   }
 
   .featured-card.small {

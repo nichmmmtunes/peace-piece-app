@@ -183,6 +183,10 @@ a {
   transition: color 0.2s;
 }
 
+.content-area > div {
+  padding: var(--space-8) var(--space-6) var(--space-6) var(--space-6) !important;
+}
+
 a:hover {
   color: var(--color-primary-500);
 }
@@ -336,6 +340,7 @@ input:focus, textarea:focus, select:focus {
 .instrument-serif {
   font-family: var(--font-instrument-serif);
 }
+
 
 /* Responsive utilities */
 @media (max-width: 640px) {

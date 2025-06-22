@@ -460,6 +460,10 @@
     align-items: center;
     min-height: 200px;
     color: var(--text-muted);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 
   /* Mobile responsiveness */

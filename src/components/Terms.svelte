@@ -125,17 +125,20 @@
   }
 
   .terms-section {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: var(--space-6);
+    background: transparent;
+    border-radius: 0px;
+    padding: 0px 0px 2rem 0px;
+  }
+
+  .terms-section:not(:last-child) {
+    border-bottom: solid 1px var(--border-color);
   }
 
   .terms-section h2 {
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: var(--space-3);
-    color: var(--color-primary-700);
+    color: var(--text-color);
   }
 
   .terms-section p {
@@ -164,10 +167,10 @@
   }
 
   .contact-info {
-    background-color: var(--color-neutral-50);
+    background: var(--card-bg);
     border-radius: var(--radius-md);
     padding: var(--space-4);
-    margin-top: var(--space-3);
+    margin-top: var(--space-6);
   }
 
   .contact-info p {
@@ -180,7 +183,7 @@
   }
 
   .contact-info a {
-    color: var(--color-primary-600);
+    color: var(--text-color);
     text-decoration: none;
   }
 

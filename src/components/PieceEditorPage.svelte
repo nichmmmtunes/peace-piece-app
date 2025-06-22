@@ -377,6 +377,7 @@
     display: flex;
     flex-direction: column;
     background: var(--bg-color);
+    padding: 0px !important
   }
 
   .loading {
