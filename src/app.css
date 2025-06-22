@@ -3,14 +3,14 @@
   --color-primary-00: #fff;
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
+  --color-primary-200: #E3E8FA;
+  --color-primary-300: #C1CBEE;
+  --color-primary-400: #D6DDF5;
   --color-primary-500: #5679EC;
   --color-primary-600: #2B469F;
   --color-primary-700: #262A38;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  --color-primary-800: #292D3C;
+  --color-primary-900: #131322;
   
   --color-accent-50: #fff1f0;
   --color-accent-100: #ffe4e2;
@@ -66,7 +66,7 @@
   --color-neutral-700: #374151;
   --color-neutral-800: #1f2937;
   --color-neutral-900: #131322;
-  --color-neutral-dark-gradient: linear-gradient(180deg, #2A2E3E, #212531);
+  --color-neutral-dark-gradient: linear-gradient(180deg, #202432, #181d2b);
   --color-neutral-light-gradient: linear-gradient(180deg, #F8F9FD, #F2F3F8);
   
   /* Logo colors */
@@ -189,7 +189,6 @@ a:hover {
 
 button {
   border-radius: 100px;
-  border: 1px solid var(--border-color);
   padding: var(--space-2) var(--space-4);
   font-size: 1rem;
   font-weight: 500;
@@ -203,6 +202,13 @@ button {
 button.neumorphic,
 a.neumorphic {
   filter: drop-shadow(-8px -8px 8px #3A3F51) drop-shadow(4px 4px 4px rgba(0, 0, 0, 0.8));
+  border-radius: 100px !important;
+}
+
+.light-mode button.neumorphic,
+.light-mode a.neumorphic {
+  filter: drop-shadow(4px 6px 8px rgba(0, 0, 0, 0.2)) drop-shadow(-8px -8px 8px #fff);
+  border-radius: 100px !important;
 }
 
 button:hover {
@@ -226,7 +232,7 @@ button.primary {
 }
 
 button.primary:hover {
-  background: var(--color-success-600);
+  background: var(--color-primary-500);
 }
 
 button.danger {

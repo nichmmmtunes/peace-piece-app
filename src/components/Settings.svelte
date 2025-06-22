@@ -674,6 +674,10 @@
     transform: translateX(24px);
   }
 
+  .settings-card.danger-zone {
+    border: solid 1px var(--color-error-600) !important;
+  }
+
   .danger-zone h2 {
     color: var(--color-error-600);
   }

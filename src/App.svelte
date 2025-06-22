@@ -87,6 +87,7 @@
   function updateTheme(isDark: boolean) {
     if (isDark) {
       document.documentElement.classList.add('dark-mode');
+      document.documentElement.classList.remove('light-mode');
       document.documentElement.style.setProperty('--bg-color', 'var(--color-neutral-900)');
       document.documentElement.style.setProperty('--text-color', 'var(--color-neutral-50)');
       document.documentElement.style.setProperty('--text-muted', 'var(--color-neutral-400)');
@@ -98,6 +99,7 @@
       document.documentElement.style.setProperty('--logo-icon-color', 'var(--color-primary-400)');
     } else {
       document.documentElement.classList.remove('dark-mode');
+      document.documentElement.classList.add('light-mode');
       document.documentElement.style.setProperty('--bg-color', 'var(--color-primary-00)');
       document.documentElement.style.setProperty('--text-color', 'var(--color-neutral-900)');
       document.documentElement.style.setProperty('--text-muted', 'var(--color-neutral-500)');

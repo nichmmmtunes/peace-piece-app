@@ -1090,22 +1090,23 @@
     padding: var(--space-3);
     border: 2px dashed var(--border-color);
     border-radius: var(--radius-md);
-    background-color: var(--color-neutral-50);
+    background: var(--bg-color);
     cursor: pointer;
     transition: all 0.2s;
+    width: fit-content;
   }
 
   .file-input:hover {
     border-color: var(--color-primary-400);
-    background-color: var(--color-primary-50);
   }
 
   .current-media {
     margin-bottom: var(--space-3);
     padding: var(--space-3);
-    background-color: var(--color-neutral-50);
+    background: var(--card-bg);
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
+    width: fit-content;
   }
 
   .current-image {
@@ -1333,7 +1334,7 @@
   .checkbox-container {
     display: block;
     position: relative;
-    padding-left: 30px;
+    padding-left: 19px;
     cursor: pointer;
     user-select: none;
     height: 24px;
@@ -1447,10 +1448,6 @@
     display: flex;
     gap: var(--space-3);
     align-items: flex-start;
-    padding: var(--space-3);
-    background-color: var(--color-neutral-50);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
   }
 
   .contributor-fields {

@@ -125,6 +125,26 @@
       console.error('Error toggling follow:', e);
     }
   }
+
+  // Handle share button click
+  function handleShare() {
+    if (!piece) return;
+    
+    const shareData = {
+      title: piece.title,
+      text: `Check out this piece: ${piece.title}`,
+      url: `${window.location.origin}/piece/${piece.id}`
+    };
+    
+    if (navigator.share) {
+      navigator.share(shareData)
+        .then(() => console.log('Share successful'))
+        .catch((error) => console.error('Error sharing:', error));
+    } else {
+      // Popup for non-supporting browsers
+
+    }
+  }
   
   async function handleDonate() {
     if (!$user) {
@@ -416,6 +436,9 @@
                       <div class="sponsor-info">
                         <h4 class="sponsor-name">{sponsor.name}</h4>
                         <span class="sponsor-amount">{formatAmount(sponsor.amount)}</span>
+                        {#if sponsor.description }
+                        <p class="sponsor-description">{sponsor.description}</p>
+                        {/if}
                       </div>
                     </div>
                   {/each}
@@ -525,6 +548,7 @@
                     <div class="contributor-info">
                       <h4 class="contributor-name">{contributor.name}</h4>
                       <span class="contributor-role">{contributor.role}</span>
+                      <p class="contributor-bio">{contributor.bio}</p>
                     </div>
                   </div>
                 {/each}
@@ -541,10 +565,10 @@
             <div class="funding-progress" in:fly={{ y: 20, duration: 300, delay: 200 }}>
               <div class="funding-header">
                 <h3>Funding Progress</h3>
+                <span class="total-raised">{formatAmount(piece.amount_raised || 0)}</span>
                 <div class="funding-amounts">
-                  <span class="amount-raised">{formatAmount(piece.amount_raised || 0)}</span>
-                  <span class="amount-separator">of</span>
-                  <span class="funding-goal">{formatAmount(piece.funding_goal)}</span>
+                  <span class="amount-separator">raised of</span>
+                  <span class="funding-goal">{formatAmount(piece.funding_goal)} goal</span>
                 </div>
               </div>
               
@@ -554,10 +578,28 @@
                   style="width: {calculateProgress(piece.amount_raised || 0, piece.funding_goal)}%"
                 ></div>
               </div>
+
+              <div class="countdown">
+                {#if piece.publication_target_date}
+                  <span class="countdown-value">
+                    {
+                      Math.max(
+                        Math.ceil(
+                          (new Date(piece.publication_target_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+                        ),
+                        0
+                      )
+                    }
+                  </span>
+                  <span class="countdown-label">days until Kickoff</span>
+                {:else}
+                  <span class="countdown-value">Ongoing</span>
+                {/if}
+              </div>
               
               <div class="funding-actions">
                 <button 
-                  class="donate-button" 
+                  class="donate-button neumorphic" 
                   on:click={handleDonate}
                   disabled={checkoutLoading}
                 >
@@ -607,33 +649,45 @@
                   <span>{formatAmount(piece.amount_raised || 0)} Raised</span>
                 </div>
               </div>
+              <!-- Apply Button -->
+              {#if piece.project_status === 'open_to_applications' && !isOrganizer && !isContributor && piece.approved}
+                <a href="/apply/{piece.id}" use:link class="apply-button neumorphic">
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <line x1="20" y1="8" x2="20" y2="14"></line>
+                    <line x1="23" y1="11" x2="17" y2="11"></line>
+                  </svg>
+                  Apply as Artist
+                </a>
+              {/if}
+
+              <div class="two-column-btns">
+                <!-- Follow Button -->
+                <button 
+                  class="follow-button neumorphic" 
+                  class:following={isFollowing}
+                  on:click={toggleFollow}
+                >
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill={isFollowing ? "currentColor" : "none"}>
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor"></path>
+                  </svg>
+                  {isFollowing ? 'Saved' : 'Save'}
+                </button>
+                <!-- Follow Button -->
+                <button 
+                  class="share-button neumorphic" 
+                  on:click={handleShare}
+                >
+                  <svg width="19" height="14" viewBox="0 0 19 14" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17.127 5.99976L13.0693 1.94201C12.9141 1.78684 12.8365 1.60867 12.8365 1.40751C12.8365 1.20617 12.9141 1.02792 13.0693 0.872758C13.2244 0.727925 13.4042 0.657091 13.6087 0.660258C13.8131 0.663591 13.9845 0.734425 14.123 0.872758L18.6173 5.36701C18.7109 5.46067 18.7769 5.55942 18.8153 5.66326C18.8538 5.76709 18.873 5.87926 18.873 5.99976C18.873 6.12026 18.8538 6.23242 18.8153 6.33626C18.7769 6.44009 18.7109 6.53884 18.6173 6.63251L14.123 11.1268C13.9678 11.2818 13.7922 11.3568 13.5962 11.3518C13.4001 11.3466 13.2244 11.2716 13.0693 11.1268C12.9141 10.9716 12.8356 10.7943 12.8337 10.595C12.8317 10.3957 12.9051 10.2216 13.0538 10.0728L17.127 5.99976ZM11.8193 6.74976H5C4.1025 6.74976 3.3365 7.06709 2.702 7.70176C2.06733 8.33626 1.75 9.10226 1.75 9.99976V12.7498C1.75 12.9626 1.67817 13.1408 1.5345 13.2843C1.391 13.4279 1.21283 13.4998 1 13.4998C0.787167 13.4998 0.609 13.4279 0.4655 13.2843C0.321833 13.1408 0.25 12.9626 0.25 12.7498V9.99976C0.25 8.68693 0.7135 7.56709 1.6405 6.64026C2.56733 5.71326 3.68717 5.24976 5 5.24976H11.8193L8.5115 1.94201C8.3565 1.78684 8.279 1.60867 8.279 1.40751C8.279 1.20617 8.3565 1.02792 8.5115 0.872758C8.66667 0.727925 8.8465 0.657091 9.051 0.660258C9.2555 0.663591 9.427 0.734425 9.5655 0.872758L14.0595 5.36701C14.1532 5.46067 14.2193 5.55942 14.2578 5.66326C14.2963 5.76709 14.3155 5.87926 14.3155 5.99976C14.3155 6.12026 14.2963 6.23242 14.2578 6.33626C14.2193 6.44009 14.1532 6.53884 14.0595 6.63251L9.5655 11.1268C9.41033 11.2818 9.23467 11.3568 9.0385 11.3518C8.84233 11.3466 8.66667 11.2716 8.5115 11.1268C8.3565 10.9716 8.278 10.7943 8.276 10.595C8.274 10.3957 8.34742 10.2216 8.49625 10.0728L11.8193 6.74976Z" fill="currentColor"/>
+                  </svg>
+                  Share
+                </button>
+              </div>
             </div>
           {/if}
 
-          <!-- Apply Button -->
-          {#if piece.project_status === 'open_to_applications' && !isOrganizer && !isContributor && piece.approved}
-            <a href="/apply/{piece.id}" use:link class="apply-button">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="8.5" cy="7" r="4"></circle>
-                <line x1="20" y1="8" x2="20" y2="14"></line>
-                <line x1="23" y1="11" x2="17" y2="11"></line>
-              </svg>
-              Apply as Artist
-            </a>
-          {/if}
-
-          <!-- Follow Button -->
-          <button 
-            class="follow-button" 
-            class:following={isFollowing}
-            on:click={toggleFollow}
-          >
-            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill={isFollowing ? "currentColor" : "none"}>
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-            </svg>
-            {isFollowing ? 'Following' : 'Follow'}
-          </button>
         </div>
       </div>
     </div>
@@ -641,6 +695,28 @@
 </div>
 
 <style>
+  :global(.dark-mode) .progress-bar {
+    background: #1F222F;
+    box-shadow: inset 1px 2px 8px rgba(0, 0, 0, 0.8), inset 0 -1px 8px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+  }
+
+  :global(.light-mode) .progress-bar {
+    background: #F9F9FE;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 -1px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+
+  :global(.dark-mode) .cause-tag {
+    background: #373E59;
+    color: #fff;
+  }
+
+  :global(.light-mode) .cause-tag {
+    background: #C1CBEE;
+    color: var(--text-color);
+  }
+
   .piece-detail {
     padding: var(--space-6);
     max-width: 1200px;
@@ -795,6 +871,7 @@
     display: flex;
     gap: var(--space-4);
     justify-content: center;
+    margin: 1.5rem 0;
   }
 
   .stat {
@@ -836,22 +913,31 @@
   }
 
   .follow-button {
-    background-color: var(--color-primary-600);
-    color: white;
+    background: var(--card-bg);
+    color: var(--text-color);
     border: none;
     cursor: pointer;
+    border-radius: 100px 42px 42px 100px !important;
   }
 
-  .follow-button:hover {
-    background-color: var(--color-primary-700);
+  .follow-button:hover,
+  .follow-button:visited,
+  .follow-button:focus {
+    background: var(--card-bg);
   }
 
   .follow-button.following {
-    background-color: var(--color-success-600);
+    background: var(--card-bg);
   }
 
-  .follow-button.following:hover {
-    background-color: var(--color-success-700);
+  .share-button,
+  .share-button:hover,
+  .share-button:visited,
+  .share-button:focus {
+    background: var(--card-bg);
+    color: var(--text-color);
+    border: none;
+    border-radius: 42px 100px 100px 42px !important;
   }
 
   /* Main Content */
@@ -891,6 +977,18 @@
 
   .content-right {
     padding-top: 100px;
+  }
+
+  .two-column-btns {
+    display: flex;
+    gap: 18px;
+    margin: 0px auto;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .two-column-btns button.neumorphic {
+    flex: 1;
   }
 
   /* Image Section */
@@ -954,8 +1052,8 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
-    background-color: var(--color-success-600);
-    color: white;
+    background: var(--text-color);
+    color: var(--bg-color);
     border: none;
     padding: var(--space-3) var(--space-6);
     border-radius: var(--radius-md);
@@ -966,11 +1064,11 @@
   }
 
   .donate-button:hover {
-    background-color: var(--color-success-700);
+    background: var(--text-color);
   }
 
   .donate-button:disabled {
-    background-color: var(--color-neutral-400);
+    background: var(--text-muted);
     cursor: not-allowed;
   }
 
@@ -1117,19 +1215,28 @@
   /* Funding Progress */
   .funding-progress {
     background: var(--card-bg);
-    border: 1px solid var(--border-color);
+    border: none;
     border-radius: var(--radius-xl);
     padding: var(--space-8);
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: 0px;
   }
 
   .funding-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     margin-bottom: var(--space-3);
+    flex-direction: column;
+  }
+
+  .funding-header .total-raised {
+    font-family: var(--font-instrument-serif);
+    font-size: 3.65rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0px;
   }
 
   .funding-header h3 {
@@ -1137,6 +1244,7 @@
     font-weight: 600;
     margin: 0;
     color: var(--text-color);
+    display: none;
   }
 
   .funding-amounts {
@@ -1159,12 +1267,19 @@
     color: var(--text-color);
   }
 
+  .countdown {
+    text-align: center;
+    font-family: var(--font-instrument-serif);
+    font-size: 1.75rem;
+    margin: 1rem 0;
+  }
+
   .progress-bar {
-    height: 8px;
-    background-color: var(--color-neutral-100);
-    border-radius: 4px;
+    height: 18px;
+    background: var(--color-neutral-100);
+    border-radius: 9px;
     overflow: hidden;
-    margin-bottom: var(--space-4);
+    margin-bottom: 0px;
   }
 
   .progress-fill {
@@ -1172,6 +1287,7 @@
     background-color: var(--color-success-600);
     border-radius: 4px;
     transition: width 0.3s ease;
+    min-width: 1%;
   }
 
   .funding-actions {
@@ -1203,6 +1319,10 @@
     color: var(--text-color);
   }
 
+  .contributors-section p.contributor-bio {
+    font-size: 0.875rem;
+  }
+
   .contributors-list,
   .sponsors-list {
     display: flex;
@@ -1213,20 +1333,20 @@
   .contributor-card,
   .sponsor-card {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-3);
-    padding: var(--space-3);
-    background-color: var(--bg-color);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
+    padding: 20px 0 0;
+    background-color: transparent;
+    border-radius: 0px;
+    border-top: 1px solid var(--border-color);
   }
 
   .contributor-avatar,
   .sponsor-logo,
   .sponsor-placeholder {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    width: 35px;
+    height: 45px;
+    border-radius: 100px;
     overflow: hidden;
     flex-shrink: 0;
   }
@@ -1351,11 +1471,6 @@
     border-radius: var(--radius-md);
     font-size: 0.875rem;
     font-weight: 500;
-  }
-
-  .cause-tag {
-    background-color: var(--color-primary-100);
-    color: var(--color-primary-700);
   }
 
   .medium-tag {
