@@ -282,72 +282,40 @@
       <!-- Header Section -->
       <div class="piece-header" in:fade>
         <div class="header-content">
-          <h1>{piece.title}</h1>
-          <div class="piece-meta">
-            <div class="organizer">
-              <span>Organized by</span>
-              <a href="/profile/{piece.organizer_name}" use:link class="organizer-name">
-                {piece.organizer_name}
-              </a>
-            </div>
-            
-            <div class="piece-stats">
-              <div class="stat">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                </svg>
-                <span>{piece.follower_count || 0} Followers</span>
-              </div>
-              
-              <div class="stat">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-                <span>{piece.contributors?.length || 0} Contributors</span>
-              </div>
-              
-              <div class="stat">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                  <line x1="12" y1="1" x2="12" y2="23"></line>
-                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                </svg>
-                <span>{formatAmount(piece.amount_raised || 0)} Raised</span>
-              </div>
+
+          <!-- Project Status -->
+          <div class="project-status-container" in:fly={{ y: 20, duration: 300, delay: 150 }}>
+            <div class="status-badge {piece.project_status}">
+              {#if piece.project_status === 'submitted_for_approval'}
+                Submitted for Approval
+              {:else if piece.project_status === 'open_to_applications'}
+                Open to Applications
+              {:else if piece.project_status === 'seeking_funding'}
+                Seeking Funding
+              {:else if piece.project_status === 'published'}
+                Published
+              {/if}
             </div>
           </div>
-        </div>
         
-        <div class="header-actions">
-          {#if isOrganizer}
-            <a href="/update/{piece.id}" use:link class="edit-button">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-              </svg>
-              Edit Piece
-            </a>
-            
-            <a href="/edit/{piece.id}" use:link class="edit-button">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                <path d="M15 10l4.553-2.276A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14M5 18h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z"></path>
-              </svg>
-              Editor
-            </a>
-          {/if}
-          
-          <button 
-            class="follow-button" 
-            class:following={isFollowing}
-            on:click={toggleFollow}
-          >
-            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill={isFollowing ? "currentColor" : "none"}>
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-            </svg>
-            {isFollowing ? 'Following' : 'Follow'}
-          </button>
+          <div class="header-actions">
+            {#if isOrganizer}
+              <a href="/update/{piece.id}" use:link class="edit-button">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Edit Piece
+              </a>
+              
+              <a href="/edit/{piece.id}" use:link class="edit-button">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                  <path d="M15 10l4.553-2.276A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14M5 18h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z"></path>
+                </svg>
+                Editor
+              </a>
+            {/if}
+          </div>
         </div>
       </div>
       
@@ -355,6 +323,30 @@
       <div class="piece-content">
         <!-- Left Column -->
         <div class="content-left">
+          <div class="piece-introduction">
+            <h1>{piece.title}</h1>
+  
+            <!-- Description -->
+            {#if piece.piece_description}
+              <div class="description-section" in:fly={{ y: 20, duration: 300, delay: 50 }}>
+                <div class="description-content">
+                  {piece.piece_description}
+                </div>
+              </div>
+            {/if}
+  
+            <!-- Cause Tags -->
+            {#if piece.cause_tags && piece.cause_tags.length > 0}
+              <div class="tags-section" in:fly={{ y: 20, duration: 300, delay: 150 }}>
+                <div class="tags-list">
+                  {#each piece.cause_tags as tag}
+                    <span class="tag cause-tag">{tag}</span>
+                  {/each}
+                </div>
+              </div>
+            {/if}
+          </div>
+
           <!-- Main Image -->
           <div class="piece-image-container" in:fly={{ y: 20, duration: 300 }}>
             {#if piece.image_url}
@@ -398,43 +390,152 @@
               </div>
             {/if}
           </div>
-          
-          <!-- Audio Player -->
-          {#if piece.audio_url && canViewFullContent()}
-            <div class="audio-container" in:fly={{ y: 20, duration: 300, delay: 100 }}>
-              <h3>Audio Experience</h3>
-              <audio controls src={piece.audio_url} class="audio-player"></audio>
-            </div>
-          {/if}
-          
-          <!-- Project Status -->
-          <div class="project-status-container" in:fly={{ y: 20, duration: 300, delay: 150 }}>
-            <h3>Project Status</h3>
-            <div class="status-badge {piece.project_status}">
-              {#if piece.project_status === 'submitted_for_approval'}
-                Submitted for Approval
-              {:else if piece.project_status === 'open_to_applications'}
-                Open to Applications
-              {:else if piece.project_status === 'seeking_funding'}
-                Seeking Funding
-              {:else if piece.project_status === 'published'}
-                Published
-              {/if}
-            </div>
-            
-            {#if piece.project_status === 'open_to_applications' && !isOrganizer && !isContributor && piece.approved}
-              <a href="/apply/{piece.id}" use:link class="apply-button">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="8.5" cy="7" r="4"></circle>
-                  <line x1="20" y1="8" x2="20" y2="14"></line>
-                  <line x1="23" y1="11" x2="17" y2="11"></line>
-                </svg>
-                Apply as Artist
+
+          <div class="piece-meta">
+            <div class="organizer">
+              <span>Organized by</span>
+              <a href="/profile/{piece.organizer_name}" use:link class="organizer-name">
+                {piece.organizer_name}
               </a>
+            </div>
+
+            <!-- Sponsors -->
+            {#if piece.sponsors && piece.sponsors.length > 0}
+              <div class="sponsors-section" in:fly={{ y: 20, duration: 300, delay: 300 }}>
+                <h3>Sponsors</h3>
+                <div class="sponsors-list">
+                  {#each piece.sponsors as sponsor}
+                    <div class="sponsor-card">
+                      {#if sponsor.logo_url}
+                        <img src={sponsor.logo_url} alt={sponsor.name} class="sponsor-logo" />
+                      {:else}
+                        <div class="sponsor-placeholder">
+                          {sponsor.name?.[0]?.toUpperCase() || 'S'}
+                        </div>
+                      {/if}
+                      <div class="sponsor-info">
+                        <h4 class="sponsor-name">{sponsor.name}</h4>
+                        <span class="sponsor-amount">{formatAmount(sponsor.amount)}</span>
+                      </div>
+                    </div>
+                  {/each}
+                </div>
+              </div>
             {/if}
           </div>
           
+          <!-- Mission -->
+          {#if piece.mission}
+            <div class="mission-section" in:fly={{ y: 20, duration: 300 }}>
+              <h2>Mission</h2>
+              <div class="mission-content">
+                {@html piece.mission}
+              </div>
+            </div>
+          {/if}
+          
+          <!-- Project Details -->
+          {#if piece.full_project_overview || piece.collaboration_structure || piece.deliverable_format}
+            <div class="details-section" in:fly={{ y: 20, duration: 300, delay: 100 }}>
+              <h2>Project Details</h2>
+              
+              {#if piece.full_project_overview}
+                <div class="detail-group">
+                  <h3>Project Overview</h3>
+                  <p>{piece.full_project_overview}</p>
+                </div>
+              {/if}
+              
+              {#if piece.collaboration_structure}
+                <div class="detail-group">
+                  <h3>Collaboration Structure</h3>
+                  <p>{piece.collaboration_structure}</p>
+                </div>
+              {/if}
+              
+              {#if piece.deliverable_format}
+                <div class="detail-group">
+                  <h3>Deliverable Format</h3>
+                  <p>{piece.deliverable_format}</p>
+                </div>
+              {/if}
+              
+              {#if piece.compensation_details}
+                <div class="detail-group">
+                  <h3>Compensation Details</h3>
+                  <p>{piece.compensation_details}</p>
+                </div>
+              {/if}
+            </div>
+          {/if}
+          
+          
+          <!-- Project Timeline -->
+          {#if piece.milestones && piece.milestones.length > 0}
+            <div class="timeline-section" in:fly={{ y: 20, duration: 300, delay: 250 }}>
+              <h2>Project Timeline</h2>
+              <div class="timeline">
+                {#each piece.milestones as milestone, index}
+                  <div class="timeline-item" class:completed={milestone.completed}>
+                    {#if milestone.due_date}
+                      <div class="timeline-date">
+                        <span>
+                          {new Date(milestone.due_date).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                    {/if}
+                    <div class="timeline-marker">
+                      <div class="marker-dot"></div>
+                      {#if index < piece.milestones.length - 1}
+                        <div class="marker-line"></div>
+                      {/if}
+                    </div>
+                    <div class="timeline-content">
+                      <h3 class="timeline-title">{milestone.title}</h3>
+                      {#if milestone.description}
+                        <p class="timeline-description">{milestone.description}</p>
+                      {/if}
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            </div>
+          {/if}
+
+          <!-- Contributors -->
+          {#if piece.contributors && piece.contributors.length > 0}
+            <div class="contributors-section" in:fly={{ y: 20, duration: 300, delay: 250 }}>
+              <h2>Meet the Team (so far)</h2>
+              <div class="contributors-list">
+                {#each piece.contributors as contributor}
+                  <div class="contributor-card">
+                    <div class="contributor-avatar">
+                      {#if contributor.avatar_url}
+                        <img src={contributor.avatar_url} alt={contributor.name} />
+                      {:else}
+                        <div class="avatar-placeholder">
+                          {contributor.name?.[0]?.toUpperCase() || 'A'}
+                        </div>
+                      {/if}
+                    </div>
+                    <div class="contributor-info">
+                      <h4 class="contributor-name">{contributor.name}</h4>
+                      <span class="contributor-role">{contributor.role}</span>
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            </div>
+          {/if}
+
+        </div>
+        
+        <!-- Right Column -->
+        <div class="content-right">
           <!-- Funding Progress -->
           {#if piece.funding_goal && piece.funding_goal > 0}
             <div class="funding-progress" in:fly={{ y: 20, duration: 300, delay: 200 }}>
@@ -484,180 +585,58 @@
               </div>
             </div>
           {/if}
-          
-          <!-- Contributors -->
-          {#if piece.contributors && piece.contributors.length > 0}
-            <div class="contributors-section" in:fly={{ y: 20, duration: 300, delay: 250 }}>
-              <h3>Contributors</h3>
-              <div class="contributors-list">
-                {#each piece.contributors as contributor}
-                  <div class="contributor-card">
-                    <div class="contributor-avatar">
-                      {#if contributor.avatar_url}
-                        <img src={contributor.avatar_url} alt={contributor.name} />
-                      {:else}
-                        <div class="avatar-placeholder">
-                          {contributor.name?.[0]?.toUpperCase() || 'A'}
-                        </div>
-                      {/if}
-                    </div>
-                    <div class="contributor-info">
-                      <h4 class="contributor-name">{contributor.name}</h4>
-                      <span class="contributor-role">{contributor.role}</span>
-                    </div>
-                  </div>
-                {/each}
-              </div>
+
+          <div class="piece-stats">
+            <div class="stat">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+              <span>{piece.follower_count || 0} Followers</span>
             </div>
-          {/if}
-          
-          <!-- Sponsors -->
-          {#if piece.sponsors && piece.sponsors.length > 0}
-            <div class="sponsors-section" in:fly={{ y: 20, duration: 300, delay: 300 }}>
-              <h3>Sponsors</h3>
-              <div class="sponsors-list">
-                {#each piece.sponsors as sponsor}
-                  <div class="sponsor-card">
-                    {#if sponsor.logo_url}
-                      <img src={sponsor.logo_url} alt={sponsor.name} class="sponsor-logo" />
-                    {:else}
-                      <div class="sponsor-placeholder">
-                        {sponsor.name?.[0]?.toUpperCase() || 'S'}
-                      </div>
-                    {/if}
-                    <div class="sponsor-info">
-                      <h4 class="sponsor-name">{sponsor.name}</h4>
-                      <span class="sponsor-amount">{formatAmount(sponsor.amount)}</span>
-                    </div>
-                  </div>
-                {/each}
-              </div>
+            
+            <div class="stat">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <span>{piece.contributors?.length || 0} Contributors</span>
             </div>
-          {/if}
-        </div>
-        
-        <!-- Right Column -->
-        <div class="content-right">
-          <!-- Mission -->
-          {#if piece.mission}
-            <div class="mission-section" in:fly={{ y: 20, duration: 300 }}>
-              <h2>Mission</h2>
-              <div class="mission-content">
-                {@html piece.mission}
-              </div>
+            
+            <div class="stat">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+              <span>{formatAmount(piece.amount_raised || 0)} Raised</span>
             </div>
+          </div>
+
+          <!-- Apply Button -->
+          {#if piece.project_status === 'open_to_applications' && !isOrganizer && !isContributor && piece.approved}
+            <a href="/apply/{piece.id}" use:link class="apply-button">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <line x1="20" y1="8" x2="20" y2="14"></line>
+                <line x1="23" y1="11" x2="17" y2="11"></line>
+              </svg>
+              Apply as Artist
+            </a>
           {/if}
-          
-          <!-- Description -->
-          {#if piece.piece_description}
-            <div class="description-section" in:fly={{ y: 20, duration: 300, delay: 50 }}>
-              <h2>Description</h2>
-              <div class="description-content">
-                {piece.piece_description}
-              </div>
-            </div>
-          {/if}
-          
-          <!-- Project Details -->
-          {#if piece.full_project_overview || piece.collaboration_structure || piece.deliverable_format}
-            <div class="details-section" in:fly={{ y: 20, duration: 300, delay: 100 }}>
-              <h2>Project Details</h2>
-              
-              {#if piece.full_project_overview}
-                <div class="detail-group">
-                  <h3>Project Overview</h3>
-                  <p>{piece.full_project_overview}</p>
-                </div>
-              {/if}
-              
-              {#if piece.collaboration_structure}
-                <div class="detail-group">
-                  <h3>Collaboration Structure</h3>
-                  <p>{piece.collaboration_structure}</p>
-                </div>
-              {/if}
-              
-              {#if piece.deliverable_format}
-                <div class="detail-group">
-                  <h3>Deliverable Format</h3>
-                  <p>{piece.deliverable_format}</p>
-                </div>
-              {/if}
-              
-              {#if piece.compensation_details}
-                <div class="detail-group">
-                  <h3>Compensation Details</h3>
-                  <p>{piece.compensation_details}</p>
-                </div>
-              {/if}
-            </div>
-          {/if}
-          
-          <!-- Cause Tags -->
-          {#if piece.cause_tags && piece.cause_tags.length > 0}
-            <div class="tags-section" in:fly={{ y: 20, duration: 300, delay: 150 }}>
-              <h3>Causes</h3>
-              <div class="tags-list">
-                {#each piece.cause_tags as tag}
-                  <span class="tag cause-tag">{tag}</span>
-                {/each}
-              </div>
-            </div>
-          {/if}
-          
-          <!-- Accepted Mediums -->
-          {#if piece.accepted_mediums && piece.accepted_mediums.length > 0}
-            <div class="tags-section" in:fly={{ y: 20, duration: 300, delay: 200 }}>
-              <h3>Accepted Mediums</h3>
-              <div class="tags-list">
-                {#each piece.accepted_mediums as medium}
-                  <span class="tag medium-tag">{medium}</span>
-                {/each}
-              </div>
-            </div>
-          {/if}
-          
-          <!-- Project Timeline -->
-          {#if piece.milestones && piece.milestones.length > 0}
-            <div class="timeline-section" in:fly={{ y: 20, duration: 300, delay: 250 }}>
-              <h2>Project Timeline</h2>
-              <div class="timeline">
-                {#each piece.milestones as milestone, index}
-                  <div class="timeline-item" class:completed={milestone.completed}>
-                    <div class="timeline-marker">
-                      <div class="marker-dot"></div>
-                      {#if index < piece.milestones.length - 1}
-                        <div class="marker-line"></div>
-                      {/if}
-                    </div>
-                    <div class="timeline-content">
-                      <h3 class="timeline-title">{milestone.title}</h3>
-                      {#if milestone.description}
-                        <p class="timeline-description">{milestone.description}</p>
-                      {/if}
-                      {#if milestone.due_date}
-                        <div class="timeline-date">
-                          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                          </svg>
-                          <span>
-                            {new Date(milestone.due_date).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric'
-                            })}
-                          </span>
-                        </div>
-                      {/if}
-                    </div>
-                  </div>
-                {/each}
-              </div>
-            </div>
-          {/if}
+
+          <!-- Follow Button -->
+          <button 
+            class="follow-button" 
+            class:following={isFollowing}
+            on:click={toggleFollow}
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill={isFollowing ? "currentColor" : "none"}>
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            {isFollowing ? 'Following' : 'Follow'}
+          </button>
         </div>
       </div>
     </div>
@@ -721,7 +700,7 @@
   .piece-container {
     display: flex;
     flex-direction: column;
-    gap: var(--space-6);
+    gap: 0px;
   }
 
   /* Draft Banner */
@@ -778,6 +757,9 @@
 
   .header-content {
     flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .piece-header h1 {
@@ -873,10 +855,31 @@
   }
 
   /* Main Content */
+
+  .content-left .piece-introduction {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .description-section {
+    margin-bottom: 12px;
+  }
+
   .piece-content {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-6);
+    grid-template-columns: 1fr 450px;
+    gap: 65px;
+  }
+
+  .piece-content h1 {
+    margin-bottom: 0px;
+  }
+
+  .piece-content h2 {
+    margin-bottom: 20px !important;
+    font-size: 28px !important;
+    font-family: var(--font-instrument-serif);
   }
 
   .content-left,
@@ -884,6 +887,10 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
+  }
+
+  .content-right {
+    padding-top: 100px;
   }
 
   /* Image Section */
@@ -1022,10 +1029,7 @@
 
   /* Project Status */
   .project-status-container {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: var(--space-4);
+    padding: 0px;
   }
 
   .project-status-container h3 {
@@ -1036,32 +1040,59 @@
   }
 
   .status-badge {
-    display: inline-block;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 500;
-    margin-bottom: var(--space-3);
+    position: relative;
+    --circle-size: 10px;
+    padding-left: calc(var(--circle-size) + 10px);
   }
 
-  .status-badge.submitted_for_approval {
-    background-color: var(--color-warning-100);
-    color: var(--color-warning-700);
+  .status-badge.submitted_for_approval::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--circle-size);
+    height: var(--circle-size);
+    background-color: var(--color-neutral-400);
+    border-radius: 50%;
   }
 
-  .status-badge.open_to_applications {
-    background-color: var(--color-success-100);
-    color: var(--color-success-700);
+  .status-badge.open_to_applications::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--circle-size);
+    height: var(--circle-size);
+    background-color: var(--color-success-600);
+    border-radius: 50%;
   }
 
-  .status-badge.seeking_funding {
-    background-color: var(--color-primary-100);
-    color: var(--color-primary-700);
+  .status-badge.seeking_funding::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--circle-size);
+    height: var(--circle-size);
+    background-color: var(--color-warning-500);
+    border-radius: 50%;
   }
 
-  .status-badge.published {
-    background-color: var(--color-accent-100);
-    color: var(--color-accent-700);
+  .status-badge.published::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--circle-size);
+    height: var(--circle-size);
+    background-color: var(--color-success-500);
+    border-radius: 50%;
   }
 
   .apply-button {
@@ -1152,15 +1183,15 @@
     text-align: center;
   }
 
-  /* Contributors Section */
+  .mission-section,
+  .details-section,
   .contributors-section,
-  .sponsors-section {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: var(--space-4);
+  .timeline-section {
+    padding-top: var(--space-6);
+    border-top: solid 1px var(--border-color);
   }
 
+  /* Contributors Section */
   .contributors-section h3,
   .sponsors-section h3 {
     font-size: 1.125rem;
@@ -1239,16 +1270,6 @@
     font-weight: 500;
   }
 
-  /* Content Sections */
-  .mission-section,
-  .description-section,
-  .details-section {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: var(--space-6);
-  }
-
   .mission-section h2,
   .description-section h2,
   .details-section h2 {
@@ -1308,14 +1329,6 @@
     margin: 0;
   }
 
-  /* Tags Section */
-  .tags-section {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: var(--space-4);
-  }
-
   .tags-section h3 {
     font-size: 1.125rem;
     font-weight: 600;
@@ -1348,13 +1361,6 @@
   }
 
   /* Timeline Section */
-  .timeline-section {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: var(--space-6);
-  }
-
   .timeline-section h2 {
     font-size: 1.5rem;
     font-weight: 600;
@@ -1430,10 +1436,11 @@
 
   .timeline-date {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-1);
     font-size: 0.75rem;
     color: var(--text-muted);
+    width: 45px;
   }
 
   .spinner {

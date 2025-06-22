@@ -904,44 +904,93 @@
 
   .status-badge {
     font-size: 0.75rem;
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-full);
     font-weight: 500;
+    position: relative;
+    padding-left: 25px;
   }
 
-  .status-badge.draft {
-    background: var(--color-neutral-100);
-    color: var(--text-muted);
+  .status-badge.draft::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background-color: var(--color-neutral-400);
+    border-radius: 50%;
   }
 
-  .status-badge.open-to-applications {
-    background: var(--color-success-100);
-    color: var(--color-success-700);
+  .status-badge.open-to-applications::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background-color: var(--color-primary-00);
+    border-radius: 50%;
   }
 
-  .status-badge.seeking-funding {
-    background: var(--color-warning-100);
-    color: var(--color-warning-700);
+  .status-badge.seeking-funding::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background-color: var(--color-warning-500);
+    border-radius: 50%;
   }
 
-  .status-badge.published {
-    background: var(--color-primary-100);
-    color: var(--color-primary-700);
+  .status-badge.published::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background-color: var(--color-success-500);
+    border-radius: 50%;
   }
 
-  .status-badge.status-pending {
-    background: var(--color-warning-100);
-    color: var(--color-warning-700);
+  .status-badge.status-pending::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background-color: var(--color-neutral-300);
+    border-radius: 50%;
   }
 
-  .status-badge.status-accepted {
-    background: var(--color-success-100);
-    color: var(--color-success-700);
+  .status-badge.status-accepted::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background-color: var(--color-success-400);
+    border-radius: 50%;
   }
 
-  .status-badge.status-declined {
-    background: var(--color-error-100);
-    color: var(--color-error-700);
+  .status-badge.status-declined::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background-color: var(--color-error-400);
+    border-radius: 50%;
   }
 
   .project-meta {

@@ -433,6 +433,7 @@
     cursor: pointer;
     background-color: var(--color-neutral-100);
     flex-shrink: 0;
+    border: solid 3px var(--bg-color);
   }
 
   .avatar {

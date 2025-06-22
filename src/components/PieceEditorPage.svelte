@@ -231,9 +231,34 @@
     }
   }
   
+  // Throttle helper
+  function throttle<T extends (...args: any[]) => void>(fn: T, wait: number) {
+    let lastCall = 0;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    let lastArgs: any;
+
+    return function (...args: Parameters<T>) {
+      const now = Date.now();
+      lastArgs = args;
+      if (now - lastCall >= wait) {
+        lastCall = now;
+        fn(...args);
+      } else if (!timeout) {
+        timeout = setTimeout(() => {
+          lastCall = Date.now();
+          timeout = null;
+          fn(...lastArgs);
+        }, wait - (now - lastCall));
+      }
+    };
+  }
+
+  // Throttled save handler
+  const throttledSaveEditorData = throttle(saveEditorData, 1000);
+
   function handleEditorSave(event: CustomEvent<any>) {
     const editorData = event.detail;
-    saveEditorData(editorData);
+    throttledSaveEditorData(editorData);
   }
 
   async function handlePublishPiece(event: CustomEvent<{ pieceId: string, videoUrl: string, newProjectStatus: string }>) {

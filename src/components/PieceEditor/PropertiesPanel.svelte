@@ -275,18 +275,42 @@
   }
 
   // Export functions
-  function handleExport() {
-    // In a real scenario, this would involve complex video generation.
-    // For now, we'll simulate an export and provide a placeholder URL.
-    const exportedVideoUrl = 'https://videos.pexels.com/video-files/15432179/15432179-uhd_2560_1440_50fps.mp4'; // Placeholder URL
+  async function handleExport() {
+    // Display upgrade popup
+    alert('You must upgrade to export video.\nPlease contact support for more information.');
 
-    dispatch('publishPiece', {
-      pieceId: pieceId,
-      videoUrl: exportedVideoUrl,
-      newProjectStatus: 'published'
-    });
+    // // Example: Call a backend API to generate the video
+    // try {
+    //   // Prepare export payload
+    //   const payload = {
+    //     pieceId,
+    //     exportSettings,
+    //   };
 
-    alert(`Publishing started!\nFormat: ${exportSettings.format}\nQuality: ${exportSettings.quality}\nResolution: ${exportSettings.resolution}`);
+    //   // Replace with your actual API endpoint
+    //   const response = await fetch('/api/export-video', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify(payload)
+    //   });
+
+    //   if (!response.ok) {
+    //     throw new Error('Export failed');
+    //   }
+
+    //   const result = await response.json();
+
+    //   // Assume result.videoUrl contains the generated video URL
+    //   dispatch('publishPiece', {
+    //     pieceId,
+    //     videoUrl: result.videoUrl,
+    //     newProjectStatus: 'published'
+    //   });
+
+    //   alert(`Publishing started!\nFormat: ${exportSettings.format}\nQuality: ${exportSettings.quality}\nResolution: ${exportSettings.resolution}`);
+    // } catch (err) {
+    //   alert('Export failed: ' + err.message);
+    // }
   }
 
   function resetExportSettings() {
