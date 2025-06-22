@@ -668,7 +668,7 @@
     color: white;
     font-size: 0.8rem;
     z-index: 100;
-    visibility: visible;
+    visibility: hidden;
     opacity: 1;
   }
 
