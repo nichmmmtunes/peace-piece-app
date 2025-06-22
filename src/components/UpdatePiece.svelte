@@ -2,7 +2,6 @@
   import { onMount } from 'svelte';
   import { push, link } from 'svelte-spa-router';
   import { supabase } from '../lib/supabase';
-  import { user } from '../stores/authStore';
   import { fade, fly } from 'svelte/transition';
   import RichTextEditor from './RichTextEditor.svelte';
 
@@ -28,7 +27,7 @@
   let piece: any = null;
   
   // Project status and milestones
-  let projectStatus: 'submitted_for_approval' | 'open_to_applications' | 'seeking_funding' | 'published' = 'submitted_for_approval';
+  let projectStatus: 'open_to_applications' | 'seeking_funding' | 'published' = 'open_to_applications';
   let milestones: { title: string, description: string, completed: boolean, due_date?: string }[] = [];
   
   // Cause tags and accepted mediums
@@ -39,33 +38,29 @@
   
   // Additional project fields
   let fullProjectOverview = '';
-  let collaborationStructure = '';
-  let deliverableFormat = '';
-  let compensationDetails = '';
+  let collaborationStructure: 'interwoven' | 'collaborative' = 'interwoven';
+  let deliverableFormat: 'video' | 'image_with_audio' | 'image_only' = 'video';
+  let artistFees: number | null = null;
   let fundingGoal: number | null = null;
-  let approved = false;
 
   // Project status options
   const projectStatusOptions = [
-    { value: 'submitted_for_approval', label: 'Submit for Approval' },
     { value: 'open_to_applications', label: 'Open to Applications' },
     { value: 'seeking_funding', label: 'Seeking Funding' },
     { value: 'published', label: 'Published' }
   ];
-  
-  // Multi-step form state
-  let currentStep = 1;
-  let stepValidationError = '';
-  
-  // Define form steps
-  const formSteps = [
-    { id: 'basics', title: 'Basic Information' },
-    { id: 'details', title: 'Project Details' },
-    { id: 'media', title: 'Media' },
-    { id: 'tags', title: 'Tags & Mediums' },
-    { id: 'milestones', title: 'Milestones' },
-    { id: 'contributors', title: 'Contributors' },
-    { id: 'review', title: 'Review & Submit' }
+
+  // Collaboration structure options
+  const collaborationStructureOptions = [
+    { value: 'interwoven', label: 'Interwoven', description: 'Artists work together on a single cohesive piece' },
+    { value: 'collaborative', label: 'Collaborative', description: 'Artists create separate pieces that are combined' }
+  ];
+
+  // Deliverable format options
+  const deliverableFormatOptions = [
+    { value: 'video', label: 'Video', description: 'A video with optional audio' },
+    { value: 'image_with_audio', label: 'Image with Audio', description: 'A static image with accompanying audio' },
+    { value: 'image_only', label: 'Image Only', description: 'A static image without audio' }
   ];
 
   async function loadPiece() {
@@ -90,9 +85,8 @@
       currentVideoUrl = piece.video_url || '';
       
       // Load project status and milestones
-      projectStatus = piece.project_status || 'submitted_for_approval';
+      projectStatus = piece.project_status || 'open_to_applications';
       milestones = piece.milestones || [];
-      approved = piece.approved || false;
       
       // Load cause tags and accepted mediums
       causeTags = piece.cause_tags || [];
@@ -100,9 +94,24 @@
       
       // Load additional project fields
       fullProjectOverview = piece.full_project_overview || '';
-      collaborationStructure = piece.collaboration_structure || '';
-      deliverableFormat = piece.deliverable_format || '';
-      compensationDetails = piece.compensation_details || '';
+      collaborationStructure = piece.collaboration_structure === 'interwoven' || piece.collaboration_structure === 'collaborative' 
+        ? piece.collaboration_structure 
+        : 'interwoven';
+      
+      // Parse deliverable format from string
+      if (piece.deliverable_format === 'video' || 
+          piece.deliverable_format === 'image_with_audio' || 
+          piece.deliverable_format === 'image_only') {
+        deliverableFormat = piece.deliverable_format;
+      } else if (piece.deliverable_format && piece.deliverable_format.toLowerCase().includes('video')) {
+        deliverableFormat = 'video';
+      } else if (piece.deliverable_format && piece.deliverable_format.toLowerCase().includes('audio')) {
+        deliverableFormat = 'image_with_audio';
+      } else {
+        deliverableFormat = 'image_only';
+      }
+      
+      artistFees = piece.artist_fees || null;
       fundingGoal = piece.funding_goal || null;
       
       // Ensure milestones is an array
@@ -187,11 +196,6 @@
         videoUrl = await uploadFile(videoFile, 'videos');
       }
 
-      // If changing from a different status to 'submitted_for_approval', set approved to false
-      if (piece.project_status !== 'submitted_for_approval' && projectStatus === 'submitted_for_approval') {
-        approved = false;
-      }
-
       const { error: pieceError } = await supabase
         .from('pieces')
         .update({
@@ -209,9 +213,8 @@
           full_project_overview: fullProjectOverview,
           collaboration_structure: collaborationStructure,
           deliverable_format: deliverableFormat,
-          compensation_details: compensationDetails,
+          artist_fees: artistFees,
           funding_goal: fundingGoal,
-          approved: approved,
           updated_at: new Date().toISOString()
         })
         .eq('id', params.id);
@@ -309,47 +312,6 @@
   function handleMissionUpdate(event: CustomEvent<string>) {
     projectMission = event.detail;
   }
-  
-  // Step navigation functions
-  function goToNextStep() {
-    stepValidationError = '';
-    
-    // Validate current step
-    if (currentStep === 1) {
-      if (!title.trim()) {
-        stepValidationError = 'Title is required';
-        return;
-      }
-      if (!organizerId) {
-        stepValidationError = 'Organizer is required';
-        return;
-      }
-    }
-    
-    if (currentStep < formSteps.length) {
-      currentStep++;
-      window.scrollTo(0, 0);
-    }
-  }
-  
-  function goToPreviousStep() {
-    if (currentStep > 1) {
-      currentStep--;
-      stepValidationError = '';
-      window.scrollTo(0, 0);
-    }
-  }
-  
-  function goToStep(step: number) {
-    if (step >= 1 && step <= formSteps.length) {
-      currentStep = step;
-      stepValidationError = '';
-      window.scrollTo(0, 0);
-    }
-  }
-  
-  // Calculate progress percentage
-  $: progressPercentage = ((currentStep - 1) / (formSteps.length - 1)) * 100;
 
   onMount(() => {
     if (params.id) {
@@ -388,507 +350,366 @@
             {message}
           </div>
         {/if}
-        
-        <!-- Progress Bar -->
-        <div class="progress-container">
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: {progressPercentage}%"></div>
-          </div>
-          <div class="step-indicators">
-            {#each formSteps as step, index}
-              <div 
-                class="step-indicator" 
-                class:active={currentStep === index + 1}
-                class:completed={currentStep > index + 1}
-                on:click={() => goToStep(index + 1)}
-              >
-                <div class="step-number">
-                  {#if currentStep > index + 1}
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="white" stroke-width="2" fill="none">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  {:else}
-                    {index + 1}
-                  {/if}
-                </div>
-                <span class="step-title">{step.title}</span>
-              </div>
-            {/each}
-          </div>
-        </div>
-        
-        {#if stepValidationError}
-          <div class="validation-error" transition:fade>
-            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            {stepValidationError}
-          </div>
-        {/if}
 
         <form on:submit|preventDefault={handleSubmit}>
-          <!-- Step 1: Basic Information -->
-          {#if currentStep === 1}
-            <section class="form-section" in:fade>
-              <h2>Basic Information</h2>
-              
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="title">Title *</label>
-                  <input
-                    type="text"
-                    id="title"
-                    bind:value={title}
-                    required
-                    disabled={loading}
-                    placeholder="Enter the title of your piece"
-                  />
-                </div>
-
-                <div class="form-group">
-                  <label for="organizer">Organizer *</label>
-                  <select
-                    id="organizer"
-                    bind:value={organizerId}
-                    required
-                    disabled={loading}
-                  >
-                    <option value="">Select an organizer</option>
-                    {#each organizers as organizer}
-                      <option value={organizer.id}>{organizer.name}</option>
-                    {/each}
-                  </select>
-                </div>
-              </div>
-
+          <!-- Basic Information -->
+          <section class="form-section">
+            <h2>Basic Information</h2>
+            
+            <div class="form-grid">
               <div class="form-group">
-                <label for="pieceDescription">Description (Markdown supported)</label>
-                <textarea
-                  id="pieceDescription"
-                  bind:value={pieceDescription}
-                  rows="6"
+                <label for="title">Title *</label>
+                <input
+                  type="text"
+                  id="title"
+                  bind:value={title}
+                  required
                   disabled={loading}
-                  placeholder="Describe your piece using markdown formatting. You can use **bold**, *italic*, and [links](url)..."
-                ></textarea>
-                <div class="field-help">
-                  <p>You can use markdown formatting:</p>
-                  <ul>
-                    <li><code>**bold text**</code> for <strong>bold text</strong></li>
-                    <li><code>*italic text*</code> for <em>italic text</em></li>
-                    <li><code>[link text](url)</code> for links</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="projectMission">Project Mission</label>
-                <RichTextEditor 
-                  content={projectMission} 
-                  on:update={handleMissionUpdate}
-                  placeholder="Share your project's mission, goals, and inspiring content..."
-                  minHeight="200px"
+                  placeholder="Enter the title of your piece"
                 />
               </div>
-              
-              <!-- Project Status -->
+
               <div class="form-group">
-                <label for="projectStatus">Project Status *</label>
+                <label for="organizer">Organizer *</label>
                 <select
-                  id="projectStatus"
-                  bind:value={projectStatus}
+                  id="organizer"
+                  bind:value={organizerId}
                   required
                   disabled={loading}
                 >
-                  {#each projectStatusOptions as option}
-                    <option value={option.value}>{option.label}</option>
+                  <option value="">Select an organizer</option>
+                  {#each organizers as organizer}
+                    <option value={organizer.id}>{organizer.name}</option>
                   {/each}
                 </select>
-                <div class="field-help">
-                  <p>Select the current status of your project:</p>
-                  <ul>
-                    <li><strong>Submit for Approval:</strong> Your piece will be reviewed before being published</li>
-                    <li><strong>Open to Applications:</strong> Artists can apply to contribute</li>
-                    <li><strong>Seeking Funding:</strong> Project is looking for sponsors and donations</li>
-                    <li><strong>Published:</strong> Project is complete and published</li>
-                  </ul>
-                </div>
               </div>
-              
-              <!-- Approval Status -->
-              {#if $user && piece && piece.organizer_user_id === $user.id}
-                <div class="form-group">
-                  <label for="approvalStatus">Approval Status</label>
-                  <div class="approval-status">
-                    <div class="status-badge {approved ? 'approved' : 'pending'}">
-                      {approved ? 'Approved' : 'Pending Approval'}
-                    </div>
-                    {#if !approved && projectStatus !== 'submitted_for_approval'}
-                      <p class="approval-note">This piece is not yet approved. It will not be visible to the public until approved by an admin.</p>
-                    {/if}
-                  </div>
-                </div>
-              {/if}
-            </section>
-          {/if}
+            </div>
+
+            <div class="form-group">
+              <label for="pieceDescription">Description (Markdown supported)</label>
+              <textarea
+                id="pieceDescription"
+                bind:value={pieceDescription}
+                rows="6"
+                disabled={loading}
+                placeholder="Describe your piece using markdown formatting. You can use **bold**, *italic*, and [links](url)..."
+              ></textarea>
+              <div class="field-help">
+                <p>You can use markdown formatting:</p>
+                <ul>
+                  <li><code>**bold text**</code> for <strong>bold text</strong></li>
+                  <li><code>*italic text*</code> for <em>italic text</em></li>
+                  <li><code>[link text](url)</code> for links</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="projectMission">Project Mission</label>
+              <RichTextEditor 
+                content={projectMission} 
+                on:update={handleMissionUpdate}
+                placeholder="Share your project's mission, goals, and inspiring content..."
+                minHeight="200px"
+              />
+            </div>
+            
+            <!-- Project Status -->
+            <div class="form-group">
+              <label for="projectStatus">Project Status *</label>
+              <select
+                id="projectStatus"
+                bind:value={projectStatus}
+                required
+                disabled={loading}
+              >
+                {#each projectStatusOptions as option}
+                  <option value={option.value}>{option.label}</option>
+                {/each}
+              </select>
+              <div class="field-help">
+                <p>Select the current status of your project:</p>
+                <ul>
+                  <li><strong>Open to Applications:</strong> Artists can apply to contribute</li>
+                  <li><strong>Seeking Funding:</strong> Project is looking for sponsors and donations</li>
+                  <li><strong>Published:</strong> Project is complete and published</li>
+                </ul>
+              </div>
+            </div>
+          </section>
           
-          <!-- Step 2: Project Details -->
-          {#if currentStep === 2}
-            <section class="form-section" in:fade>
-              <h2>Project Details</h2>
-              
-              <div class="form-group">
-                <label for="fullProjectOverview">Full Project Overview</label>
-                <textarea
-                  id="fullProjectOverview"
-                  bind:value={fullProjectOverview}
-                  rows="8"
-                  disabled={loading}
-                  placeholder="Provide a comprehensive overview of your project, its goals, and its significance..."
-                ></textarea>
-              </div>
-              
-              <div class="form-group">
-                <label for="collaborationStructure">Collaboration Structure</label>
-                <textarea
-                  id="collaborationStructure"
-                  bind:value={collaborationStructure}
-                  rows="4"
-                  disabled={loading}
-                  placeholder="Explain how artists will collaborate on this project..."
-                ></textarea>
-              </div>
-              
-              <div class="form-group">
-                <label for="deliverableFormat">Deliverable Format</label>
-                <textarea
-                  id="deliverableFormat"
-                  bind:value={deliverableFormat}
-                  rows="4"
-                  disabled={loading}
-                  placeholder="Describe the final format of the piece (e.g., digital exhibition, printed book, etc.)..."
-                ></textarea>
-              </div>
-              
-              <div class="form-group">
-                <label for="compensationDetails">Compensation Details</label>
-                <textarea
-                  id="compensationDetails"
-                  bind:value={compensationDetails}
-                  rows="4"
-                  disabled={loading}
-                  placeholder="Explain how artists will be compensated for their contributions..."
-                ></textarea>
-              </div>
-              
-              <!-- Funding Goal -->
-              <div class="form-group">
-                <label for="fundingGoal">Funding Goal ($)</label>
+          <!-- Cause Tags Section -->
+          <section class="form-section">
+            <div class="section-header">
+              <h2>Cause Tags</h2>
+              <div class="tag-input-container">
                 <input
-                  type="number"
-                  id="fundingGoal"
-                  bind:value={fundingGoal}
-                  min="0"
-                  step="100"
+                  type="text"
+                  bind:value={newCauseTag}
+                  placeholder="Add a cause tag..."
                   disabled={loading}
-                  placeholder="Enter your funding goal amount (e.g., 5000)"
+                  class="tag-input"
                 />
-                <div class="field-help">
-                  <p>Set a realistic funding goal for your project. This will be displayed on your project page with a progress bar.</p>
-                </div>
-              </div>
-            </section>
-          {/if}
-          
-          <!-- Step 3: Media -->
-          {#if currentStep === 3}
-            <section class="form-section" in:fade>
-              <h2>Media</h2>
-              
-              <div class="media-grid">
-                <div class="form-group">
-                  <label for="image">Image</label>
-                  {#if currentImageUrl}
-                    <div class="current-media">
-                      <img src={currentImageUrl} alt="Current image" class="current-image" />
-                      <span class="media-label">Current image</span>
-                    </div>
-                  {/if}
-                  <input
-                    type="file"
-                    id="image"
-                    accept="image/*"
-                    on:change={(e) => imageFile = e.target.files?.[0] || null}
-                    disabled={loading}
-                    class="file-input"
-                  />
-                  {#if imageFile}
-                    <div class="new-file-indicator">
-                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      New image selected: {imageFile.name}
-                    </div>
-                  {/if}
-                </div>
-                
-                <div class="form-group">
-                  <label for="audio">Audio</label>
-                  {#if currentAudioUrl}
-                    <div class="current-media">
-                      <audio controls src={currentAudioUrl} class="current-audio"></audio>
-                      <span class="media-label">Current audio</span>
-                    </div>
-                  {/if}
-                  <input
-                    type="file"
-                    id="audio"
-                    accept="audio/*"
-                    on:change={(e) => audioFile = e.target.files?.[0] || null}
-                    disabled={loading}
-                    class="file-input"
-                  />
-                  {#if audioFile}
-                    <div class="new-file-indicator">
-                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      New audio selected: {audioFile.name}
-                    </div>
-                  {/if}
-                </div>
-              </div>
-            </section>
-          {/if}
-          
-          <!-- Step 4: Tags & Mediums -->
-          {#if currentStep === 4}
-            <section class="form-section" in:fade>
-              <!-- Cause Tags Section -->
-              <div class="section-header">
-                <h2>Cause Tags</h2>
-                <div class="tag-input-container">
-                  <input
-                    type="text"
-                    bind:value={newCauseTag}
-                    placeholder="Add a cause tag..."
-                    disabled={loading}
-                    class="tag-input"
-                  />
-                  <button 
-                    type="button" 
-                    class="add-tag-button" 
-                    on:click={addCauseTag}
-                    disabled={loading || !newCauseTag.trim()}
-                  >
-                    Add
-                  </button>
-                </div>
-              </div>
-              
-              {#if causeTags.length > 0}
-                <div class="tags-container">
-                  {#each causeTags as tag}
-                    <div class="tag-item">
-                      <span class="tag-text">{tag}</span>
-                      <button 
-                        type="button" 
-                        class="remove-tag-button" 
-                        on:click={() => removeCauseTag(tag)}
-                        disabled={loading}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  {/each}
-                </div>
-              {:else}
-                <div class="empty-tags">
-                  <p>No cause tags added yet. Add tags to help categorize your project.</p>
-                </div>
-              {/if}
-              
-              <!-- Accepted Mediums Section -->
-              <div class="section-header" style="margin-top: var(--space-8);">
-                <h2>Accepted Artistic Mediums</h2>
-                <div class="tag-input-container">
-                  <input
-                    type="text"
-                    bind:value={newAcceptedMedium}
-                    placeholder="Add an artistic medium..."
-                    disabled={loading}
-                    class="tag-input"
-                  />
-                  <button 
-                    type="button" 
-                    class="add-tag-button" 
-                    on:click={addAcceptedMedium}
-                    disabled={loading || !newAcceptedMedium.trim()}
-                  >
-                    Add
-                  </button>
-                </div>
-              </div>
-              
-              {#if acceptedMediums.length > 0}
-                <div class="tags-container">
-                  {#each acceptedMediums as medium}
-                    <div class="tag-item medium-tag">
-                      <span class="tag-text">{medium}</span>
-                      <button 
-                        type="button" 
-                        class="remove-tag-button" 
-                        on:click={() => removeAcceptedMedium(medium)}
-                        disabled={loading}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  {/each}
-                </div>
-              {:else}
-                <div class="empty-tags">
-                  <p>No artistic mediums added yet. Add mediums to specify what types of art you're looking for.</p>
-                </div>
-              {/if}
-            </section>
-          {/if}
-          
-          <!-- Step 5: Milestones -->
-          {#if currentStep === 5}
-            <section class="form-section" in:fade>
-              <div class="section-header">
-                <h2>Project Milestones</h2>
-                <button type="button" class="add-button" on:click={addMilestone}>
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
-                  Add Milestone
+                <button 
+                  type="button" 
+                  class="add-tag-button" 
+                  on:click={addCauseTag}
+                  disabled={loading || !newCauseTag.trim()}
+                >
+                  Add
                 </button>
               </div>
-              
-              {#if milestones.length > 0}
-                <div class="milestones-list">
-                  {#each milestones as milestone, i}
-                    <div class="milestone-row" in:fly={{ y: 20, duration: 300 }}>
-                      <div class="milestone-header">
-                        <div class="milestone-checkbox">
-                          <label class="checkbox-container">
-                            <input 
-                              type="checkbox" 
-                              checked={milestone.completed} 
-                              on:change={(e) => updateMilestone(i, 'completed', e.target.checked)}
-                              disabled={loading}
-                            />
-                            <span class="checkmark"></span>
-                          </label>
-                        </div>
-                        
-                        <div class="milestone-title-container">
-                          <input
-                            type="text"
-                            placeholder="Milestone title"
-                            value={milestone.title}
-                            on:input={(e) => updateMilestone(i, 'title', e.target.value)}
+            </div>
+            
+            {#if causeTags.length > 0}
+              <div class="tags-container">
+                {#each causeTags as tag}
+                  <div class="tag-item">
+                    <span class="tag-text">{tag}</span>
+                    <button 
+                      type="button" 
+                      class="remove-tag-button" 
+                      on:click={() => removeCauseTag(tag)}
+                      disabled={loading}
+                    >
+                      ×
+                    </button>
+                  </div>
+                {/each}
+              </div>
+            {:else}
+              <div class="empty-tags">
+                <p>No cause tags added yet. Add tags to help categorize your project.</p>
+              </div>
+            {/if}
+          </section>
+          
+          <!-- Accepted Mediums Section -->
+          <section class="form-section">
+            <div class="section-header">
+              <h2>Accepted Artistic Mediums</h2>
+              <div class="tag-input-container">
+                <input
+                  type="text"
+                  bind:value={newAcceptedMedium}
+                  placeholder="Add an artistic medium..."
+                  disabled={loading}
+                  class="tag-input"
+                />
+                <button 
+                  type="button" 
+                  class="add-tag-button" 
+                  on:click={addAcceptedMedium}
+                  disabled={loading || !newAcceptedMedium.trim()}
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+            
+            {#if acceptedMediums.length > 0}
+              <div class="tags-container">
+                {#each acceptedMediums as medium}
+                  <div class="tag-item medium-tag">
+                    <span class="tag-text">{medium}</span>
+                    <button 
+                      type="button" 
+                      class="remove-tag-button" 
+                      on:click={() => removeAcceptedMedium(medium)}
+                      disabled={loading}
+                    >
+                      ×
+                    </button>
+                  </div>
+                {/each}
+              </div>
+            {:else}
+              <div class="empty-tags">
+                <p>No artistic mediums added yet. Add mediums to specify what types of art you're looking for.</p>
+              </div>
+            {/if}
+          </section>
+          
+          <!-- Project Details Section -->
+          <section class="form-section">
+            <h2>Project Details</h2>
+            
+            <div class="form-group">
+              <label for="fullProjectOverview">Full Project Overview</label>
+              <textarea
+                id="fullProjectOverview"
+                bind:value={fullProjectOverview}
+                rows="8"
+                disabled={loading}
+                placeholder="Provide a comprehensive overview of your project, its goals, and its significance..."
+              ></textarea>
+            </div>
+            
+            <!-- Collaboration Structure as Radio Cards -->
+            <div class="form-group">
+              <label>Collaboration Structure</label>
+              <div class="radio-cards">
+                {#each collaborationStructureOptions as option}
+                  <label 
+                    class="radio-card" 
+                    class:selected={collaborationStructure === option.value}
+                  >
+                    <input 
+                      type="radio" 
+                      name="collaborationStructure" 
+                      value={option.value} 
+                      bind:group={collaborationStructure} 
+                      disabled={loading}
+                    />
+                    <div class="radio-card-content">
+                      <h3>{option.label}</h3>
+                      <p>{option.description}</p>
+                    </div>
+                  </label>
+                {/each}
+              </div>
+            </div>
+            
+            <!-- Deliverable Format as Radio Cards -->
+            <div class="form-group">
+              <label>Deliverable Format</label>
+              <div class="radio-cards">
+                {#each deliverableFormatOptions as option}
+                  <label 
+                    class="radio-card" 
+                    class:selected={deliverableFormat === option.value}
+                  >
+                    <input 
+                      type="radio" 
+                      name="deliverableFormat" 
+                      value={option.value} 
+                      bind:group={deliverableFormat} 
+                      disabled={loading}
+                    />
+                    <div class="radio-card-content">
+                      <h3>{option.label}</h3>
+                      <p>{option.description}</p>
+                    </div>
+                  </label>
+                {/each}
+              </div>
+            </div>
+            
+            <!-- Artist Fees -->
+            <div class="form-group">
+              <label for="artistFees">Artist Fees ($)</label>
+              <input
+                type="number"
+                id="artistFees"
+                bind:value={artistFees}
+                min="0"
+                step="100"
+                disabled={loading}
+                placeholder="Enter the total fees for artists (e.g., 2000)"
+              />
+              <div class="field-help">
+                <p>Specify the total amount that will be paid to artists for their contributions.</p>
+              </div>
+            </div>
+            
+            <!-- Funding Goal -->
+            <div class="form-group">
+              <label for="fundingGoal">Funding Goal ($)</label>
+              <input
+                type="number"
+                id="fundingGoal"
+                bind:value={fundingGoal}
+                min="0"
+                step="100"
+                disabled={loading}
+                placeholder="Enter your funding goal amount (e.g., 5000)"
+              />
+              <div class="field-help">
+                <p>Set a realistic funding goal for your project. This will be displayed on your project page with a progress bar.</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Media Section -->
+          <section class="form-section">
+            <h2>Media</h2>
+            
+            <div class="media-grid">
+              <div class="form-group">
+                <label for="image">Image</label>
+                {#if currentImageUrl}
+                  <div class="current-media">
+                    <img src={currentImageUrl} alt="Current image" class="current-image" />
+                    <span class="media-label">Current image</span>
+                  </div>
+                {/if}
+                <input
+                  type="file"
+                  id="image"
+                  accept="image/*"
+                  on:change={(e) => imageFile = e.target.files?.[0] || null}
+                  disabled={loading}
+                  class="file-input"
+                />
+                {#if imageFile}
+                  <div class="new-file-indicator">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    New image selected: {imageFile.name}
+                  </div>
+                {/if}
+              </div>
+            </div>
+          </section>
+          
+          <!-- Milestones Section -->
+          <section class="form-section">
+            <div class="section-header">
+              <h2>Project Milestones</h2>
+              <button type="button" class="add-button" on:click={addMilestone}>
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add Milestone
+              </button>
+            </div>
+            
+            {#if milestones.length > 0}
+              <div class="milestones-list">
+                {#each milestones as milestone, i}
+                  <div class="milestone-row" in:fly={{ y: 20, duration: 300 }}>
+                    <div class="milestone-header">
+                      <div class="milestone-checkbox">
+                        <label class="checkbox-container">
+                          <input 
+                            type="checkbox" 
+                            checked={milestone.completed} 
+                            on:change={(e) => updateMilestone(i, 'completed', e.target.checked)}
                             disabled={loading}
-                            class="milestone-title-input"
                           />
-                        </div>
-                        
-                        <button 
-                          type="button"
-                          class="remove-button"
-                          on:click={() => removeMilestone(i)}
-                          disabled={loading}
-                          title="Remove milestone"
-                        >
-                          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                          </svg>
-                        </button>
+                          <span class="checkmark"></span>
+                        </label>
                       </div>
                       
-                      <div class="milestone-details">
-                        <textarea
-                          placeholder="Milestone description"
-                          value={milestone.description}
-                          on:input={(e) => updateMilestone(i, 'description', e.target.value)}
-                          disabled={loading}
-                          rows="2"
-                          class="milestone-description"
-                        ></textarea>
-                        
-                        <div class="milestone-date-container">
-                          <label for={`due-date-${i}`} class="date-label">Due Date:</label>
-                          <input
-                            type="date"
-                            id={`due-date-${i}`}
-                            value={milestone.due_date ? milestone.due_date.split('T')[0] : ''}
-                            on:input={(e) => updateMilestone(i, 'due_date', e.target.value)}
-                            disabled={loading}
-                            class="milestone-date"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  {/each}
-                </div>
-              {:else}
-                <div class="empty-milestones">
-                  <p>No milestones added yet. Click "Add Milestone" to create project milestones.</p>
-                </div>
-              {/if}
-            </section>
-          {/if}
-          
-          <!-- Step 6: Contributors -->
-          {#if currentStep === 6}
-            <section class="form-section" in:fade>
-              <div class="section-header">
-                <h2>Contributors</h2>
-                <button type="button" class="add-button" on:click={addArtist}>
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
-                  Add Contributor
-                </button>
-              </div>
-
-              {#if selectedArtists.length > 0}
-                <div class="contributors-list">
-                  {#each selectedArtists as artist, i}
-                    <div class="contributor-row" in:fly={{ y: 20, duration: 300 }}>
-                      <div class="contributor-fields">
-                        <select
-                          bind:value={artist.id}
-                          disabled={loading}
-                          class="artist-select"
-                        >
-                          <option value="">Select an artist</option>
-                          {#each artists as a}
-                            <option value={a.id}>{a.name}</option>
-                          {/each}
-                        </select>
-
+                      <div class="milestone-title-container">
                         <input
                           type="text"
-                          placeholder="Role (e.g., Poet, Musician, Artist)"
-                          bind:value={artist.role}
+                          placeholder="Milestone title"
+                          value={milestone.title}
+                          on:input={(e) => updateMilestone(i, 'title', e.target.value)}
                           disabled={loading}
-                          class="role-input"
+                          class="milestone-title-input"
                         />
                       </div>
-
+                      
                       <button 
                         type="button"
                         class="remove-button"
-                        on:click={() => removeArtist(i)}
+                        on:click={() => removeMilestone(i)}
                         disabled={loading}
-                        title="Remove contributor"
+                        title="Remove milestone"
                       >
                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
                           <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -896,198 +717,122 @@
                         </svg>
                       </button>
                     </div>
-                  {/each}
-                </div>
-              {:else}
-                <div class="empty-contributors">
-                  <p>No contributors added yet. Click "Add Contributor" to get started.</p>
-                </div>
-              {/if}
-            </section>
-          {/if}
-          
-          <!-- Step 7: Review & Submit -->
-          {#if currentStep === 7}
-            <section class="form-section" in:fade>
-              <h2>Review & Submit</h2>
-              
-              <div class="review-section">
-                <h3>Basic Information</h3>
-                <div class="review-item">
-                  <span class="review-label">Title:</span>
-                  <span class="review-value">{title || 'Not provided'}</span>
-                </div>
-                <div class="review-item">
-                  <span class="review-label">Organizer:</span>
-                  <span class="review-value">{organizers.find(o => o.id === organizerId)?.name || 'Not selected'}</span>
-                </div>
-                <div class="review-item">
-                  <span class="review-label">Project Status:</span>
-                  <span class="review-value">{projectStatusOptions.find(o => o.value === projectStatus)?.label || 'Not selected'}</span>
-                </div>
-                <div class="review-item">
-                  <span class="review-label">Funding Goal:</span>
-                  <span class="review-value">{fundingGoal ? `$${fundingGoal}` : 'Not provided'}</span>
-                </div>
-                <div class="review-item">
-                  <span class="review-label">Approval Status:</span>
-                  <span class="review-value">{approved ? 'Approved' : 'Pending Approval'}</span>
-                </div>
-              </div>
-              
-              <div class="review-section">
-                <h3>Media</h3>
-                <div class="review-item">
-                  <span class="review-label">Image:</span>
-                  <span class="review-value">
-                    {#if imageFile}
-                      New image: {imageFile.name}
-                    {:else if currentImageUrl}
-                      Current image (unchanged)
-                    {:else}
-                      Not provided
-                    {/if}
-                  </span>
-                </div>
-                <div class="review-item">
-                  <span class="review-label">Audio:</span>
-                  <span class="review-value">
-                    {#if audioFile}
-                      New audio: {audioFile.name}
-                    {:else if currentAudioUrl}
-                      Current audio (unchanged)
-                    {:else}
-                      Not provided
-                    {/if}
-                  </span>
-                </div>
-              </div>
-              
-              <div class="review-section">
-                <h3>Tags & Mediums</h3>
-                <div class="review-item">
-                  <span class="review-label">Cause Tags:</span>
-                  <div class="review-tags">
-                    {#if causeTags.length > 0}
-                      {#each causeTags as tag}
-                        <span class="tag-item small">{tag}</span>
-                      {/each}
-                    {:else}
-                      <span class="review-value">None added</span>
-                    {/if}
-                  </div>
-                </div>
-                <div class="review-item">
-                  <span class="review-label">Accepted Mediums:</span>
-                  <div class="review-tags">
-                    {#if acceptedMediums.length > 0}
-                      {#each acceptedMediums as medium}
-                        <span class="tag-item medium-tag small">{medium}</span>
-                      {/each}
-                    {:else}
-                      <span class="review-value">None added</span>
-                    {/if}
-                  </div>
-                </div>
-              </div>
-              
-              <div class="review-section">
-                <h3>Milestones</h3>
-                {#if milestones.length > 0}
-                  <div class="review-milestones">
-                    {#each milestones as milestone, i}
-                      <div class="review-milestone">
-                        <div class="milestone-header">
-                          <span class="milestone-number">{i + 1}.</span>
-                          <span class="milestone-title">{milestone.title || 'Untitled'}</span>
-                          {#if milestone.due_date}
-                            <span class="milestone-date">
-                              Due: {new Date(milestone.due_date).toLocaleDateString()}
-                            </span>
-                          {/if}
-                        </div>
-                        {#if milestone.description}
-                          <p class="milestone-desc">{milestone.description}</p>
-                        {/if}
+                    
+                    <div class="milestone-details">
+                      <textarea
+                        placeholder="Milestone description"
+                        value={milestone.description}
+                        on:input={(e) => updateMilestone(i, 'description', e.target.value)}
+                        disabled={loading}
+                        rows="2"
+                        class="milestone-description"
+                      ></textarea>
+                      
+                      <div class="milestone-date-container">
+                        <label for={`due-date-${i}`} class="date-label">Due Date:</label>
+                        <input
+                          type="date"
+                          id={`due-date-${i}`}
+                          value={milestone.due_date ? milestone.due_date.split('T')[0] : ''}
+                          on:input={(e) => updateMilestone(i, 'due_date', e.target.value)}
+                          disabled={loading}
+                          class="milestone-date"
+                        />
                       </div>
-                    {/each}
+                    </div>
                   </div>
-                {:else}
-                  <span class="review-value">No milestones added</span>
-                {/if}
+                {/each}
               </div>
-              
-              <div class="review-section">
-                <h3>Contributors</h3>
-                {#if selectedArtists.length > 0}
-                  <div class="review-contributors">
-                    {#each selectedArtists as artist, i}
-                      <div class="review-contributor">
-                        <span class="contributor-name">
-                          {artists.find(a => a.id === artist.id)?.name || 'Unknown Artist'}
-                        </span>
-                        <span class="contributor-role">{artist.role || 'No role specified'}</span>
-                      </div>
-                    {/each}
-                  </div>
-                {:else}
-                  <span class="review-value">No contributors added</span>
-                {/if}
+            {:else}
+              <div class="empty-milestones">
+                <p>No milestones added yet. Click "Add Milestone" to create project milestones.</p>
               </div>
-              
-              <div class="submission-note">
-                <p>
-                  <strong>Note:</strong> If you change the status to "Submit for Approval", your piece will need to be reviewed again before being publicly visible.
-                </p>
-              </div>
-            </section>
-          {/if}
+            {/if}
+          </section>
 
-          <!-- Form Navigation -->
-          <div class="form-navigation">
-            {#if currentStep > 1}
-              <button 
-                type="button" 
-                class="secondary"
-                on:click={goToPreviousStep}
-                disabled={loading}
-              >
-                Previous
+          <!-- Contributors Section -->
+          <section class="form-section">
+            <div class="section-header">
+              <h2>Contributors</h2>
+              <button type="button" class="add-button" on:click={addArtist}>
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add Contributor
               </button>
+            </div>
+
+            {#if selectedArtists.length > 0}
+              <div class="contributors-list">
+                {#each selectedArtists as artist, i}
+                  <div class="contributor-row" in:fly={{ y: 20, duration: 300 }}>
+                    <div class="contributor-fields">
+                      <select
+                        bind:value={artist.id}
+                        disabled={loading}
+                        class="artist-select"
+                      >
+                        <option value="">Select an artist</option>
+                        {#each artists as a}
+                          <option value={a.id}>{a.name}</option>
+                        {/each}
+                      </select>
+
+                      <input
+                        type="text"
+                        placeholder="Role (e.g., Poet, Musician, Artist)"
+                        bind:value={artist.role}
+                        disabled={loading}
+                        class="role-input"
+                      />
+                    </div>
+
+                    <button 
+                      type="button"
+                      class="remove-button"
+                      on:click={() => removeArtist(i)}
+                      disabled={loading}
+                      title="Remove contributor"
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
+                {/each}
+              </div>
             {:else}
-              <button 
-                type="button" 
-                class="secondary"
-                on:click={() => push(`/piece/${params.id}`)}
-                disabled={loading}
-              >
-                Cancel
-              </button>
+              <div class="empty-contributors">
+                <p>No contributors added yet. Click "Add Contributor" to get started.</p>
+              </div>
             {/if}
+          </section>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button 
+              type="button" 
+              class="secondary"
+              on:click={() => push(`/piece/${params.id}`)}
+              disabled={loading}
+            >
+              Cancel
+            </button>
             
-            {#if currentStep < formSteps.length}
-              <button 
-                type="button" 
-                class="primary"
-                on:click={goToNextStep}
-                disabled={loading}
-              >
-                Next
-              </button>
-            {:else}
-              <button type="submit" class="primary" disabled={loading}>
-                {#if loading}
-                  <svg class="spinner" viewBox="0 0 24 24" width="16" height="16">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="60" stroke-dashoffset="60" stroke-linecap="round">
-                      <animate attributeName="stroke-dashoffset" dur="2s" values="60;0" repeatCount="indefinite"/>
-                    </circle>
-                  </svg>
-                  Updating...
-                {:else}
-                  Update Peace Piece
-                {/if}
-              </button>
-            {/if}
+            <button type="submit" class="primary" disabled={loading}>
+              {#if loading}
+                <svg class="spinner" viewBox="0 0 24 24" width="16" height="16">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="60" stroke-dashoffset="60" stroke-linecap="round">
+                    <animate attributeName="stroke-dashoffset" dur="2s" values="60;0" repeatCount="indefinite"/>
+                  </circle>
+                </svg>
+                Updating...
+              {:else}
+                Update Peace Piece
+              {/if}
+            </button>
           </div>
         </form>
       </div>
@@ -1186,96 +931,6 @@
     color: var(--color-error-700);
     border-color: var(--color-error-200);
   }
-  
-  /* Progress Bar Styles */
-  .progress-container {
-    margin-bottom: var(--space-6);
-  }
-  
-  .progress-bar {
-    height: 8px;
-    background-color: var(--color-neutral-100);
-    border-radius: 4px;
-    margin-bottom: var(--space-4);
-    overflow: hidden;
-  }
-  
-  .progress-fill {
-    height: 100%;
-    background-color: var(--color-primary-600);
-    border-radius: 4px;
-    transition: width 0.3s ease;
-  }
-  
-  .step-indicators {
-    display: flex;
-    justify-content: space-between;
-    margin-top: var(--space-2);
-    position: relative;
-  }
-  
-  .step-indicator {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-2);
-    cursor: pointer;
-    position: relative;
-    z-index: 1;
-  }
-  
-  .step-number {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background-color: var(--color-neutral-200);
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-  }
-  
-  .step-indicator.active .step-number {
-    background-color: var(--color-primary-600);
-    color: white;
-    transform: scale(1.2);
-  }
-  
-  .step-indicator.completed .step-number {
-    background-color: var(--color-success-600);
-    color: white;
-  }
-  
-  .step-title {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    text-align: center;
-    max-width: 80px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    transition: all 0.3s ease;
-  }
-  
-  .step-indicator.active .step-title {
-    color: var(--text-color);
-    font-weight: 600;
-  }
-  
-  .validation-error {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-3);
-    background-color: var(--color-error-50);
-    color: var(--color-error-700);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--space-4);
-    font-size: 0.875rem;
-  }
 
   .form-section {
     margin-bottom: var(--space-8);
@@ -1319,6 +974,11 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    margin-bottom: var(--space-6);
+  }
+
+  .form-group:last-child {
+    margin-bottom: 0;
   }
 
   .form-group label {
@@ -1374,16 +1034,20 @@
     padding: var(--space-3);
     border: 2px dashed var(--border-color);
     border-radius: var(--radius-md);
-    background: var(--bg-color);
-    color: var(--text-muted);
+    background-color: var(--color-neutral-50);
     cursor: pointer;
     transition: all 0.2s;
+  }
+
+  .file-input:hover {
+    border-color: var(--color-primary-400);
+    background-color: var(--color-primary-50);
   }
 
   .current-media {
     margin-bottom: var(--space-3);
     padding: var(--space-3);
-    background: var(--bg-color);
+    background-color: var(--color-neutral-50);
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
   }
@@ -1392,7 +1056,7 @@
     max-width: 200px;
     max-height: 150px;
     object-fit: cover;
-    border-radius: 0px;
+    border-radius: var(--radius-sm);
     margin-bottom: var(--space-2);
     display: block;
   }
@@ -1497,11 +1161,6 @@
     color: var(--color-success-700);
   }
   
-  .tag-item.small {
-    font-size: 0.75rem;
-    padding: 2px 8px;
-  }
-  
   .remove-tag-button {
     background: none;
     border: none;
@@ -1530,6 +1189,61 @@
     border-radius: var(--radius-md);
     border: 1px dashed var(--border-color);
     margin-top: var(--space-4);
+  }
+  
+  /* Radio Cards */
+  .radio-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+  }
+  
+  .radio-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-4);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .radio-card:hover {
+    border-color: var(--color-primary-400);
+    background-color: var(--color-primary-50);
+  }
+  
+  .radio-card.selected {
+    border-color: var(--color-primary-600);
+    background-color: var(--color-primary-100);
+  }
+  
+  .radio-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .radio-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  
+  .radio-card-content h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-color);
+  }
+  
+  .radio-card-content p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0;
   }
   
   /* Milestones styles */
@@ -1563,7 +1277,7 @@
   .checkbox-container {
     display: block;
     position: relative;
-    padding-left: 18px;
+    padding-left: 30px;
     cursor: pointer;
     user-select: none;
     height: 24px;
@@ -1678,7 +1392,7 @@
     gap: var(--space-3);
     align-items: flex-start;
     padding: var(--space-3);
-    background: transparent;
+    background-color: var(--color-neutral-50);
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
   }
@@ -1721,168 +1435,11 @@
     border-radius: var(--radius-md);
     border: 1px dashed var(--border-color);
   }
-  
-  /* Review Step Styles */
-  .review-section {
-    margin-bottom: var(--space-6);
-    padding-bottom: var(--space-4);
-    border-bottom: 1px solid var(--border-color);
-  }
-  
-  .review-section:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-  }
-  
-  .review-section h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    margin: 0 0 var(--space-3) 0;
-    color: var(--text-color);
-  }
-  
-  .review-item {
-    display: flex;
-    margin-bottom: var(--space-2);
-    align-items: flex-start;
-  }
-  
-  .review-label {
-    font-weight: 500;
-    color: var(--text-muted);
-    width: 150px;
-    flex-shrink: 0;
-  }
-  
-  .review-value {
-    color: var(--text-color);
-  }
-  
-  .review-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-1);
-  }
-  
-  .review-milestones {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-  }
-  
-  .review-milestone {
-    padding: var(--space-3);
-    background: var(--bg-color);
-    border-radius: var(--radius-md);
-  }
-  
-  .milestone-header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin-bottom: var(--space-2);
-  }
-  
-  .milestone-number {
-    font-weight: 600;
-    color: var(--text-color);
-  }
-  
-  .milestone-title {
-    font-weight: 500;
-    color: var(--text-color);
-    flex: 1;
-  }
-  
-  .milestone-date {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-  }
-  
-  .milestone-desc {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-    margin: 0;
-  }
-  
-  .review-contributors {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-  
-  .review-contributor {
-    display: flex;
-    justify-content: space-between;
-    padding: var(--space-2) var(--space-3);
-    background: var(--bg-color);
-    border-radius: var(--radius-md);
-  }
-  
-  .contributor-name {
-    font-weight: 500;
-    color: var(--text-color);
-  }
-  
-  .contributor-role {
-    color: var(--text-muted);
-    font-size: 0.875rem;
-  }
-  
-  .submission-note {
-    margin-top: var(--space-6);
-    padding: var(--space-4);
-    background: var(--color-primary-50);
-    color: var(--color-neutral-900);
-    border-radius: var(--radius-md);
-    border: none;
-  }
-  
-  .submission-note p {
-    color: var(--color-neutral-900);
-    margin: 0;
-    font-size: 0.875rem;
-    line-height: 1.5;
-  }
 
-  /* Approval status styles */
-  .approval-status {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    font-weight: 500;
-    width: fit-content;
-  }
-
-  .status-badge.approved {
-    background-color: var(--color-success-100);
-    color: var(--color-success-700);
-  }
-
-  .status-badge.pending {
-    background-color: var(--color-warning-100);
-    color: var(--color-warning-700);
-  }
-
-  .approval-note {
-    font-size: 0.875rem;
-    color: var(--color-warning-600);
-    margin: 0;
-  }
-
-  .form-navigation {
+  .form-actions {
     display: flex;
     gap: var(--space-3);
-    justify-content: space-between;
+    justify-content: flex-end;
     margin-top: var(--space-6);
     padding-top: var(--space-6);
     border-top: 1px solid var(--border-color);
@@ -1910,15 +1467,6 @@
     .update-header h1 {
       font-size: 2rem;
     }
-    
-    .step-indicators {
-      overflow-x: auto;
-      padding-bottom: var(--space-2);
-    }
-    
-    .step-indicator {
-      min-width: 80px;
-    }
 
     .form-grid,
     .media-grid {
@@ -1936,21 +1484,11 @@
     .remove-button {
       align-self: flex-end;
     }
-    
-    .review-item {
-      flex-direction: column;
-      gap: var(--space-1);
-    }
-    
-    .review-label {
-      width: 100%;
-    }
-    
-    .review-contributor {
-      flex-direction: column;
-      gap: var(--space-1);
-    }
 
+    .form-actions {
+      flex-direction: column-reverse;
+    }
+    
     .milestone-header {
       flex-wrap: wrap;
     }
@@ -1973,6 +1511,10 @@
     .milestone-date {
       max-width: none;
       width: 100%;
+    }
+    
+    .radio-cards {
+      grid-template-columns: 1fr;
     }
   }
 </style>
