@@ -1273,7 +1273,7 @@
   
   .radio-card.selected {
     border-color: var(--color-primary-600);
-    background-color: var(--color-primary-100);
+    background: var(--bg-color);
   }
   
   .radio-card input[type="radio"] {
