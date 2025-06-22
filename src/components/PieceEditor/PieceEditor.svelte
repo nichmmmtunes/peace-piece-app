@@ -62,6 +62,9 @@ onMount(() => {
   document.addEventListener('mousemove', handleGlobalMouseMove);
   document.addEventListener('mouseup', handleGlobalMouseUp);
   
+  // Set up auto-save timer
+  autoSaveTimer = setInterval(saveEditorData, AUTO_SAVE_INTERVAL);
+  
   return () => {
     document.removeEventListener('mousemove', handleGlobalMouseMove);
     document.removeEventListener('mouseup', handleGlobalMouseUp);

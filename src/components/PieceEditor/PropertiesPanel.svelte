@@ -171,6 +171,13 @@
     if (!target.files || !target.files[0] || !selectedClip) return;
     
     const file = target.files[0];
+    
+    // Validate file object and its name property
+    if (!file || typeof file.name !== 'string' || !file.name.trim()) {
+      console.error('Invalid file: file name is missing or invalid');
+      return;
+    }
+    
     const url = URL.createObjectURL(file);
     
     // Clean up old URL if it exists

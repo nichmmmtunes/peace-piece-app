@@ -317,7 +317,7 @@
         
         <div class="header-right">
           {#if saveMessage}
-            <div class="save-message" class:error={saveMessage.includes('Error')}>
+            <div class="save-message" class:error={saveMessage.includes('Error')} transition:fade>
               {saveMessage}
             </div>
           {/if}
