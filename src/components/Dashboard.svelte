@@ -906,7 +906,8 @@
     font-size: 0.75rem;
     font-weight: 500;
     position: relative;
-    padding-left: 25px;
+    --circle-size: 10px;
+    padding-left: calc(var(--circle-size) + 10px);
   }
 
   .status-badge.draft::before {
@@ -915,8 +916,8 @@
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
+    width: var(--circle-size);
+    height: var(--circle-size);
     background-color: var(--color-neutral-400);
     border-radius: 50%;
   }
@@ -927,9 +928,9 @@
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    background-color: var(--color-primary-00);
+    width: var(--circle-size);
+    height: var(--circle-size);
+    background-color: var(--color-success-600);
     border-radius: 50%;
   }
 
@@ -939,8 +940,8 @@
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
+    width: var(--circle-size);
+    height: var(--circle-size);
     background-color: var(--color-warning-500);
     border-radius: 50%;
   }
@@ -951,8 +952,8 @@
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
+    width: var(--circle-size);
+    height: var(--circle-size);
     background-color: var(--color-success-500);
     border-radius: 50%;
   }
@@ -963,8 +964,8 @@
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
+    width: var(--circle-size);
+    height: var(--circle-size);
     background-color: var(--color-neutral-300);
     border-radius: 50%;
   }
@@ -975,8 +976,8 @@
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
+    width: var(--circle-size);
+    height: var(--circle-size);
     background-color: var(--color-success-400);
     border-radius: 50%;
   }
@@ -987,8 +988,8 @@
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
+    width: var(--circle-size);
+    height: var(--circle-size);
     background-color: var(--color-error-400);
     border-radius: 50%;
   }

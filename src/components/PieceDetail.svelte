@@ -583,35 +583,32 @@
                   </div>
                 {/if}
               </div>
+              <div class="piece-stats">
+                <div class="stat">
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
+                  <span>{piece.follower_count || 0} Followers</span>
+                </div>
+                <div class="stat">
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  <span>{piece.contributors?.length || 0} Contributors</span>
+                </div>
+                <div class="stat">
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                  </svg>
+                  <span>{formatAmount(piece.amount_raised || 0)} Raised</span>
+                </div>
+              </div>
             </div>
           {/if}
-
-          <div class="piece-stats">
-            <div class="stat">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-              </svg>
-              <span>{piece.follower_count || 0} Followers</span>
-            </div>
-            
-            <div class="stat">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              <span>{piece.contributors?.length || 0} Contributors</span>
-            </div>
-            
-            <div class="stat">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                <line x1="12" y1="1" x2="12" y2="23"></line>
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-              </svg>
-              <span>{formatAmount(piece.amount_raised || 0)} Raised</span>
-            </div>
-          </div>
 
           <!-- Apply Button -->
           {#if piece.project_status === 'open_to_applications' && !isOrganizer && !isContributor && piece.approved}
@@ -700,7 +697,7 @@
   .piece-container {
     display: flex;
     flex-direction: column;
-    gap: 0px;
+    gap: 10px;
   }
 
   /* Draft Banner */
@@ -797,6 +794,7 @@
   .piece-stats {
     display: flex;
     gap: var(--space-4);
+    justify-content: center;
   }
 
   .stat {
@@ -821,6 +819,8 @@
     border-radius: var(--radius-md);
     font-weight: 500;
     transition: all 0.2s;
+    justify-content: center;
+    height: 43px;
   }
 
   .edit-button {
@@ -901,7 +901,7 @@
   .piece-image {
     position: relative;
     width: 100%;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-creative);
     overflow: hidden;
   }
 
@@ -1118,8 +1118,11 @@
   .funding-progress {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: var(--space-4);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
   }
 
   .funding-header {
