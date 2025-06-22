@@ -1267,8 +1267,8 @@
   }
   
   .radio-card:hover {
-    border-color: var(--color-primary-400);
-    background-color: var(--color-primary-50);
+    border-color: var(--color-primary-200);
+    background: var(--bg-color);
   }
   
   .radio-card.selected {
