@@ -91,6 +91,11 @@
   
   // Helper function to upload a file to Supabase Storage
   async function uploadFileToStorage(file: File, bucket: string): Promise<string> {
+    // Validate file object and its name property
+    if (!file || typeof file.name !== 'string' || !file.name.trim()) {
+      throw new Error('Invalid file: file name is missing or invalid');
+    }
+    
     const fileExt = file.name.split('.').pop();
     const fileName = `${crypto.randomUUID()}.${fileExt}`;
     
