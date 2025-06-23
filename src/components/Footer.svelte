@@ -18,6 +18,11 @@
     margin-top: auto;
   }
 
+  :global(.light-mode) .footer {
+    background: transparent;
+    width: 100%;
+  } 
+
   .footer-content {
     max-width: 1400px;
     margin: 0 auto;

@@ -44,13 +44,20 @@
   onMount(() => {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     darkMode = prefersDark;
-    updateTheme(darkMode);
+
+    // update the theme based on localStorage or system preference
+    const savedDarkMode = localStorage.getItem('darkMode');
+    if (savedDarkMode !== null) {
+      darkMode = JSON.parse(savedDarkMode);
+    } else {
+      darkMode = prefersDark;
+    }
 
     // Listen for system theme changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-      darkMode = e.matches;
-      updateTheme(darkMode);
-    });
+    // window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    //   darkMode = e.matches;
+    //   updateTheme(darkMode);
+    // });
 
     // Load sidebar state from localStorage
     const savedSidebarState = localStorage.getItem('sidebarCollapsed');
@@ -82,6 +89,10 @@
   function toggleDarkMode() {
     darkMode = !darkMode;
     updateTheme(darkMode);
+    localStorage.setItem('darkMode', darkMode ? 'true' : 'false');
+    // Dispatch a custom event to notify other components
+    document.dispatchEvent(new CustomEvent('themeChange', { detail: { darkMode } }));
+    console.log('🔍 DEBUG: Dark mode toggled:', darkMode);
   }
 
   function updateTheme(isDark: boolean) {
@@ -363,6 +374,7 @@
     flex-direction: column;
     transition: margin-left 0.3s ease;
     min-height: 100vh;
+    position: relative;
   }
 
   .main-content.with-sidebar {

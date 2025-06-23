@@ -1047,7 +1047,7 @@
   .field-help {
     background: transparent;
     border-radius: var(--radius-md);
-    padding: var(--space-3);
+    padding: 0px;
     margin-top: var(--space-2);
   }
 

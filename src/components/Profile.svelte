@@ -275,7 +275,7 @@
           
           {#if artistProfile && artistProfile.bio}
             <div class="bio-block">
-              <h3>Artist Bio</h3>
+              <h2>Artist Bio</h2>
               <p class="bio-text">{artistProfile.bio}</p>
             </div>
           {/if}
@@ -377,7 +377,7 @@
 
       <!-- Contributions Section -->
       <section class="contributions-section" in:fly={{ y: 20, duration: 300, delay: 400 }}>
-        <h2>Peace Piece Contributions</h2>
+        <h2>Contributions</h2>
         {#if contributions.length > 0}
           <div class="contributions-grid">
             {#each contributions as contribution (contribution.id)}
@@ -613,14 +613,14 @@
   .edit-profile-btn:hover {
     background: var(--bg-color);
     color: var(--text-color);
-    border: 1px solid var(--border-color);
+    border: none;
   }
   
   .edit-artist-btn,
   .edit-artist-btn:hover {
     background-color: var(--color-accent-100);
     color: var(--color-accent-700);
-    border: 1px solid var(--color-accent-200);
+    border: none;
   }
   
   .create-artist-btn,
@@ -970,7 +970,7 @@
     padding: var(--space-4);
     background: var(--bg-color);
     border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
+    border: none;
   }
 
   .activity-date {

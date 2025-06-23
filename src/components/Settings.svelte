@@ -345,8 +345,8 @@
 <style>
   .settings-container {
     padding: var(--space-6);
-    max-width: 800px;
-    margin: 0 auto;
+    max-width: 1000px;
+    margin: 0 auto 0 0;
   }
 
   .settings-header {
@@ -428,7 +428,7 @@
   .organizer-profile-status {
     margin-top: var(--space-4);
     padding-top: var(--space-4);
-    border-top: 1px solid var(--color-primary-200);
+    border-top: 1px solid var(--border-color);
   }
 
   .status-badge {

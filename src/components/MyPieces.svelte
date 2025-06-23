@@ -358,7 +358,7 @@
   .my-pieces-container {
     padding: var(--space-6);
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 0 auto 0 0;
   }
 
   .my-pieces-header {
@@ -435,6 +435,7 @@
   .section-header h2 {
     margin: 0;
     color: var(--text-color);
+    font-family: var(--font-instrument-serif);
   }
 
   .create-button,

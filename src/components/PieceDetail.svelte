@@ -205,6 +205,27 @@
     const progress = (raised / goal) * 100;
     return Math.min(progress, 100); // Cap at 100%
   }
+
+  function decimalAdjust(type: any, value: number, exp: number) {
+    type = String(type);
+    if (!["round", "floor", "ceil"].includes(type)) {
+      throw new TypeError(
+        "The type of decimal adjustment must be one of 'round', 'floor', or 'ceil'.",
+      );
+    }
+    exp = Number(exp);
+    value = Number(value);
+    if (exp % 1 !== 0 || Number.isNaN(value)) {
+      return NaN;
+    } else if (exp === 0) {
+      return Math[type](value);
+    }
+    const [magnitude, exponent = 0] = value.toString().split("e");
+    const adjustedValue = Math[type](`${magnitude}e${exponent - exp}`);
+    // Shift back
+    const [newMagnitude, newExponent = 0] = adjustedValue.toString().split("e");
+    return Number(`${newMagnitude}e${Number(newExponent) + exp}`);
+  }
   
   // Check if the current user can view this piece
   function canViewPiece(): boolean {
@@ -592,9 +613,20 @@
               
               <div class="progress-bar">
                 <div 
+                  class="artist-goal-fill" 
+                  style="width: {decimalAdjust("round", piece.artist_fees / piece.funding_goal, -2) * 100}%"
+                ></div>
+                <div 
                   class="progress-fill" 
                   style="width: {calculateProgress(piece.amount_raised || 0, piece.funding_goal)}%"
                 ></div>
+              </div>
+
+              <div class="progress-bar-legend">
+                <div
+                  class="artist-goal-legend">
+                  <span class="legend-label">Artist Fees</span>
+                </div>
               </div>
 
               <div class="countdown">
@@ -882,7 +914,7 @@
 
   .organizer-name {
     font-weight: 500;
-    color: var(--color-primary-600);
+    color: var(--text-color);
     text-decoration: none;
   }
 
@@ -963,6 +995,40 @@
     border-radius: 42px 100px 100px 42px !important;
   }
 
+  .artist-goal-legend {
+    margin-top: .75rem;
+    padding-left: 16px;
+    position: relative;
+  }
+
+  .artist-goal-legend::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    background-color: var(--color-warning-500);
+    border-radius: 50%;
+    opacity: .3;
+    overflow: hidden;
+    box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.15);
+  }
+
+  :global(.dark-mode) .artist-goal-legend::before {
+    background: var(--color-warning-400);
+  }
+
+  :global(.light-mode) .artist-goal-legend::before {
+    background: var(--color-warning-500);
+  }
+
+  .legend-label {
+    color: var(--text-muted);
+    font-size: 0.875rem;    
+  }
+
   /* Main Content */
 
   .content-left .piece-introduction {
@@ -987,7 +1053,7 @@
 
   .piece-content h2 {
     margin-bottom: 20px !important;
-    font-size: 28px !important;
+    font-size: 30px !important;
     font-family: var(--font-instrument-serif);
   }
 
@@ -1237,7 +1303,7 @@
     background: var(--card-bg);
     border: none;
     border-radius: var(--radius-xl);
-    padding: var(--space-8);
+    padding: var(--space-8) var(--space-6);
     display: flex;
     flex-direction: column;
     gap: 0px;
@@ -1309,6 +1375,28 @@
     border-radius: 9px;
     overflow: hidden;
     margin-bottom: 0px;
+    position: relative;
+  }
+
+  .artist-goal-fill {
+    height: 100%;
+    background-color: var(--color-warning-300);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    min-width: 1%;
+    z-index: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: .3;
+  }
+
+  :global(.light-mode) .artist-goal-fill {
+    background-color: var(--color-warning-500);
+  } 
+
+  :global(.dark-mode) .artist-goal-fill {
+    background-color: var(--color-warning-400);
   }
 
   .progress-fill {
@@ -1317,6 +1405,10 @@
     border-radius: 4px;
     transition: width 0.3s ease;
     min-width: 1%;
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
   }
 
   .funding-actions {
@@ -1536,9 +1628,18 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background-color: var(--color-neutral-300);
-    border: 2px solid var(--color-neutral-400);
+    background: var(--color-primary-500);
     margin-top: 4px;
+    overflow: hidden;
+    box-shadow: inset 0 -3px 4px rgba(0, 0, 0, 0.15);
+  }
+
+  :global(.dark-mode) .marker-dot {
+    background: var(--color-primary-400);
+  }
+
+  :global(.light-mode) .marker-dot {
+    background: var(--color-primary-500);
   }
 
   .timeline-item.completed .marker-dot {

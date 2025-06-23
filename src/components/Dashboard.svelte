@@ -704,7 +704,12 @@
   .dashboard-container {
     padding: var(--space-6);
     max-width: 1400px;
-    margin: 0 auto;
+    margin: 0 auto 0 0;
+    background: var(--bg-color);
+  }
+
+  :global(.light-mode) .dashboard-container {
+    background: var(--card-bg);
   }
 
   .loading {
@@ -796,6 +801,10 @@
     gap: var(--space-6);
   }
 
+  :global(.light-mode) .dashboard-grid {
+    margin-bottom: 100px;
+  }
+
   .dashboard-left {
     display: flex;
     flex-direction: column;
@@ -841,6 +850,14 @@
     border-radius: var(--radius-creative);
     padding: var(--space-6);
     border: none;
+  }
+
+  :global(.light-mode) .projects-section,
+  :global(.light-mode) .activity-section,
+  :global(.light-mode) .applications-section,
+  :global(.light-mode) .reminders-section,
+  :global(.light-mode) .impact-section {
+    background: var(--bg-color);
   }
 
   .projects-list {
@@ -1096,7 +1113,7 @@
     padding: var(--space-4);
     background: var(--bg-color);
     border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
+    border: none;
     position: relative;
   }
 
@@ -1358,6 +1375,11 @@
   .empty-state p {
     margin-bottom: var(--space-4);
   }
+
+  :global(.light-mode) .footer {
+    transform: translateY(-100%);
+    margin-bottom: -78px;
+  } 
 
   /* Responsive Adjustments */
   @media (max-width: 1024px) {
