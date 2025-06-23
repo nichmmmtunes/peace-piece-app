@@ -1283,7 +1283,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    background-color: var(--text-color);
+    background: var(--text-color);
     color: var(--bg-color);
     border: none;
     padding: var(--space-2) var(--space-4);
@@ -1293,6 +1293,7 @@
     margin: .5rem auto 2.5rem;
     text-align: center;
     justify-content: center;
+    min-height: 43px;
   }
 
   /* Funding Progress */
