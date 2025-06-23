@@ -391,11 +391,14 @@
 
   .featured-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: var(--space-4);
-    height: 400px;
-    padding: var(--space-6) var(--space-4);
+    padding: var(--space-6) 0px;
+  }
+
+  .featured-grid .featured-card:nth-child(n+4) {
+    display: none;
   }
 
   .featured-card.large {

@@ -394,7 +394,6 @@
             {#if piece.image_url}
               <div class="piece-image">
                 <img src={piece.image_url} alt={piece.title} />
-                
                 {#if !canViewFullContent()}
                   <div class="image-overlay">
                     <div class="overlay-content">
@@ -420,15 +419,6 @@
                     View Full Piece
                   </a>
                 {/if}
-              </div>
-            {:else}
-              <div class="image-placeholder">
-                <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1" fill="none">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                  <polyline points="21,15 16,10 5,21"></polyline>
-                </svg>
-                <p>No image available</p>
               </div>
             {/if}
           </div>
@@ -480,7 +470,7 @@
           </div>
           
           <!-- Mission -->
-          {#if piece.mission}
+          {#if piece.mission && piece.mission.trim() !== '' && piece.mission.trim() !== '<p></p>'}
             <div class="mission-section" in:fly={{ y: 20, duration: 300 }}>
               <h2>Mission</h2>
               <div class="mission-content">
@@ -539,8 +529,8 @@
               <div class="timeline">
                 {#each piece.milestones as milestone, index}
                   <div class="timeline-item" class:completed={milestone.completed}>
-                    {#if milestone.due_date}
-                      <div class="timeline-date">
+                    <div class="timeline-date">
+                      {#if milestone.due_date}
                         <span>
                           {new Date(milestone.due_date).toLocaleDateString('en-US', {
                             month: 'short',
@@ -548,8 +538,8 @@
                             year: 'numeric'
                           })}
                         </span>
-                      </div>
-                    {/if}
+                      {/if}
+                    </div>
                     <div class="timeline-marker">
                       <div class="marker-dot"></div>
                       {#if index < piece.milestones.length - 1}
@@ -600,144 +590,143 @@
         <!-- Right Column -->
         <div class="content-right">
           <!-- Funding Progress -->
-          {#if piece.funding_goal && piece.funding_goal > 0}
-            <div class="funding-progress" in:fly={{ y: 20, duration: 300, delay: 200 }}>
-              <div class="funding-header">
-                <h3>Funding Progress</h3>
-                <span class="total-raised"><span class="dollar-sign">$</span>{piece.amount_raised || 0}</span>
-                <div class="funding-amounts">
-                  <span class="amount-separator">raised of</span>
-                  <span class="funding-goal">{formatAmount(piece.funding_goal)} goal</span>
-                </div>
+          <div class="funding-progress" in:fly={{ y: 20, duration: 300, delay: 200 }}>
+            {#if piece.funding_goal && piece.funding_goal > 0}
+            <div class="funding-header">
+              <h3>Funding Progress</h3>
+              <span class="total-raised"><span class="dollar-sign">$</span>{piece.amount_raised || 0}</span>
+              <div class="funding-amounts">
+                <span class="amount-separator">raised of</span>
+                <span class="funding-goal">{formatAmount(piece.funding_goal)} goal</span>
               </div>
-              
-              <div class="progress-bar">
-                <div 
-                  class="artist-goal-fill" 
-                  style="width: {decimalAdjust("round", piece.artist_fees / piece.funding_goal, -2) * 100}%"
-                ></div>
-                <div 
-                  class="progress-fill" 
-                  style="width: {calculateProgress(piece.amount_raised || 0, piece.funding_goal)}%"
-                ></div>
-              </div>
+            </div>            
+            
+            <div class="progress-bar">
+              <div 
+                class="artist-goal-fill" 
+                style="width: {decimalAdjust("round", piece.artist_fees / piece.funding_goal, -2) * 100}%"
+              ></div>
+              <div 
+                class="progress-fill" 
+                style="width: {calculateProgress(piece.amount_raised || 0, piece.funding_goal)}%"
+              ></div>
+            </div>
 
-              <div class="progress-bar-legend">
-                <div
-                  class="artist-goal-legend">
-                  <span class="legend-label">Artist Fees</span>
-                </div>
+            <div class="progress-bar-legend">
+              <div
+                class="artist-goal-legend">
+                <span class="legend-label">Artist Fees</span>
               </div>
+            </div>
+            {/if}
 
-              <div class="countdown">
-                {#if piece.publication_target_date}
-                  <span class="countdown-value">
-                    {
-                      Math.max(
-                        Math.ceil(
-                          (new Date(piece.publication_target_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-                        ),
-                        0
-                      )
-                    }
-                  </span>
-                  <span class="countdown-label">days until kickoff</span>
+            <div class="countdown">
+              {#if piece.publication_target_date}
+                <span class="countdown-value">
+                  {
+                    Math.max(
+                      Math.ceil(
+                        (new Date(piece.publication_target_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+                      ),
+                      0
+                    )
+                  }
+                </span>
+                <span class="countdown-label">days until kickoff</span>
+              {:else}
+                <span class="countdown-value">Ongoing</span>
+              {/if}
+            </div>
+            
+            <div class="funding-actions">
+              <button 
+                class="donate-button neumorphic" 
+                on:click={handleDonate}
+                disabled={checkoutLoading}
+              >
+                {#if checkoutLoading}
+                  <svg class="spinner" viewBox="0 0 24 24" width="16" height="16">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="60" stroke-dashoffset="60" stroke-linecap="round">
+                      <animate attributeName="stroke-dashoffset" dur="2s" values="60;0" repeatCount="indefinite"/>
+                    </circle>
+                  </svg>
+                  Processing...
                 {:else}
-                  <span class="countdown-value">Ongoing</span>
-                {/if}
-              </div>
-              
-              <div class="funding-actions">
-                <button 
-                  class="donate-button neumorphic" 
-                  on:click={handleDonate}
-                  disabled={checkoutLoading}
-                >
-                  {#if checkoutLoading}
-                    <svg class="spinner" viewBox="0 0 24 24" width="16" height="16">
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="60" stroke-dashoffset="60" stroke-linecap="round">
-                        <animate attributeName="stroke-dashoffset" dur="2s" values="60;0" repeatCount="indefinite"/>
-                      </circle>
-                    </svg>
-                    Processing...
-                  {:else}
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                      <line x1="12" y1="1" x2="12" y2="23"></line>
-                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                    </svg>
-                    Donate to Support
-                  {/if}
-                </button>
-                
-                {#if checkoutError}
-                  <div class="checkout-error">
-                    {checkoutError}
-                  </div>
-                {/if}
-              </div>
-              <div class="piece-stats">
-                <div class="stat">
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                  </svg>
-                  <span>{piece.follower_count || 0} Followers</span>
-                </div>
-                <div class="stat">
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                  </svg>
-                  <span>{piece.contributors?.length || 0} Contributors</span>
-                </div>
-                <div class="stat">
                   <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
                     <line x1="12" y1="1" x2="12" y2="23"></line>
                     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                   </svg>
-                  <span>{formatAmount(piece.amount_raised || 0)} Raised</span>
+                  Donate to Support
+                {/if}
+              </button>
+              
+              {#if checkoutError}
+                <div class="checkout-error">
+                  {checkoutError}
                 </div>
-              </div>
-              <!-- Apply Button -->
-              {#if piece.project_status === 'open_to_applications' && !isOrganizer && !isContributor && piece.approved}
-                <a href="/apply/{piece.id}" use:link class="apply-button neumorphic">
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="8.5" cy="7" r="4"></circle>
-                    <line x1="20" y1="8" x2="20" y2="14"></line>
-                    <line x1="23" y1="11" x2="17" y2="11"></line>
-                  </svg>
-                  Apply as Artist
-                </a>
               {/if}
-
-              <div class="two-column-btns">
-                <!-- Follow Button -->
-                <button 
-                  class="follow-button neumorphic" 
-                  class:following={isFollowing}
-                  on:click={toggleFollow}
-                >
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill={isFollowing ? "currentColor" : "none"}>
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor"></path>
-                  </svg>
-                  {isFollowing ? 'Saved' : 'Save'}
-                </button>
-                <!-- Follow Button -->
-                <button 
-                  class="share-button neumorphic" 
-                  on:click={handleShare}
-                >
-                  <svg width="19" height="14" viewBox="0 0 19 14" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M17.127 5.99976L13.0693 1.94201C12.9141 1.78684 12.8365 1.60867 12.8365 1.40751C12.8365 1.20617 12.9141 1.02792 13.0693 0.872758C13.2244 0.727925 13.4042 0.657091 13.6087 0.660258C13.8131 0.663591 13.9845 0.734425 14.123 0.872758L18.6173 5.36701C18.7109 5.46067 18.7769 5.55942 18.8153 5.66326C18.8538 5.76709 18.873 5.87926 18.873 5.99976C18.873 6.12026 18.8538 6.23242 18.8153 6.33626C18.7769 6.44009 18.7109 6.53884 18.6173 6.63251L14.123 11.1268C13.9678 11.2818 13.7922 11.3568 13.5962 11.3518C13.4001 11.3466 13.2244 11.2716 13.0693 11.1268C12.9141 10.9716 12.8356 10.7943 12.8337 10.595C12.8317 10.3957 12.9051 10.2216 13.0538 10.0728L17.127 5.99976ZM11.8193 6.74976H5C4.1025 6.74976 3.3365 7.06709 2.702 7.70176C2.06733 8.33626 1.75 9.10226 1.75 9.99976V12.7498C1.75 12.9626 1.67817 13.1408 1.5345 13.2843C1.391 13.4279 1.21283 13.4998 1 13.4998C0.787167 13.4998 0.609 13.4279 0.4655 13.2843C0.321833 13.1408 0.25 12.9626 0.25 12.7498V9.99976C0.25 8.68693 0.7135 7.56709 1.6405 6.64026C2.56733 5.71326 3.68717 5.24976 5 5.24976H11.8193L8.5115 1.94201C8.3565 1.78684 8.279 1.60867 8.279 1.40751C8.279 1.20617 8.3565 1.02792 8.5115 0.872758C8.66667 0.727925 8.8465 0.657091 9.051 0.660258C9.2555 0.663591 9.427 0.734425 9.5655 0.872758L14.0595 5.36701C14.1532 5.46067 14.2193 5.55942 14.2578 5.66326C14.2963 5.76709 14.3155 5.87926 14.3155 5.99976C14.3155 6.12026 14.2963 6.23242 14.2578 6.33626C14.2193 6.44009 14.1532 6.53884 14.0595 6.63251L9.5655 11.1268C9.41033 11.2818 9.23467 11.3568 9.0385 11.3518C8.84233 11.3466 8.66667 11.2716 8.5115 11.1268C8.3565 10.9716 8.278 10.7943 8.276 10.595C8.274 10.3957 8.34742 10.2216 8.49625 10.0728L11.8193 6.74976Z" fill="currentColor"/>
-                  </svg>
-                  Share
-                </button>
+            </div>
+            <div class="piece-stats">
+              <div class="stat">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+                <span>{piece.follower_count || 0} Followers</span>
+              </div>
+              <div class="stat">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>{piece.contributors?.length || 0} Contributors</span>
+              </div>
+              <div class="stat">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                  <line x1="12" y1="1" x2="12" y2="23"></line>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                <span>{formatAmount(piece.amount_raised || 0)} Raised</span>
               </div>
             </div>
-          {/if}
+            <!-- Apply Button -->
+            {#if piece.project_status === 'open_to_applications' && !isOrganizer && !isContributor && piece.approved}
+              <a href="/apply/{piece.id}" use:link class="apply-button neumorphic">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="8.5" cy="7" r="4"></circle>
+                  <line x1="20" y1="8" x2="20" y2="14"></line>
+                  <line x1="23" y1="11" x2="17" y2="11"></line>
+                </svg>
+                Apply as Artist
+              </a>
+            {/if}
 
+            <div class="two-column-btns">
+              <!-- Follow Button -->
+              <button 
+                class="follow-button neumorphic" 
+                class:following={isFollowing}
+                on:click={toggleFollow}
+              >
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill={isFollowing ? "currentColor" : "none"}>
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor"></path>
+                </svg>
+                {isFollowing ? 'Saved' : 'Save'}
+              </button>
+              <!-- Follow Button -->
+              <button 
+                class="share-button neumorphic" 
+                on:click={handleShare}
+              >
+                <svg width="19" height="14" viewBox="0 0 19 14" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.127 5.99976L13.0693 1.94201C12.9141 1.78684 12.8365 1.60867 12.8365 1.40751C12.8365 1.20617 12.9141 1.02792 13.0693 0.872758C13.2244 0.727925 13.4042 0.657091 13.6087 0.660258C13.8131 0.663591 13.9845 0.734425 14.123 0.872758L18.6173 5.36701C18.7109 5.46067 18.7769 5.55942 18.8153 5.66326C18.8538 5.76709 18.873 5.87926 18.873 5.99976C18.873 6.12026 18.8538 6.23242 18.8153 6.33626C18.7769 6.44009 18.7109 6.53884 18.6173 6.63251L14.123 11.1268C13.9678 11.2818 13.7922 11.3568 13.5962 11.3518C13.4001 11.3466 13.2244 11.2716 13.0693 11.1268C12.9141 10.9716 12.8356 10.7943 12.8337 10.595C12.8317 10.3957 12.9051 10.2216 13.0538 10.0728L17.127 5.99976ZM11.8193 6.74976H5C4.1025 6.74976 3.3365 7.06709 2.702 7.70176C2.06733 8.33626 1.75 9.10226 1.75 9.99976V12.7498C1.75 12.9626 1.67817 13.1408 1.5345 13.2843C1.391 13.4279 1.21283 13.4998 1 13.4998C0.787167 13.4998 0.609 13.4279 0.4655 13.2843C0.321833 13.1408 0.25 12.9626 0.25 12.7498V9.99976C0.25 8.68693 0.7135 7.56709 1.6405 6.64026C2.56733 5.71326 3.68717 5.24976 5 5.24976H11.8193L8.5115 1.94201C8.3565 1.78684 8.279 1.60867 8.279 1.40751C8.279 1.20617 8.3565 1.02792 8.5115 0.872758C8.66667 0.727925 8.8465 0.657091 9.051 0.660258C9.2555 0.663591 9.427 0.734425 9.5655 0.872758L14.0595 5.36701C14.1532 5.46067 14.2193 5.55942 14.2578 5.66326C14.2963 5.76709 14.3155 5.87926 14.3155 5.99976C14.3155 6.12026 14.2963 6.23242 14.2578 6.33626C14.2193 6.44009 14.1532 6.53884 14.0595 6.63251L9.5655 11.1268C9.41033 11.2818 9.23467 11.3568 9.0385 11.3518C8.84233 11.3466 8.66667 11.2716 8.5115 11.1268C8.3565 10.9716 8.278 10.7943 8.276 10.595C8.274 10.3957 8.34742 10.2216 8.49625 10.0728L11.8193 6.74976Z" fill="currentColor"/>
+                </svg>
+                Share
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -769,7 +758,7 @@
   }
 
   .piece-detail {
-    padding: var(--space-6) !important;
+    padding: var(--space-6);
     max-width: 1200px;
     margin: 0 auto;
   }
@@ -875,8 +864,9 @@
   .piece-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     gap: var(--space-6);
+    min-height: 43px;
   }
 
   .header-content {
@@ -1388,7 +1378,7 @@
     text-align: center;
     font-family: var(--font-instrument-serif);
     font-size: 1.75rem;
-    margin: 1rem 0;
+    margin: 0 0 1rem;
   }
 
   .progress-bar {
@@ -1398,6 +1388,10 @@
     overflow: hidden;
     margin-bottom: 0px;
     position: relative;
+  }
+
+  .progress-bar-legend {
+    margin-bottom: 1rem;
   }
 
   .artist-goal-fill {
