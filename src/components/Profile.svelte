@@ -241,7 +241,8 @@
             {#if artistProfile}
               <a href="/settings/artist-profile" use:link class="edit-artist-btn">
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                 </svg>
                 Edit Artist Profile
               </a>
@@ -447,8 +448,8 @@
 <style>
   .profile-container {
     padding: var(--space-6);
-    max-width: 1000px;
-    margin: 0 auto;
+    max-width: 1400px;
+    margin: 0 auto 0 0;
   }
 
   .loading {

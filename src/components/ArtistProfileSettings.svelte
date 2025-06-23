@@ -331,9 +331,9 @@
 
 <style>
   .artist-profile-settings {
-    padding: var(--space-6);
-    max-width: 800px;
-    margin: 0 auto;
+    padding: var(--space-8) var(--space-6) var(--space-6);
+    max-width: 1000px;
+    margin: 0 auto 0 0;
   }
 
   .settings-header {

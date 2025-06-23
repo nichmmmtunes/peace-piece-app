@@ -1055,6 +1055,11 @@
     transition: all 0.2s;
   }
 
+  :global(.light-mode) .action-button {
+    background: var(--card-bg);
+    color: var(--text-color);
+  }
+
   .action-button:hover {
     background: var(--card-bg);
     outline: solid 1px var(--color-primary-500);
@@ -1304,6 +1309,10 @@
     background: var(--bg-color);
     border-radius: var(--radius-md);
     border: none;
+  }
+
+  :global(.light-mode) .reminder-card {
+    background: var(--card-bg);
   }
 
   .reminder-header {

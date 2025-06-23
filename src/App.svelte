@@ -49,8 +49,10 @@
     const savedDarkMode = localStorage.getItem('darkMode');
     if (savedDarkMode !== null) {
       darkMode = JSON.parse(savedDarkMode);
+      updateTheme(darkMode);
     } else {
       darkMode = prefersDark;
+      updateTheme(darkMode);
     }
 
     // Listen for system theme changes
@@ -89,10 +91,15 @@
   function toggleDarkMode() {
     darkMode = !darkMode;
     updateTheme(darkMode);
-    localStorage.setItem('darkMode', darkMode ? 'true' : 'false');
-    // Dispatch a custom event to notify other components
-    document.dispatchEvent(new CustomEvent('themeChange', { detail: { darkMode } }));
-    console.log('🔍 DEBUG: Dark mode toggled:', darkMode);
+
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    if (darkMode) {
+      document.documentElement.classList.add('dark-mode');
+      document.documentElement.classList.remove('light-mode');
+    } else {
+      document.documentElement.classList.remove('dark-mode');
+      document.documentElement.classList.add('light-mode');   
+    }
   }
 
   function updateTheme(isDark: boolean) {

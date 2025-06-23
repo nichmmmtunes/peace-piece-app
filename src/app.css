@@ -184,7 +184,7 @@ a {
 }
 
 .content-area > div {
-  padding: var(--space-8) var(--space-6) var(--space-6) var(--space-6) !important;
+  padding: var(--space-6);
 }
 
 a:hover {
