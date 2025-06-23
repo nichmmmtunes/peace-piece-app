@@ -1720,12 +1720,14 @@
   @media (max-width: 1024px) {
     .piece-content {
       grid-template-columns: 1fr;
+      gap: 20px;
     }
   }
 
   @media (max-width: 768px) {
     .piece-detail {
       padding: var(--space-4);
+      overflow: hidden;
     }
 
     .piece-header {
@@ -1737,20 +1739,37 @@
       font-size: 2rem;
     }
 
+    .content-left {
+      order: 2;
+    }
+
+    .content-right {
+      order: 1;
+      padding-top: 10px;
+    }
+
     .piece-meta {
       flex-direction: column;
       align-items: flex-start;
       gap: var(--space-3);
     }
 
+    .header-content {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-2);
+      width: 100%;
+      z-index: 1;
+    }
+
     .header-actions {
       width: 100%;
-      justify-content: space-between;
+      justify-content: flex-start;
     }
 
     .funding-header {
       flex-direction: column;
-      align-items: flex-start;
+      align-items: center;
       gap: var(--space-2);
     }
 
