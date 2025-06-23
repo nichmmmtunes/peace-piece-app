@@ -290,11 +290,6 @@
         ⏹️
       </button>
     </div>
-    
-    <div class="timeline-actions">
-      <button class="timeline-btn" title="Loop">🔄</button>
-    </div>
-    
     <div class="time-display">
       {formatTime(currentTime)} / {formatTime(totalDuration)}
     </div>
@@ -373,10 +368,10 @@
 <style>
   /* Timeline Resize Handle */
   .timeline-resize-handle {
-    height: 8px;
-    background: #e8e8e8;
-    border-top: 1px solid #d0d0d0;
-    border-bottom: 1px solid #d0d0d0;
+    height: 5px;
+    background: var(--color-neutral-400);
+    border-top: 1px solid var(--color-neutral-400);
+    border-bottom: 1px solid var(--color-neutral-400);
     cursor: ns-resize;
     display: flex;
     align-items: center;
@@ -386,11 +381,11 @@
   }
 
   .timeline-resize-handle:hover {
-    background: #ddd;
+    background: var(--color-neutral-500);
   }
 
   .timeline-resize-handle.resizing {
-    background: #007AFF;
+    background: var(--color-neutral-800);
   }
 
   .resize-indicator {
@@ -408,24 +403,24 @@
   }
 
   .dot {
-    width: 3px;
-    height: 3px;
+    width: 2px;
+    height: 2px;
     border-radius: 50%;
-    background: #999;
+    background: var(--color-neutral-100);
     transition: background 0.2s ease;
   }
 
   .timeline-resize-handle:hover .dot {
-    background: #666;
+    background: var(--color-neutral-100);
   }
 
   .timeline-resize-handle.resizing .dot {
-    background: white;
+    background: var(--color-neutral-200);
   }
 
   /* Timeline */
   .timeline-section {
-    background: white;
+    background: var(--color-neutral-100);
     border-top: 1px solid #d0d0d0;
     display: flex;
     flex-direction: column;
@@ -475,13 +470,7 @@
   }
 
   .control-btn.play-pause {
-    background: #007AFF;
-    color: white;
     font-size: 1.2rem;
-  }
-
-  .control-btn.play-pause:hover {
-    background: #0056CC;
   }
 
   .control-btn.back-to-start {
@@ -605,6 +594,7 @@
     position: relative;
     overflow-x: auto;
     overflow-y: auto;
+    background: var(--color-primary-00);
   }
 
   .timeline-tracks {
@@ -628,7 +618,7 @@
     position: absolute;
     top: 4px;
     height: 24px;
-    background: #007AFF;
+    background: var(--color-neutral-800);
     border-radius: 2px;
     cursor: grab;
     transition: all 0.05s;
@@ -641,14 +631,14 @@
   }
 
   .timeline-clip:hover {
-    background: #0056CC;
+    background: var(--color-neutral-700);
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .timeline-clip.selected {
-    background: #FF6B35;
-    box-shadow: 0 0 0 2px #FF6B35;
+    background: var(--color-neutral-900);
+    box-shadow: 0 0 0 2px var(--color-neutral-500);
   }
 
   .timeline-clip.dragging {

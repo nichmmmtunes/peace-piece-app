@@ -563,10 +563,10 @@ $: activeClips = clips
 
   /* Panel Resize Handles */
   .panel-resize-handle {
-    width: 8px;
-    background: #e8e8e8;
-    border-left: 1px solid #d0d0d0;
-    border-right: 1px solid #d0d0d0;
+    width: 5px;
+    background: var(--color-neutral-400);
+    border-left: 1px solid var(--color-neutral-400);
+    border-right: 1px solid var(--color-neutral-400);
     cursor: ew-resize;
     display: flex;
     align-items: center;
@@ -578,11 +578,11 @@ $: activeClips = clips
   }
 
   .panel-resize-handle:hover {
-    background: #ddd;
+    background: var(--color-neutral-500);
   }
 
   .panel-resize-handle.resizing {
-    background: #007AFF;
+    background: var(--color-neutral-600);
   }
 
   .panel-resize-handle-right {
@@ -609,19 +609,19 @@ $: activeClips = clips
   }
 
   .dot {
-    width: 3px;
-    height: 3px;
+    width: 2px;
+    height: 2px;
     border-radius: 50%;
-    background: #999;
+    background: var(--color-neutral-100);
     transition: background 0.2s ease;
   }
 
   .panel-resize-handle:hover .dot {
-    background: #666;
+    background: var(--color-neutral-100);
   }
 
   .panel-resize-handle.resizing .dot {
-    background: white;
+    background: var(--color-neutral-100);
   }
 
   /* Prevent text selection during resize */

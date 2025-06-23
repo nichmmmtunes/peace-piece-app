@@ -447,8 +447,8 @@
 
 <style>
   .profile-container {
-    padding: var(--space-6);
-    max-width: 1400px;
+    padding: var(--space-8) var(--space-6) var(--space-6);
+    max-width: 1000px;
     margin: 0 auto 0 0;
   }
 
@@ -511,6 +511,10 @@
     border: none;
     border-radius: var(--radius-lg);
     padding: var(--space-6);
+  }
+
+  :global(.light-mode) .profile-header {
+    background: var(--bg-color);
   }
 
   .profile-info {
@@ -616,6 +620,11 @@
     color: var(--text-color);
     border: none;
   }
+
+  :global(.light-mode) .edit-profile-btn,
+  :global(.light-mode) .edit-profile-btn:hover {
+    background: var(--card-bg);
+  } 
   
   .edit-artist-btn,
   .edit-artist-btn:hover {
@@ -664,10 +673,10 @@
   }
 
   .bio-section {
-    background: var(--card-bg);
+    background: transparent;
     border: none;
     border-radius: var(--radius-lg);
-    padding: var(--space-6);
+    padding: 0px;
   }
   
   .bio-block {
@@ -692,15 +701,20 @@
   }
 
   .profile-stats {
-    background: var(--card-bg);
-    border: none;
+    background: transparent;
     border-radius: var(--radius-lg);
-    padding: var(--space-6);
+    padding: var(--space-6) 0 0;
+    border-top: solid 1px var(--border-color);
   }
 
   .stats-grid {
     display: grid;
     gap: var(--space-6);
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stat-item {
+    width: fit-content;
   }
 
   .stat-item h3 {
@@ -721,6 +735,7 @@
     padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-sm);
     font-weight: 500;
+    user-select: none;
   }
 
   .tag.artist {
@@ -748,6 +763,10 @@
     color: var(--color-neutral-700);
   }
 
+  :global(.light-mode) .tag.skill {
+    background: var(--bg-color)
+  }
+
   .tag.social-cause {
     background-color: var(--color-primary-100);
     color: var(--color-primary-700);
@@ -765,6 +784,12 @@
     border: none;
     border-radius: var(--radius-lg);
     padding: var(--space-6);
+  }
+
+  :global(.light-mode) .portfolio-section,
+  :global(.light-mode) .contributions-section,
+  :global(.light-mode) .history-section {
+    background: var(--bg-color);
   }
 
   .portfolio-section h2,
@@ -972,6 +997,10 @@
     background: var(--bg-color);
     border-radius: var(--radius-md);
     border: none;
+  }
+
+  :global(.light-mode) .activity-item {
+    background: var(--card-bg);
   }
 
   .activity-date {

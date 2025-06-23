@@ -355,6 +355,10 @@
 </div>
 
 <style>
+  :global(.light-mode) :global(.main-content) {
+    background: var(--card-bg);
+  }
+
   .my-pieces-container {
     padding: var(--space-6);
     max-width: 1200px;
@@ -484,6 +488,10 @@
     display: flex;
     flex-direction: column;
     border-radius: var(--radius-creative);
+  }
+
+  :global(.light-mode) .piece-card {
+    background: var(--bg-color);
   }
 
   .piece-card:hover {
@@ -656,6 +664,10 @@
     background: var(--card-bg);
     border: none;
     border-radius: var(--radius-lg);
+  }
+
+  :global(.light-mode) .empty-state {
+    background: var(--bg-color);
   }
 
   .empty-state p {

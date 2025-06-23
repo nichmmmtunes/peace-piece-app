@@ -358,6 +358,10 @@
     padding: var(--space-6);
   }
 
+  :global(.light-mode) .settings-card {
+    background: var(--bg-color);
+  }
+
   .info-card {
     background-color: var(--color-primary-50);
     border-color: var(--color-primary-200);

@@ -106,7 +106,7 @@
     if (isDark) {
       document.documentElement.classList.add('dark-mode');
       document.documentElement.classList.remove('light-mode');
-      document.documentElement.style.setProperty('--bg-color', 'var(--color-neutral-900)');
+      document.documentElement.style.setProperty('--bg-color', 'var(--color-primary-900)');
       document.documentElement.style.setProperty('--text-color', 'var(--color-neutral-50)');
       document.documentElement.style.setProperty('--text-muted', 'var(--color-neutral-400)');
       document.documentElement.style.setProperty('--card-bg', 'var(--color-neutral-dark-gradient)');
@@ -119,7 +119,7 @@
       document.documentElement.classList.remove('dark-mode');
       document.documentElement.classList.add('light-mode');
       document.documentElement.style.setProperty('--bg-color', 'var(--color-primary-00)');
-      document.documentElement.style.setProperty('--text-color', 'var(--color-neutral-900)');
+      document.documentElement.style.setProperty('--text-color', 'var(--color-primary-900)');
       document.documentElement.style.setProperty('--text-muted', 'var(--color-neutral-500)');
       document.documentElement.style.setProperty('--card-bg', 'var(--color-neutral-light-gradient)');
       document.documentElement.style.setProperty('--border-color', 'var(--color-neutral-200)');
@@ -389,7 +389,7 @@
   }
 
   .main-content.with-sidebar.sidebar-collapsed {
-    margin-left: 80px;
+    margin-left: 69px;
   }
 
   .mobile-sidebar-overlay {

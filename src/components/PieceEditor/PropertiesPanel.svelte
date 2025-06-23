@@ -1070,7 +1070,7 @@
   /* Right Sidebar */
   .right-sidebar {
     width: 100%;
-    background: white;
+    background: var(--color-neutral-100);
     border-left: 1px solid #d0d0d0;
     display: flex;
     flex-direction: column;
@@ -1103,9 +1103,9 @@
   }
 
   .tab-btn.active {
-    color: #007AFF;
-    border-bottom-color: #007AFF;
-    background: #f8f9ff;
+    color: var(--color-primary-600);
+    border-bottom-color: var(--color-primary-500);
+    background-color: white;
   }
 
   /* Tab Content */
@@ -1152,7 +1152,7 @@
   }
 
   .property-section, .export-section {
-    margin-bottom: 1.5rem;
+    margin-bottom: 0px;
     padding-bottom: 1rem;
     border-bottom: 1px solid #f0f0f0;
   }
@@ -1193,6 +1193,8 @@
     width: 100%;
     padding: 0.5rem;
     border: 1px solid #d0d0d0;
+    background: white;
+    color: var(--color-neutral-900);
     border-radius: 4px;
     font-size: 0.9rem;
     transition: border-color 0.2s;
@@ -1248,6 +1250,8 @@
     border-radius: 2px;
     outline: none;
     cursor: pointer;
+    accent-color: var(--color-neutral-600);
+    box-shadow: none;
   }
 
   .property-slider::-webkit-slider-thumb {
@@ -1499,12 +1503,12 @@
   }
 
   .export-btn.primary {
-    background: #007AFF;
+    background: var(--color-primary-500);
     color: white;
   }
 
   .export-btn.primary:hover {
-    background: #0056CC;
+    background: var(--color-primary-600);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 122, 255, 0.3);
   }

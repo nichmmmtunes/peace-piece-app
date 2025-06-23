@@ -507,7 +507,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: #f5f5f5;
+    background: linear-gradient(0deg, #2e2e2e, var(--color-neutral-900));
     min-width: 0;
     overflow: hidden;
     cursor: default;
@@ -529,7 +529,7 @@
     height: 82%;
     aspect-ratio: 16 / 9;
     background: #000;
-    border: 1px solid #d0d0d0;
+    border: none;
     border-radius: 4px;
     display: flex;
     flex-direction: column;

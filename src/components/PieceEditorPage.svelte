@@ -348,6 +348,7 @@
           {/if}
           
           <div class="editor-status">
+            <div class="saved-indicator saved"></div>
             {#if isOrganizer}
               <span class="status-badge organizer">Organizer</span>
             {:else if isContributor}
@@ -452,13 +453,15 @@
   }
 
   .editor-header {
-    padding: var(--space-4);
-    background: var(--card-bg);
-    border-bottom: 1px solid var(--border-color);
+    padding: 0px var(--space-4);
+    background: var(--color-neutral-900);
+    border-bottom: 1px solid var(--color-neutral-700);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
+    position: relative;
+    min-height: 42px;
   }
 
   .header-left {
@@ -471,7 +474,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    color: var(--text-muted);
+    color: var(--color-neutral-400);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s;
@@ -480,14 +483,18 @@
   }
 
   .back-link:hover {
-    color: var(--text-color);
+    color: var(--color-primary-00);
   }
 
   .header-left h1 {
     font-size: 1.25rem;
     font-weight: 600;
     margin: 0;
-    color: var(--text-color);
+    color: var(--color-neutral-100);
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
   }
 
   .header-left h1 .inter {
@@ -510,6 +517,7 @@
     font-size: 0.875rem;
     font-weight: 500;
     transition: all 0.2s;
+    display: none;
   }
 
   .save-message.error {
@@ -520,7 +528,27 @@
   .editor-status {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: var(--space-3);
+  }
+
+  .editor-status .saved-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--color-success-600);
+    transition: background-color 0.2s;
+  }
+
+  .editor-status .saved-indicator.saved {
+    background-color: var(--color-success-600);
+  }
+
+  .editor-status .saved-indicator.saving {
+    background-color: var(--color-warning-600);
+  }
+
+  .editor-status .saved-indicator.error {
+    background-color: var(--color-error-600);
   }
 
   .status-badge {

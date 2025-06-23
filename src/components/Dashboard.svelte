@@ -701,15 +701,14 @@
 </div>
 
 <style>
+  :global(.light-mode) :global(.main-content) {
+    background: var(--card-bg);
+  }
+
   .dashboard-container {
     padding: var(--space-6);
     max-width: 1400px;
     margin: 0 auto 0 0;
-    background: var(--bg-color);
-  }
-
-  :global(.light-mode) .dashboard-container {
-    background: var(--card-bg);
   }
 
   .loading {
@@ -1120,6 +1119,10 @@
     border-radius: var(--radius-md);
     border: none;
     position: relative;
+  }
+
+  :global(.light-mode) .activity-item {
+    background: var(--card-bg);
   }
 
   .activity-icon {

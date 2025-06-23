@@ -377,11 +377,20 @@
     padding: var(--space-6);
   }
 
+  :global(.light-mode) .settings-card {
+    background: var(--bg-color);
+  }
+
   .artist-profile-card,
   .organizer-profile-card {
     background: var(--bg-color);
     border-color: var(--card-bg);
-    border: 1px solid var(--border-color);
+    border: none;
+  }
+
+  :global(.dark-mode) .artist-profile-card,
+  :global(.dark-mode) .organizer-profile-card {
+    border: solid 1px var(--border-color);
   }
 
   .artist-profile-header,

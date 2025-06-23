@@ -372,6 +372,10 @@
     padding: var(--space-4);
   }
 
+  :global(.light-mode) .notifications-controls {
+    background: var(--bg-color);
+  }
+
   .filter-buttons {
     display: flex;
     gap: var(--space-2);

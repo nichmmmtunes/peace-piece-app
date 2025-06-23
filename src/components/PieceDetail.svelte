@@ -745,6 +745,7 @@
 </div>
 
 <style>
+
   :global(.dark-mode) .progress-bar {
     background: #1F222F;
     box-shadow: inset 1px 2px 8px rgba(0, 0, 0, 0.8), inset 0 -1px 8px rgba(0, 0, 0, 0.7);

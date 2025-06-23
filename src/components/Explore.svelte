@@ -413,6 +413,10 @@
     border: none;
   }
 
+  :global(.light-mode) .featured-card {
+    background: var(--bg-color);
+  }
+
   .featured-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 16px var(--shadow-color);

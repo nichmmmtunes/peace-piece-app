@@ -57,15 +57,15 @@
   --color-error-900: #7f1d1d;
   
   --color-neutral-50: #f9fafb;
-  --color-neutral-100: #f3f4f6;
-  --color-neutral-200: #e5e7eb;
-  --color-neutral-300: #d1d5db;
-  --color-neutral-400: #9ca3af;
-  --color-neutral-500: #6b7280;
-  --color-neutral-600: #4b5563;
-  --color-neutral-700: #374151;
-  --color-neutral-800: #1f2937;
-  --color-neutral-900: #131322;
+  --color-neutral-100: #f4f4f4;
+  --color-neutral-200: #eceded;
+  --color-neutral-300: #dadada;
+  --color-neutral-400: #adadad;
+  --color-neutral-500: #7b7b7b;
+  --color-neutral-600: #5f5f5f;
+  --color-neutral-700: #4e4e4e;
+  --color-neutral-800: #373737;
+  --color-neutral-900: #1b1b1b;
   --color-neutral-dark-gradient: linear-gradient(180deg, #202432, #181d2b);
   --color-neutral-light-gradient: linear-gradient(180deg, #F8F9FD, #F2F3F8);
   
@@ -122,7 +122,7 @@
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-color: var(--color-neutral-900);
+    --bg-color: var(--color-primary-900);
     --text-color: var(--color-neutral-50);
     --text-muted: var(--color-neutral-400);
     --card-bg: var(--color-neutral-dark-gradient);

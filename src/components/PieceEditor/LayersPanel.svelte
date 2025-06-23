@@ -443,7 +443,7 @@
   /* Left Sidebar */
   .left-sidebar {
     width: 100%;
-    background: white;
+    background: var(--color-neutral-100);
     border-right: 1px solid #d0d0d0;
     display: flex;
     flex-direction: column;
@@ -469,8 +469,9 @@
   }
 
   .tab-btn.active {
-    color: #333;
-    border-bottom-color: #007AFF;
+    color: var(--color-primary-600);
+    border-bottom-color: var(--color-primary-500);
+    background-color: white;
   }
 
   .tab-content {
@@ -493,13 +494,14 @@
   .add-layer-btn {
     width: 100%;
     padding: 0.5rem;
-    background: #007AFF;
+    background: var(--color-primary-500);
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.8rem;
     margin-bottom: 0.5rem;
+    height: 45.5px;
   }
 
   .layer-info {
@@ -539,11 +541,11 @@
   }
 
   .layer-item:hover {
-    background: #f0f0f0;
+    background: var(--color-neutral-300);
   }
 
   .layer-item.selected {
-    background: #007AFF;
+    background: var(--color-neutral-600);
     color: white;
   }
 
@@ -593,12 +595,12 @@
   .dot {
     width: 2px;
     height: 2px;
-    background: #999;
+    background: var(--color-neutral-300);
     border-radius: 50%;
   }
 
   .layer-item.selected .dot {
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--color-neutral-300);
   }
 
   .layer-icon {
@@ -702,7 +704,7 @@
   .upload-btn {
     display: block;
     padding: 0.75rem;
-    background: #007AFF;
+    background: var(--color-primary-500);
     color: white;
     text-align: center;
     border-radius: 4px;
