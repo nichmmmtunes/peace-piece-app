@@ -355,10 +355,6 @@
 </div>
 
 <style>
-  :global(.light-mode) :global(.main-content) {
-    background: var(--card-bg);
-  }
-
   .my-pieces-container {
     padding: var(--space-6);
     max-width: 1200px;
@@ -492,7 +488,7 @@
 
   :global(.light-mode) .piece-card {
     background: var(--bg-color);
-  }
+  } 
 
   .piece-card:hover {
     transform: translateY(-2px);

@@ -110,7 +110,7 @@
       document.documentElement.style.setProperty('--text-color', 'var(--color-neutral-50)');
       document.documentElement.style.setProperty('--text-muted', 'var(--color-neutral-400)');
       document.documentElement.style.setProperty('--card-bg', 'var(--color-neutral-dark-gradient)');
-      document.documentElement.style.setProperty('--border-color', 'var(--color-neutral-700)');
+      document.documentElement.style.setProperty('--border-color', 'var(--color-neutral-800)');
       document.documentElement.style.setProperty('--shadow-color', 'rgba(0, 0, 0, 0.3)');
       document.documentElement.style.setProperty('--logo-gradient-stop1', '#DBDEEF');
       document.documentElement.style.setProperty('--logo-gradient-stop2', '#7E7F89');
@@ -122,7 +122,7 @@
       document.documentElement.style.setProperty('--text-color', 'var(--color-primary-900)');
       document.documentElement.style.setProperty('--text-muted', 'var(--color-neutral-500)');
       document.documentElement.style.setProperty('--card-bg', 'var(--color-neutral-light-gradient)');
-      document.documentElement.style.setProperty('--border-color', 'var(--color-neutral-200)');
+      document.documentElement.style.setProperty('--border-color', 'var(--color-neutral-300)');
       document.documentElement.style.setProperty('--shadow-color', 'rgba(0, 0, 0, 0.05)');
       document.documentElement.style.setProperty('--logo-gradient-stop1', '#131322');
       document.documentElement.style.setProperty('--logo-gradient-stop2', '#131322');

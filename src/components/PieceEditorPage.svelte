@@ -478,8 +478,9 @@
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s;
-    font-size: 16px;
+    font-size: .9rem;
     font-weight: 400;
+    user-select: none;
   }
 
   .back-link:hover {

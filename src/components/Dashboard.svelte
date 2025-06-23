@@ -701,9 +701,6 @@
 </div>
 
 <style>
-  :global(.light-mode) :global(.main-content) {
-    background: var(--card-bg);
-  }
 
   .dashboard-container {
     padding: var(--space-6);

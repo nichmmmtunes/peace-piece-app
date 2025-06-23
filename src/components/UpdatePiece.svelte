@@ -894,7 +894,7 @@
 
 <style>
   .update-piece {
-    padding: var(--space-6);
+    padding: var(--space-8) var(--space-6) var(--space-6);
     max-width: 900px;
     margin: 0 auto;
   }
@@ -967,6 +967,10 @@
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     padding: var(--space-6);
+  }
+
+  :global(.light-mode) .update-form {
+    background: var(--bg-color);
   }
 
   .message {

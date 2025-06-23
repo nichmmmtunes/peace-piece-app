@@ -367,7 +367,7 @@
     margin-bottom: var(--space-6);
     gap: var(--space-4);
     background: var(--card-bg);
-    border: 1px solid var(--border-color);
+    border: none;
     border-radius: var(--radius-md);
     padding: var(--space-4);
   }

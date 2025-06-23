@@ -1065,8 +1065,14 @@
     gap: var(--space-6);
   }
 
+  .content-left > * {
+    position: relative;
+    z-index: 1;
+  } 
+
   .content-right {
     padding-top: 100px;
+    isolation: isolate;
   }
 
   .two-column-btns {
@@ -1308,6 +1314,21 @@
     display: flex;
     flex-direction: column;
     gap: 0px;
+    position: relative;
+  }
+
+  :global(.light-mode) .funding-progress:before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: calc(100% + 150px);
+    height: calc(100% + 200px);
+    background: rgba(255, 255, 255, 1);
+    border-radius: var(--radius-xl);
+    transform: translate(-50%, -50%);
+    z-index: -1;
+    filter: blur(80px);
   }
 
   .funding-header {

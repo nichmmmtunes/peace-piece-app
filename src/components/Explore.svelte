@@ -166,9 +166,7 @@
                     {/if}
                   </div>
                   <h3 class="project-title">{piece.title}</h3>
-                  <p class="project-organizer">Organized by {piece.organizer_name}</p>
-                  <p class="project-sponsor">Sponsored by Community</p>
-                  
+                  <p class="project-organizer">Organized by {piece.organizer_name}</p>                  
                   <div class="project-tags">
                     {#if piece.cause_tags && piece.cause_tags.length > 0}
                       <span class="tag social-cause">{piece.cause_tags[0]}</span>
@@ -234,9 +232,7 @@
                       {/if}
                     </div>
                     <h3 class="project-title">{piece.title}</h3>
-                    <p class="project-organizer">Organized by {piece.organizer_name}</p>
-                    <p class="project-sponsor">Sponsored by Community</p>
-                    
+                    <p class="project-organizer">Organized by {piece.organizer_name}</p>                    
                     <div class="project-tags">
                       {#if piece.cause_tags && piece.cause_tags.length > 0}
                         <span class="tag social-cause">{piece.cause_tags[0]}</span>
@@ -317,6 +313,12 @@
     font-size: 0.875rem;
   }
 
+  :global(.light-mode) .search-input {
+    background: var(--bg-color);
+  }
+
+
+
   .search-icon {
     position: absolute;
     right: var(--space-3);
@@ -338,7 +340,12 @@
     font-size: 0.875rem;
     cursor: pointer;
     min-width: 120px;
+    user-select: none;
   }
+
+  :global(.light-mode) .category-filter select {
+    background: var(--bg-color);
+  } 
 
   .dropdown-icon {
     position: absolute;
@@ -551,7 +558,7 @@
   }
 
   .featured-card.large .project-title {
-    font-size: 22px;
+    font-size: 20px;
   }
 
   .project-organizer,
