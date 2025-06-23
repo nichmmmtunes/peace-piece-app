@@ -26,6 +26,8 @@
   import ForgotPassword from './components/ForgotPassword.svelte';
   import ResetPassword from './components/ResetPassword.svelte';
   import Profile from './components/Profile.svelte';
+  import ProfileArtist from './components/ProfileArtist.svelte';
+  import ProfileOrganizer from './components/ProfileOrganizer.svelte';
   import CreatePiece from './components/CreatePiece.svelte';
   import MyPieces from './components/MyPieces.svelte';
   import ArtistProfileSettings from './components/ArtistProfileSettings.svelte';
@@ -203,6 +205,8 @@
     '/forgot-password': ForgotPassword,
     '/reset-password(.*)': ResetPassword,
     '/profile/:username': Profile,
+    '/artist/:username': ProfileArtist,
+    '/organizer/:username': ProfileOrganizer,
     '/create-peace': CreatePiece,
     '/pieces': MyPieces,
     '/apply/:id': ApplyArtist,

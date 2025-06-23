@@ -12,7 +12,9 @@
   let uploading = false;
   let messageTimeout: number;
   let hasArtistProfile = false;
+  let artistUsername = '';
   let hasOrganizerProfile = false;
+  let organizerUsername = '';
   
   async function loadProfile() {
     try {
@@ -35,24 +37,32 @@
       // Check if user has an artist profile
       const { data: artistData, error: artistError } = await supabase
         .from('artists')
-        .select('id')
+        .select('id, artist_username')
         .eq('user_id', $user?.id)
         .maybeSingle();
         
       if (artistError) throw artistError;
-      
+
       hasArtistProfile = !!artistData;
+
+      if (artistData) {
+        artistUsername = artistData.artist_username || '';
+      }
       
       // Check if user has an organizer profile
       const { data: organizerData, error: organizerError } = await supabase
         .from('organizers')
-        .select('id')
+        .select('id, organizer_username')
         .eq('user_id', $user?.id)
         .maybeSingle();
         
       if (organizerError) throw organizerError;
       
       hasOrganizerProfile = !!organizerData;
+
+      if (organizerData) {
+        organizerUsername = organizerData.organizer_username || '';
+      }
       
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -152,15 +162,11 @@
         </a>
       </div>
       
-      {#if hasArtistProfile}
+      {#if hasArtistProfile && artistUsername !==''}
         <div class="artist-profile-status">
-          <div class="status-badge">
-            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-            <span>Artist Profile Active</span>
-          </div>
+          <a href="/artist/{ artistUsername }" use:link class="artist-profile-button">
+          View Artist Profile
+          </a>
         </div>
       {/if}
     </div>
@@ -181,15 +187,11 @@
         </a>
       </div>
       
-      {#if hasOrganizerProfile}
+      {#if hasOrganizerProfile && organizerUsername !== ''}
         <div class="organizer-profile-status">
-          <div class="status-badge organizer-badge">
-            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-            <span>Organizer Profile Active</span>
-          </div>
+          <a href="/organizer/{ organizerUsername }" use:link class="organizer-profile-button">
+            View Organizer Profile
+          </a>
         </div>
       {/if}
     </div>
