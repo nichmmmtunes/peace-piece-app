@@ -852,7 +852,7 @@
   .project-card {
     display: flex;
     gap: var(--space-4);
-    padding: var(--space-5) 0px;
+    padding: var(--space-5) 0px 0px;
     background: transparent;
     border-radius: 0px;
     border-top: 1px solid var(--border-color);
@@ -1018,7 +1018,7 @@
   .project-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 1rem;
+    gap: .725rem;
     margin-top: 1rem;
   }
 
