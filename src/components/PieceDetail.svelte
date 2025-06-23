@@ -17,6 +17,7 @@
   let hasDonated = false;
   let checkoutLoading = false;
   let checkoutError: string | null = null;
+  let organizer: any = null;
   
   async function loadPiece() {
     try {
@@ -37,7 +38,7 @@
       if ($user && piece.organizer_user_id === $user.id) {
         isOrganizer = true;
       }
-      
+
       // Check if current user is a contributor
       if ($user && piece.contributors) {
         const isUserContributor = piece.contributors.some(
@@ -325,7 +326,7 @@
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                 </svg>
-                Edit Detiails
+                Edit Details
               </a>
               
               <a href="/edit/{piece.id}" use:link class="edit-button">
@@ -413,10 +414,20 @@
 
           <div class="piece-meta">
             <div class="organizer">
-              <span>Organized by</span>
-              <a href="/profile/{piece.organizer_name}" use:link class="organizer-name">
-                {piece.organizer_name}
-              </a>
+              {#if organizer && organizer.avatar_url}
+                <div class="organizer-avatar">
+                  <img src={organizer.avatar_url} alt={piece.organizer_name} />
+                </div>
+              {/if}
+              <div class="organizer-info" in:fly={{ y: 20, duration: 300, delay: 200 }}>
+                <span>Organized by</span>
+                <a href="/profile/{piece.organizer_name}" use:link class="organizer-name">
+                  {piece.organizer_name}
+                </a>
+                {#if organizer && organizer.bio}
+                <p class="organizer-bio">{ organizer.bio }</p>
+                {/if}
+              </div>
             </div>
 
             <!-- Sponsors -->
@@ -472,21 +483,28 @@
               {#if piece.collaboration_structure}
                 <div class="detail-group">
                   <h3>Collaboration Structure</h3>
-                  <p>{piece.collaboration_structure}</p>
+                  <p>
+                    {#if piece.collaboration_structure == "collaborative"}
+                      This piece is open for collaborative contributions from the community.
+                    {:else if piece.collaboration_structure == "interwoven"}
+                      This piece is interwoven and requires each artist to contribute.
+                    {/if}
+                  </p>
                 </div>
               {/if}
               
               {#if piece.deliverable_format}
                 <div class="detail-group">
                   <h3>Deliverable Format</h3>
-                  <p>{piece.deliverable_format}</p>
-                </div>
-              {/if}
-              
-              {#if piece.compensation_details}
-                <div class="detail-group">
-                  <h3>Compensation Details</h3>
-                  <p>{piece.compensation_details}</p>
+                  <p>
+                    {#if piece.deliverable_format == 'image_with_audio'}
+                      This piece will be delivered as an image with accompanying audio.
+                    {:else if piece.deliverable_format == 'video'}
+                      This piece will be delivered as a video.
+                    {:else}
+                      The deliverable format for this piece is not yet specified.
+                    {/if}
+                  </p>
                 </div>
               {/if}
             </div>
@@ -591,7 +609,7 @@
                       )
                     }
                   </span>
-                  <span class="countdown-label">days until Kickoff</span>
+                  <span class="countdown-label">days until kickoff</span>
                 {:else}
                   <span class="countdown-value">Ongoing</span>
                 {/if}
@@ -713,12 +731,12 @@
   }
 
   :global(.light-mode) .cause-tag {
-    background: var(--color-primary-300);
+    background: var(--color-primary-200);
     color: var(--text-color);
   }
 
   .piece-detail {
-    padding: var(--space-6);
+    padding: var(--space-6) !important;
     max-width: 1200px;
     margin: 0 auto;
   }
@@ -855,6 +873,11 @@
     align-items: center;
     gap: var(--space-2);
     color: var(--text-muted);
+  }
+
+  .organizer-info {
+    display: flex;
+    gap: .5rem;
   }
 
   .organizer-name {
@@ -1226,6 +1249,8 @@
     align-items: center;
     margin-bottom: var(--space-3);
     flex-direction: column;
+    line-height: 1;
+    margin-bottom: 1rem;
   }
 
   .funding-header .total-raised {
@@ -1233,14 +1258,14 @@
     font-size: 3.65rem;
     font-weight: 600;
     color: var(--text-color);
-    margin-bottom: 0px;
+    margin-bottom: .5rem;
     display: flex;
   }
 
   .funding-header .total-raised .dollar-sign {
     font-size: 2.5rem;
     position: relative;
-    top: .5rem;
+    top: .15rem;
   }
 
   .funding-header h3 {

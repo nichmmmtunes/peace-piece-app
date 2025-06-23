@@ -534,8 +534,8 @@
   }
 
   .nav-item.active .nav-icon {
-    background: var(--color-primary-600);
-    color: white;
+    background: var(--text-color);
+    color: var(--bg-color);
   }
 
   .nav-label {

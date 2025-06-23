@@ -525,7 +525,7 @@
   }
 
   .card-content {
-    padding: var(--space-4);
+    padding: var(--space-4) var(--space-4) var(--space-6);
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -560,7 +560,7 @@
   .project-tags {
     display: flex;
     gap: var(--space-2);
-    margin-top: auto;
+    margin-top: .5rem;
     flex-wrap: wrap;
   }
 
