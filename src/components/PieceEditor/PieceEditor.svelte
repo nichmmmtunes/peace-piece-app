@@ -319,7 +319,13 @@ function updateClipProperty(event) {
   });
   
   // Save after updating a clip property
-  saveEditorData();
+  // Throttle saveEditorData to avoid excessive calls
+  if (!updateClipProperty._throttleTimeout) {
+    updateClipProperty._throttleTimeout = setTimeout(() => {
+      saveEditorData();
+      updateClipProperty._throttleTimeout = null;
+    }, 800);
+  }
 }
 
 function updateClipTiming(event) {

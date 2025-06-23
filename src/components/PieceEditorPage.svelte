@@ -10,6 +10,8 @@
   export let params = { id: '' };
   
   let piece: any = null;
+  let organizer: any = null;
+  let contributors: any[] = [];
   let loading = true;
   let error: string | null = null;
   let saving = false;
@@ -50,7 +52,7 @@
         // Get the organizer data to check if current user owns this organizer
         const { data: organizerData } = await supabase
           .from('organizers')
-          .select('user_id')
+          .select('*')
           .eq('id', piece.organizer_id)
           .single();
         
@@ -58,6 +60,8 @@
           isOrganizer = true;
           canEdit = true;
         }
+
+        organizer = organizerData;
       }
       
       // Check if current user is a contributor to this piece
@@ -80,6 +84,21 @@
             canEdit = true;
           }
         }
+      }
+
+      if (piece.contributors) {
+        // Get the full contributor profiles
+        const { data: contributorProfiles, error: contributorError } = await supabase
+          .from('artists')
+          .select('*')
+          .in('id', piece.contributors.map((c: any) => c.id));
+
+        if (contributorError) {
+          console.error('DEBUG: Error loading contributors:', contributorError);
+          throw contributorError; 
+        }
+
+        contributors = contributorProfiles || [];
       }
       
     } catch (e: any) {
@@ -292,6 +311,24 @@
       saving = false;
     }
   }
+
+  function getInitials(fullName: string | null): string {
+    if (!fullName) {
+      return ""; // Handle cases where the name might be null or empty
+    }
+
+    const nameParts = fullName.split(" ");
+
+    if (nameParts.length > 1) {
+      // If there's more than one part, assume first and last name
+      const firstNameInitial = nameParts[0].charAt(0);
+      const lastNameInitial = nameParts[nameParts.length - 1].charAt(0);
+      return `${firstNameInitial}${lastNameInitial}`.toUpperCase();
+    } else {
+      // If only one part (or no spaces), just take the first initial
+      return nameParts[0].charAt(0).toUpperCase();
+    }
+  }
   
   onMount(() => {
     if (params.id) {
@@ -349,11 +386,18 @@
           
           <div class="editor-status">
             <div class="saved-indicator saved"></div>
-            {#if isOrganizer}
-              <span class="status-badge organizer">Organizer</span>
-            {:else if isContributor}
-              <span class="status-badge contributor">Contributor</span>
-            {/if}
+            <div class="editor-badges">
+              <span class="status-badge organizer">
+                <span class="badge-name">{organizer ? organizer.name : 'Unknown Organizer'}</span>
+                <span class="badge-initial">{getInitials(organizer ? organizer.name : '')}</span>
+              </span>
+              {#each contributors as contributor, index (contributor.id)}
+                <span class="status-badge contributor">
+                  <span class="badge-name">{contributor.name}</span>
+                  <span class="badge-initial">{getInitials(contributor.name)}</span>
+                </span>
+              {/each}
+            </div>
           </div>
         </div>
       </div>
@@ -454,14 +498,14 @@
 
   .editor-header {
     padding: 0px var(--space-4);
-    background: var(--color-neutral-900);
-    border-bottom: 1px solid var(--color-neutral-700);
+    background: var(--color-neutral-200);
+    border-bottom: 1px solid var(--color-neutral-300);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
     position: relative;
-    min-height: 42px;
+    min-height: 49px;
   }
 
   .header-left {
@@ -474,7 +518,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    color: var(--color-neutral-400);
+    color: var(--color-neutral-900);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s;
@@ -484,14 +528,14 @@
   }
 
   .back-link:hover {
-    color: var(--color-primary-00);
+    color: var(--color-primary-600);
   }
 
   .header-left h1 {
     font-size: 1.25rem;
     font-weight: 500;
     margin: 0;
-    color: var(--color-neutral-100);
+    color: var(--color-neutral-900);
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
@@ -529,7 +573,7 @@
   .editor-status {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    gap: 10px;
   }
 
   .editor-status .saved-indicator {
@@ -552,21 +596,48 @@
     background-color: var(--color-error-600);
   }
 
-  .status-badge {
-    padding: var(--space-1) var(--space-2);
+  .editor-badges {
+    padding: 0px;
     border-radius: var(--radius-md);
     font-size: 0.75rem;
     font-weight: 500;
+    display: flex;
+  }
+
+  .status-badge {
+    width: 24px;
+    height: 28px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: -2px;
+    outline: solid 1.5px var(--color-primary-00);
+  }
+
+  .status-badge .badge-name {
+    display: none;
+  }
+
+  .status-badge .badge-initial {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--color-neutral-800);
+    text-transform: uppercase;
+    user-select: none;
   }
 
   .status-badge.organizer {
     background-color: var(--color-primary-100);
     color: var(--color-primary-700);
+    outline-color: var(--color-primary-600);
+    z-index: 1;
   }
 
   .status-badge.contributor {
     background-color: var(--color-accent-100);
     color: var(--color-accent-700);
+    outline-color: var(--color-accent-600);
   }
 
   .editor-content {
