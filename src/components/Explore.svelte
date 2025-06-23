@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { link } from 'svelte-spa-router';
   import { supabase } from '../lib/supabase';
+  import { user } from '../stores/authStore';
   import { fade, fly } from 'svelte/transition';
 
   let pieces: any[] = [];
@@ -340,12 +341,14 @@
         <h2 class="section-title">Supporters</h2>
         <div class="supporters-grid">
           {#each supporters as supporter, index (supporter.id)}
+          {#if supporter.id !== $user?.id}
             <div class="supporter-card" in:fly={{ y: 20, duration: 300, delay: index * 50 }}>
               <a href="/profile/{supporter.username}" use:link class="card-link">
                 <img src={supporter.avatar_url || '/default-avatar.png'} alt={supporter.username} />
                 <p>{supporter.username}</p>
               </a>
             </div>
+          {/if}
           {/each}
         </div>
       </section>
@@ -356,12 +359,14 @@
         <h2 class="section-title">Artists</h2>
         <div class="artists-grid">
           {#each artists as artist, index (artist.id)}
+          {#if artist.user_id !== $user?.id}
             <div class="artist-card" in:fly={{ y: 20, duration: 300, delay: index * 50 }}>
               <a href="/artist/{artist.artist_username}" use:link class="card-link">
                 <img src={artist.avatar_url || '/default-avatar.png'} alt={artist.artist_username} />
                 <p>{artist.name}</p>
               </a>
             </div>
+          {/if}
           {/each}
         </div>
       </section>
@@ -372,12 +377,14 @@
         <h2 class="section-title">Organizers</h2>
         <div class="organizers-grid">
           {#each organizers as organizer, index (organizer.id)}
+          {#if organizer.user_id !== $user?.id}
             <div class="organizer-card" in:fly={{ y: 20, duration: 300, delay: index * 50 }}>
               <a href="/organizer/{organizer.organizer_username}" use:link class="card-link">
                 <img src={organizer.avatar_url || '/default-avatar.png'} alt={organizer.organizer_username} />
                 <p>{organizer.name}</p>
               </a>
             </div>
+          {/if}
           {/each}
         </div>
       </section>
@@ -434,8 +441,6 @@
   :global(.light-mode) .search-input {
     background: var(--bg-color);
   }
-
-
 
   .search-icon {
     position: absolute;
@@ -568,16 +573,29 @@
     margin-top: var(--space-6);
   }
 
-  .category-grid,
-  .supporters-grid,
-  .artists-grid,
-  .organizers-grid {
+  .category-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: var(--space-4);
   }
 
-  .project-card,
+  .supporters-grid,
+  .artists-grid,
+  .organizers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .project-card {
+    background: transparent;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    height: 250px;
+  }
+
   .supporter-card,
   .artist-card,
   .organizer-card {
@@ -585,8 +603,8 @@
     border-radius: var(--radius-lg);
     overflow: hidden;
     transition: transform 0.2s, box-shadow 0.2s;
-    border: 1px solid var(--border-color);
-    height: 320px;
+    border: none;
+    height: 180px;
   }
 
   .project-card:hover,
@@ -595,6 +613,47 @@
   .organizer-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 16px var(--shadow-color);
+  }
+
+  .supporter-card .card-link,
+  .artist-card .card-link,
+  .organizer-card .card-link {
+    position: relative;
+  }
+
+  .supporter-card .card-link img,
+  .artist-card .card-link img,
+  .organizer-card .card-link img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .supporter-card .card-link:after,
+  .artist-card .card-link:after,
+  .organizer-card .card-link:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(transparent 50%, rgba(0, 0, 0, 0.8) calc(100% - 10px));
+    z-index: 1;
+  }
+
+  .supporter-card .card-link p,
+  .artist-card .card-link p,
+  .organizer-card .card-link p {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: var(--space-2) var(--space-4);
+    z-index: 2;
+    margin-bottom: 0px;
+    font-weight: 400;
   }
 
   .card-link {
