@@ -5,7 +5,13 @@
   import { fade, fly } from 'svelte/transition';
 
   let pieces: any[] = [];
-  let loading = true;
+  let supporters: any[] = [];
+  let artists: any[] = [];
+  let organizers: any[] = [];
+  let piecesLoading = true;
+  let supportersLoading = true;
+  let artistsLoading = true;
+  let organizersLoading = true;
   let error: string | null = null;
   let searchQuery = '';
   let selectedCategory = '';
@@ -22,7 +28,7 @@
 
   async function loadPieces() {
     try {
-      loading = true;
+      piecesLoading = true;
       error = null;
 
       let query = supabase
@@ -40,7 +46,66 @@
     } catch (e: any) {
       error = e.message;
     } finally {
-      loading = false;
+      piecesLoading = false;
+    }
+  }
+
+  async function loadSupporters() {
+    try {
+      supportersLoading = true;
+      error = null;
+
+      let query = supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      const { data, error: fetchError } = await query;
+
+      if (fetchError) throw fetchError;
+
+      supporters = data || [];
+    } catch (e: any) {
+      error = e.message;
+    } finally {
+      supportersLoading = false;
+    }
+  }
+
+  async function loadArtists() {
+    try {
+      artistsLoading = true;
+      const { data, error: fetchError } = await supabase
+        .from('artists')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (fetchError) throw fetchError;
+
+      artists = data || [];
+    } catch (e: any) {
+      error = e.message;
+    }
+    finally {
+      artistsLoading = false;
+    }
+  }
+
+  async function loadOrganizers() {
+    try {
+      organizersLoading = true;
+      const { data, error: fetchError } = await supabase
+        .from('organizers')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (fetchError) throw fetchError;
+
+      organizers = data || [];
+    } catch (e: any) {
+      error = e.message;
+    } finally {
+      organizersLoading = false;
     }
   }
 
@@ -76,6 +141,9 @@
 
   onMount(() => {
     loadPieces();
+    loadSupporters();
+    loadArtists();
+    loadOrganizers();
   });
 </script>
 
@@ -112,7 +180,7 @@
     </div>
   </div>
 
-  {#if loading}
+  {#if piecesLoading}
     <div class="loading" transition:fade>
       <div class="loading-spinner"></div>
       <p>Loading projects...</p>
@@ -265,6 +333,56 @@
         {/if}
       </div>
     {/if}
+
+    <!-- Supporters Section -->
+    {#if supporters.length > 0}
+      <section class="supporters-section">
+        <h2 class="section-title">Supporters</h2>
+        <div class="supporters-grid">
+          {#each supporters as supporter, index (supporter.id)}
+            <div class="supporter-card" in:fly={{ y: 20, duration: 300, delay: index * 50 }}>
+              <a href="/profile/{supporter.username}" use:link class="card-link">
+                <img src={supporter.avatar_url || '/default-avatar.png'} alt={supporter.username} />
+                <p>{supporter.username}</p>
+              </a>
+            </div>
+          {/each}
+        </div>
+      </section>
+    {/if}
+
+    {#if artists.length > 0}
+      <section class="artists-section">
+        <h2 class="section-title">Artists</h2>
+        <div class="artists-grid">
+          {#each artists as artist, index (artist.id)}
+            <div class="artist-card" in:fly={{ y: 20, duration: 300, delay: index * 50 }}>
+              <a href="/artist/{artist.artist_username}" use:link class="card-link">
+                <img src={artist.avatar_url || '/default-avatar.png'} alt={artist.artist_username} />
+                <p>{artist.name}</p>
+              </a>
+            </div>
+          {/each}
+        </div>
+      </section>
+    {/if}
+
+    {#if organizers.length > 0}
+      <section class="organizers-section">
+        <h2 class="section-title">Organizers</h2>
+        <div class="organizers-grid">
+          {#each organizers as organizer, index (organizer.id)}
+            <div class="organizer-card" in:fly={{ y: 20, duration: 300, delay: index * 50 }}>
+              <a href="/organizer/{organizer.organizer_username}" use:link class="card-link">
+                <img src={organizer.avatar_url || '/default-avatar.png'} alt={organizer.organizer_username} />
+                <p>{organizer.name}</p>
+              </a>
+            </div>
+          {/each}
+        </div>
+      </section>
+    {/if}
+
   {/if}
 </div>
 
@@ -287,7 +405,7 @@
   }
 
   .header-content h1 {
-    font-weight: 600;
+    font-weight: 500;
     margin: 0;
     color: var(--text-color);
   }
@@ -437,19 +555,32 @@
   }
 
   .section-title {
-    font-size: 22px;
+    font-size: 1.7rem;
     font-weight: 400;
     margin-bottom: var(--space-6);
     color: var(--text-color);
+    font-family: var(--font-instrument-serif);
   }
 
-  .category-grid {
+  .supporters-section,
+  .artists-section,
+  .organizers-section {
+    margin-top: var(--space-6);
+  }
+
+  .category-grid,
+  .supporters-grid,
+  .artists-grid,
+  .organizers-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: var(--space-4);
   }
 
-  .project-card {
+  .project-card,
+  .supporter-card,
+  .artist-card,
+  .organizer-card {
     background: transparent;
     border-radius: var(--radius-lg);
     overflow: hidden;
@@ -458,7 +589,10 @@
     height: 320px;
   }
 
-  .project-card:hover {
+  .project-card:hover,
+  .supporter-card:hover,
+  .artist-card:hover,
+  .organizer-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 16px var(--shadow-color);
   }
@@ -555,7 +689,7 @@
 
   .project-title {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-2) 0;
     line-height: 1.3;
   }

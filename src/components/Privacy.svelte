@@ -186,14 +186,14 @@
 
   .privacy-section h2 {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 500;
     margin-bottom: var(--space-3);
     color: var(--color-primary-700);
   }
 
   .privacy-section h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: var(--space-4) 0 var(--space-2) 0;
     color: var(--text-color);
   }

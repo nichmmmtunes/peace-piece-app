@@ -497,7 +497,7 @@
 
   .form-section h2 {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-2) 0;
     color: var(--text-color);
   }

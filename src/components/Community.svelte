@@ -239,7 +239,7 @@
 
   .policy-section h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: var(--space-4) 0 var(--space-2) 0;
     color: var(--text-color);
   }
@@ -301,7 +301,7 @@
 
   .value-card h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-2) 0;
     color: var(--text-color);
   }
@@ -342,7 +342,7 @@
 
   .contact-card h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-2) 0;
     color: var(--text-color);
   }

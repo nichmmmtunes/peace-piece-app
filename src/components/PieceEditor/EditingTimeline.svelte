@@ -714,7 +714,7 @@
   .layer-number {
     font-size: 0.6rem;
     color: rgba(255, 255, 255, 0.8);
-    font-weight: 600;
+    font-weight: 500;
     background: rgba(255, 255, 255, 0.2);
     padding: 1px 4px;
     border-radius: 2px;

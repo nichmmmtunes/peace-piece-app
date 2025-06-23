@@ -565,7 +565,7 @@
     padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-sm);
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 500;
     margin-bottom: var(--space-2);
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -589,7 +589,7 @@
 
   .piece-title {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-2) 0;
     line-height: 1.3;
   }
@@ -615,7 +615,7 @@
   }
 
   .stat-value {
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-color);
   }
 

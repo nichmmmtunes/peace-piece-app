@@ -467,7 +467,7 @@
   }
 
   .logo-text {
-    font-weight: 600;
+    font-weight: 500;
     font-size: 1.25rem;
     color: var(--text-color);
   }

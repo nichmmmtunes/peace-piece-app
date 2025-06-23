@@ -520,7 +520,7 @@
     align-items: center;
     justify-content: center;
     font-size: 2rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--color-neutral-500);
     background-color: var(--color-neutral-200);
   }

@@ -1009,7 +1009,7 @@
 
   .form-section h2 {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-4) 0;
     color: var(--text-color);
   }
@@ -1296,7 +1296,7 @@
   
   .radio-card-content h3 {
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0;
     color: var(--text-color);
   }

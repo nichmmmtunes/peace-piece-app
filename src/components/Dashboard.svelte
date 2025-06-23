@@ -823,7 +823,7 @@
 
   .section-header h2 {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0;
     color: var(--text-color);
   }
@@ -911,7 +911,7 @@
 
   .project-title {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0;
     color: var(--text-color);
   }
@@ -1146,7 +1146,7 @@
 
   .activity-title {
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0;
     color: var(--text-color);
   }
@@ -1253,7 +1253,7 @@
     background: var(--color-neutral-200);
     color: var(--color-neutral-600);
     font-size: 22px;
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .application-details {
@@ -1270,7 +1270,7 @@
 
   .applicant-name {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0;
     color: var(--text-color);
   }
@@ -1324,7 +1324,7 @@
 
   .reminder-title {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0;
     color: var(--text-color);
     padding-right: 20px;

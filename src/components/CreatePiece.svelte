@@ -965,7 +965,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
+    font-weight: 500;
     transition: all 0.3s ease;
   }
 
@@ -987,7 +987,7 @@
 
   .progress-step.active .step-label {
     color: var(--text-color);
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .create-form {
@@ -1035,14 +1035,14 @@
 
   .form-section h2 {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-4) 0;
     color: var(--text-color);
   }
 
   .form-section h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: var(--space-4) 0 var(--space-2) 0;
     color: var(--text-color);
   }
@@ -1094,7 +1094,7 @@
   .field-help a {
     color: var(--color-primary-600);
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .field-help a:hover {
@@ -1321,7 +1321,7 @@
   
   .radio-card-content h3 {
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0;
     color: var(--text-color);
   }
@@ -1537,7 +1537,7 @@
     color: var(--color-primary-700);
     margin: 0 0 var(--space-2) 0;
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .submission-note p {

@@ -750,7 +750,7 @@
   .popup-header h3 {
     margin: 0;
     font-size: 1.2rem;
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .popup-close {

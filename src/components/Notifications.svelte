@@ -483,7 +483,7 @@
 
   .empty-state h3 {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-2) 0;
     color: var(--text-color);
   }
@@ -546,7 +546,7 @@
 
   .notification-title {
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-1) 0;
     line-height: 1.3;
   }

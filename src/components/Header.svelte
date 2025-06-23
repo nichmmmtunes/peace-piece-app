@@ -135,7 +135,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    font-weight: 600;
+    font-weight: 500;
     font-size: 1.25rem;
   }
   
@@ -205,7 +205,7 @@
     background-color: var(--color-error-600);
     color: white;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 500;
     padding: 2px 6px;
     border-radius: 10px;
     min-width: 18px;

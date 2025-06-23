@@ -489,7 +489,7 @@
 
   .header-left h1 {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0;
     color: var(--color-neutral-100);
     position: absolute;

@@ -136,7 +136,7 @@
 
   .terms-section h2 {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 500;
     margin-bottom: var(--space-3);
     color: var(--text-color);
   }

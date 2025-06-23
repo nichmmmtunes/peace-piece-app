@@ -270,7 +270,7 @@
 
   .success-content h3 {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--color-success-800);
     margin: 0 0 var(--space-2) 0;
   }
@@ -289,7 +289,7 @@
   }
 
   .success-instructions p {
-    font-weight: 600;
+    font-weight: 500;
     margin-bottom: var(--space-2);
   }
 

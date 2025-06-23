@@ -1202,7 +1202,7 @@
 
   .audio-container h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-3) 0;
     color: var(--text-color);
   }
@@ -1218,7 +1218,7 @@
 
   .project-status-container h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-3) 0;
     color: var(--text-color);
   }
@@ -1335,7 +1335,7 @@
   .funding-header .total-raised {
     font-family: var(--font-instrument-serif);
     font-size: 3.65rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-color);
     margin-bottom: .5rem;
     display: flex;
@@ -1349,7 +1349,7 @@
 
   .funding-header h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0;
     color: var(--text-color);
     display: none;
@@ -1363,7 +1363,7 @@
   }
 
   .amount-raised {
-    font-weight: 600;
+    font-weight: 500;
     color: var(--color-success-600);
   }
 
@@ -1452,7 +1452,7 @@
   .contributors-section h3,
   .sponsors-section h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-3) 0;
     color: var(--text-color);
   }
@@ -1503,7 +1503,7 @@
     justify-content: center;
     background-color: var(--color-neutral-200);
     color: var(--color-neutral-600);
-    font-weight: 600;
+    font-weight: 500;
     font-size: 1.25rem;
   }
 
@@ -1515,7 +1515,7 @@
   .contributor-name,
   .sponsor-name {
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-1) 0;
     color: var(--text-color);
   }
@@ -1535,7 +1535,7 @@
   .description-section h2,
   .details-section h2 {
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-4) 0;
     color: var(--text-color);
   }
@@ -1579,7 +1579,7 @@
 
   .detail-group h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-2) 0;
     color: var(--text-color);
   }
@@ -1592,7 +1592,7 @@
 
   .tags-section h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-3) 0;
     color: var(--text-color);
   }
@@ -1619,7 +1619,7 @@
   /* Timeline Section */
   .timeline-section h2 {
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-4) 0;
     color: var(--text-color);
   }
@@ -1683,7 +1683,7 @@
 
   .timeline-title {
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-1) 0;
     color: var(--text-color);
   }

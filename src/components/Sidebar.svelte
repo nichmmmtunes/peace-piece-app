@@ -549,7 +549,7 @@
     background-color: var(--color-error-600);
     color: white;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 500;
     padding: 2px 6px;
     border-radius: 10px;
     min-width: 18px;
@@ -567,7 +567,7 @@
     background-color: var(--color-error-600);
     color: white;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 500;
     padding: 2px 6px;
     border-radius: 10px;
     min-width: 18px;
@@ -671,7 +671,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--color-neutral-600);
     font-size: 0.875rem;
   }

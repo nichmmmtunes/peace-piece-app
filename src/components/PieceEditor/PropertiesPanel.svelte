@@ -1164,7 +1164,7 @@
   .property-section h4, .export-section h4 {
     margin: 0 0 1rem 0;
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 500;
     color: #333;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1475,7 +1475,7 @@
   .summary-value {
     font-size: 0.8rem;
     color: #333;
-    font-weight: 600;
+    font-weight: 500;
     font-family: monospace;
   }
 

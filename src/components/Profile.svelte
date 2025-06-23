@@ -9,6 +9,7 @@
   
   let profile: any = null;
   let artistProfile: any = null;
+  let organizerProfile: any = null;
   let pieces: any[] = [];
   let contributions: any[] = [];
   let activities: any[] = [];
@@ -17,7 +18,6 @@
   let isOwnProfile = false;
   let isFollowing = false;
   let followersCount = 0;
-  let followingCount = 0;
 
   async function loadProfile() {
     try {
@@ -45,6 +45,17 @@
         
       if (!artistError && artistData) {
         artistProfile = artistData;
+      }
+
+      // Check if user has an organizer profile
+      const { data: organizerData, error: organizerError } = await supabase
+        .from('organizers')
+        .select('*')
+        .eq('user_id', profile.id)
+        .maybeSingle();
+
+      if (!organizerError && organizerData) {
+        organizerProfile = organizerData;
       }
 
       // Load user's pieces (portfolio)
@@ -220,10 +231,6 @@
                   Website
                 </a>
               {/if}
-              
-              {#if artistProfile}
-                <span class="artist-badge">Artist</span>
-              {/if}
             </div>
           </div>
         </div>
@@ -239,19 +246,21 @@
             </a>
             
             {#if artistProfile}
-              <a href="/settings/artist-profile" use:link class="edit-artist-btn">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                </svg>
-                Edit Artist Profile
+              <a href="/artist/{artistProfile.artist_username}" use:link class="view-artist-btn">
+                View Artist Profile
               </a>
             {:else}
               <a href="/settings/artist-profile" use:link class="create-artist-btn">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                </svg>
                 Create Artist Profile
+              </a>
+            {/if}
+            {#if organizerProfile}
+              <a href="/organizer/{organizerProfile.organizer_username}" use:link class="view-organizer-btn">
+                View Organizer Profile
+              </a>
+            {:else}
+              <a href="/settings/organizer-profile" use:link class="create-organizer-btn">
+                Create Organizer Profile
               </a>
             {/if}
           {:else if $user}
@@ -544,7 +553,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--color-neutral-600);
     font-size: 2rem;
   }
@@ -562,10 +571,11 @@
 
   .profile-meta {
     display: flex;
-    gap: var(--space-4);
+    gap: var(--space-1);
     color: var(--text-muted);
     font-size: 0.875rem;
-    align-items: center;
+    align-items: flex-start;
+    flex-direction: column;
     flex-wrap: wrap;
   }
 
@@ -597,8 +607,10 @@
   }
 
   .edit-profile-btn,
-  .edit-artist-btn,
+  .view-artist-btn,
   .create-artist-btn,
+  .view-organizer-btn,
+  .create-organizer-btn,
   .follow-btn,
   .add-to-list-btn,
   .invite-btn {
@@ -626,16 +638,30 @@
     background: var(--card-bg);
   } 
   
-  .edit-artist-btn,
-  .edit-artist-btn:hover {
+  .view-artist-btn,
+  .view-artist-btn:hover {
     background-color: var(--color-accent-100);
     color: var(--color-accent-700);
+    border: none;
+  }
+  
+  .view-organizer-btn,
+  .view-organizer-btn:hover {
+    background-color: var(--color-warning-100);
+    color: var(--color-warning-700);
     border: none;
   }
   
   .create-artist-btn,
   .create-artist-btn:hover {
     background-color: var(--color-accent-600);
+    color: white;
+    border: none;
+  }
+
+  .create-organizer-btn,
+  .create-organizer-btn:hover {
+    background-color: var(--color-warning-600);
     color: white;
     border: none;
   }
@@ -694,7 +720,7 @@
   
   .bio-block h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-2) 0;
     color: var(--text-color);
   }
@@ -724,7 +750,7 @@
 
   .stat-item h3 {
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-3) 0;
     color: var(--text-color);
   }
@@ -887,7 +913,7 @@
 
   .portfolio-title {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-2) 0;
     line-height: 1.3;
   }
@@ -965,7 +991,7 @@
 
   .contribution-title {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-2) 0;
     line-height: 1.3;
   }
@@ -1027,7 +1053,7 @@
 
   .date-day {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-color);
   }
 
@@ -1055,7 +1081,7 @@
 
   .activity-title {
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-1) 0;
     color: var(--text-color);
   }

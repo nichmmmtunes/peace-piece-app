@@ -416,7 +416,7 @@
     color: var(--color-error-800);
     margin: 0 0 var(--space-3) 0;
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .error-state p {
@@ -533,7 +533,7 @@
 
   .password-requirements h4 {
     font-size: 0.875rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-2) 0;
     color: var(--text-color);
   }
@@ -607,7 +607,7 @@
 
   .success-message h3 {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--color-success-800);
     margin: 0 0 var(--space-2) 0;
   }

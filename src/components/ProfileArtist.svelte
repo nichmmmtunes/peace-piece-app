@@ -283,7 +283,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--color-neutral-600);
     font-size: 2rem;
   }
@@ -433,7 +433,7 @@
   
   .bio-block h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-2) 0;
     color: var(--text-color);
   }
@@ -463,7 +463,7 @@
 
   .stat-item h3 {
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-3) 0;
     color: var(--text-color);
   }
@@ -626,7 +626,7 @@
 
   .portfolio-title {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-2) 0;
     line-height: 1.3;
   }
@@ -704,7 +704,7 @@
 
   .contribution-title {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-2) 0;
     line-height: 1.3;
   }
@@ -766,7 +766,7 @@
 
   .date-day {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-color);
   }
 
@@ -794,7 +794,7 @@
 
   .activity-title {
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-1) 0;
     color: var(--text-color);
   }

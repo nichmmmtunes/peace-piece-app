@@ -976,7 +976,7 @@
 
   .audio-info h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-1) 0;
     color: white;
     visibility: hidden;
@@ -1017,7 +1017,7 @@
 
   .text-content h3 {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-4) 0;
     color: white;
   }
@@ -1051,7 +1051,7 @@
   }
 
   .mission-text :global(strong) {
-    font-weight: 600;
+    font-weight: 500;
     color: white;
   }
 
@@ -1066,7 +1066,7 @@
 
   .contributors-container h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-3) 0;
     color: white;
     text-align: center;
@@ -1090,7 +1090,7 @@
 
   .contributor-name {
     display: block;
-    font-weight: 600;
+    font-weight: 500;
     color: white;
     margin-bottom: var(--space-1);
   }
@@ -1115,7 +1115,7 @@
 
   .shortcuts-content h4 {
     font-size: 0.875rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-2) 0;
     color: white;
   }

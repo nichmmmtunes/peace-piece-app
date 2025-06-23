@@ -492,7 +492,7 @@
   .application-details-section h2,
   .decision-section h2 {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-4) 0;
     color: var(--text-color);
     padding-bottom: var(--space-2);
@@ -526,7 +526,7 @@
     align-items: center;
     justify-content: center;
     font-size: 2rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--color-neutral-500);
     background-color: var(--color-neutral-200);
   }
@@ -537,7 +537,7 @@
 
   .applicant-name {
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-2) 0;
     color: var(--text-color);
   }
@@ -591,7 +591,7 @@
 
   .artist-info h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-3) 0;
     color: var(--text-color);
   }
@@ -635,7 +635,7 @@
 
   .selected-mediums h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-3) 0;
     color: var(--text-color);
   }
@@ -650,7 +650,7 @@
 
   .pitch-section h3 {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0 0 var(--space-3) 0;
     color: var(--text-color);
   }
