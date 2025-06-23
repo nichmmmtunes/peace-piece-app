@@ -964,7 +964,7 @@
 
   .update-form {
     background: var(--card-bg);
-    border: 1px solid var(--border-color);
+    border: none;
     border-radius: var(--radius-lg);
     padding: var(--space-6);
   }

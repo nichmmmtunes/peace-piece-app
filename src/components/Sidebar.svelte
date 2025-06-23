@@ -531,6 +531,8 @@
     background: var(--bg-color);
     padding: 10px;
     filter: drop-shadow(2px 4px 6px rgba(0,0,0,.1));
+    width: 40px;
+    height: 40px;
   }
 
   .nav-item.active .nav-icon {
