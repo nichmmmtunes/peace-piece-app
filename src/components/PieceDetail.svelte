@@ -763,6 +763,10 @@
     margin: 0 auto;
   }
 
+  .piece-detail .timeline-section {
+    background: transparent;
+  }
+
   .loading {
     display: flex;
     flex-direction: column;
@@ -1679,6 +1683,7 @@
   .timeline-content {
     flex: 1;
     padding-bottom: var(--space-4);
+    background: transparent;
   }
 
   .timeline-title {

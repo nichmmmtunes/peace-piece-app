@@ -1183,6 +1183,11 @@
     transition: all 0.2s;
   }
 
+  :global(.dark-mode) .add-button {
+    background: var(--color-primary-700);
+    color: var(--color-primary-100);
+  }
+
   .add-button:hover {
     background-color: var(--color-primary-200);
   }
