@@ -178,6 +178,7 @@
     color: var(--text-color);
     font-family: var(--font-instrument-sans);
     font-size: 1.5rem;
+    font-weight: 500;
   }
   
   nav {

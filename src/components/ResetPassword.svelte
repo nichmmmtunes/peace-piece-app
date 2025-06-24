@@ -353,7 +353,7 @@
   }
 
   .logo-text {
-    font-weight: 700;
+    font-weight: 500;
     font-size: 1.5rem;
     color: var(--text-color);
     font-family: var(--font-instrument-sans);
