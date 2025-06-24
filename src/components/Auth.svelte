@@ -335,7 +335,7 @@
     }
 
     .auth-title h1 {
-      font-size: 22px;
+      font-size: 33px;
     }
   }
 </style>

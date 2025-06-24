@@ -390,11 +390,17 @@
               <span class="status-badge organizer">
                 <span class="badge-name">{organizer ? organizer.name : 'Unknown Organizer'}</span>
                 <span class="badge-initial">{getInitials(organizer ? organizer.name : '')}</span>
+                {#if organizer.avatar_url}
+                  <img src="{organizer.avatar_url}" width="30px" height="auto" alt="{organizer.name}" />
+                {/if}
               </span>
               {#each contributors as contributor, index (contributor.id)}
                 <span class="status-badge contributor">
                   <span class="badge-name">{contributor.name}</span>
                   <span class="badge-initial">{getInitials(contributor.name)}</span>
+                  {#if contributor.avatar_url}
+                    <img src="{contributor.avatar_url}" width="30px" height="auto" alt="{contributor.name}" />
+                  {/if}
                 </span>
               {/each}
             </div>
@@ -606,13 +612,15 @@
 
   .status-badge {
     width: 24px;
-    height: 28px;
+    height: 27px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-left: -2px;
-    outline: solid 1.5px var(--color-primary-00);
+    outline: solid 2.2px var(--color-primary-00);
+    position: relative;
+    overflow: hidden;
   }
 
   .status-badge .badge-name {
@@ -625,6 +633,15 @@
     color: var(--color-neutral-800);
     text-transform: uppercase;
     user-select: none;
+  }
+
+  .status-badge img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    top: 0;
+    left: 0;
+    position: absolute;
   }
 
   .status-badge.organizer {
