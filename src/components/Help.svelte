@@ -243,6 +243,14 @@
     padding: var(--space-6);
   }
 
+  :global(.light-mode) section.quick-links .link-card {
+    background: var(--bg-color);
+  }
+
+  :global(.light-mode) .faq-section {
+    background: var(--bg-color);
+  }
+
   .faq-list {
     display: flex;
     flex-direction: column;

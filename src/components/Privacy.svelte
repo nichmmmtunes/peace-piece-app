@@ -236,9 +236,9 @@
   }
 
   .contact-info {
-    background-color: var(--card-bg);
+    background: transparent;
     border-radius: var(--radius-md);
-    padding: var(--space-2) 0;
+    padding: 0;
     margin-top: var(--space-3);
   }
 

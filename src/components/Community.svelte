@@ -11,7 +11,7 @@
   <div class="community-content">
     <section class="policy-section" in:fly={{ y: 20, duration: 300, delay: 100 }}>
       <h2>Our Mission</h2>
-      <p>Peace Piece exists to foster creativity, collaboration, and positive change through art. We believe in the power of artistic expression to bring people together, promote understanding, and create a more peaceful world.</p>
+      <p>Peace Piece exists to foster creativity, collaboration, and positive change through art. We believe in the power of artistic expression to bring people together, promote understanding, and create a more peaceful&nbsp;world.</p>
     </section>
 
     <section class="policy-section" in:fly={{ y: 20, duration: 300, delay: 200 }}>
@@ -232,9 +232,15 @@
     padding: var(--space-6);
   }
 
+  :global(.light-mode) .policy-section {
+    background: var(--bg-color);
+  }
+
   .policy-section h2 {
     margin-bottom: var(--space-4);
     color: var(--text-color);
+    font-size: 1.4rem;
+    letter-spacing: -.015rem;
   }
 
   .policy-section h3 {
@@ -287,6 +293,10 @@
     text-align: center;
   }
 
+  :global(.light-mode) .value-card {
+    background: var(--card-bg);
+  }
+
   .value-icon {
     display: flex;
     align-items: center;
@@ -332,11 +342,15 @@
   }
 
   .contact-card {
-    background: var(--card-bg);
+    background: var(--bg-color);
     border-radius: var(--radius-lg);
     padding: var(--space-4);
     text-align: center;
-    border: 1px solid var(--border-color);
+    border: none;
+  }
+
+  :global(.light-mode) .contact-card {
+    background: var(--card-bg);
   }
 
   .contact-card h3 {
