@@ -6,6 +6,7 @@
   import { supabase } from './lib/supabase';
   import Sidebar from './components/Sidebar.svelte';
   import Auth from './components/Auth.svelte';
+  import Signup from './components/Signup.svelte';
   import Settings from './components/Settings.svelte';
   import Onboarding from './components/Onboarding.svelte';
   import ConfirmSignup from './components/ConfirmSignup.svelte';
@@ -185,6 +186,7 @@
 
   const routes = {
     '/': Dashboard,
+    '/signup': Signup,
     '/auth': Auth,
     '/settings': Settings,
     '/settings/artist-profile': ArtistProfileSettings,
@@ -218,7 +220,7 @@
   const protectedRoutes = ['/', '/settings', '/settings/artist-profile', '/settings/organizer-profile', '/dashboard', '/onboarding', '/update/:id', '/edit/:id', '/notifications', '/create-peace', '/pieces', '/apply/:id', '/review-application/:id'];
 
   // List of routes that should only show top bar (no sidebar) regardless of auth status
-  const topBarOnlyRoutes = ['/auth', '/confirm-signup', '/signup-confirmed', '/onboarding', '/forgot-password', '/reset-password'];
+  const topBarOnlyRoutes = ['/auth', '/signup', '/confirm-signup', '/signup-confirmed', '/onboarding', '/forgot-password', '/reset-password'];
 
   // List of routes that should have no UI chrome (fullscreen experience)
   const fullscreenRoutes = ['/view/:id', '/edit/:id'];

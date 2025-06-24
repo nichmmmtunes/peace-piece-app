@@ -5,7 +5,7 @@
 
   let email = '';
   let password = '';
-  let isSignUp = false;
+  let isSignUp = true;
   let loading = false;
   let error = '';
   
