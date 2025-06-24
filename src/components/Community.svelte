@@ -104,7 +104,7 @@
       <h3>How to Report</h3>
       <p>If you encounter content or behavior that violates our community policies:</p>
       <ul>
-        <li>Contact us immediately at <a href="mailto:community@peacepiece.org">community@peacepiece.org</a></li>
+        <li>Contact us immediately at <a href="mailto:community@peacepiece.art">community@peacepiece.art</a></li>
         <li>Include specific details about the violation</li>
         <li>Provide links or screenshots when possible</li>
       </ul>
@@ -153,7 +153,7 @@
       <h2>Appeals Process</h2>
       <p>If you believe a moderation decision was made in error:</p>
       <ol>
-        <li>Email us at <a href="mailto:appeals@peacepiece.org">appeals@peacepiece.org</a> within 30 days</li>
+        <li>Email us at <a href="mailto:appeals@peacepiece.art">appeals@peacepiece.art</a> within 30 days</li>
         <li>Include your account information and details about the decision</li>
         <li>Explain why you believe the decision was incorrect</li>
         <li>We'll review your appeal and respond within 7 business days</li>
@@ -178,17 +178,17 @@
         <div class="contact-card">
           <h3>Community Feedback</h3>
           <p>Share suggestions for improving our policies</p>
-          <a href="mailto:feedback@peacepiece.org">feedback@peacepiece.org</a>
+          <a href="mailto:feedback@peacepiece.art">feedback@peacepiece.art</a>
         </div>
         <div class="contact-card">
           <h3>Volunteer Moderation</h3>
           <p>Help us maintain a positive environment</p>
-          <a href="mailto:volunteer@peacepiece.org">volunteer@peacepiece.org</a>
+          <a href="mailto:volunteer@peacepiece.art">volunteer@peacepiece.art</a>
         </div>
         <div class="contact-card">
           <h3>Community Events</h3>
           <p>Organize or participate in community activities</p>
-          <a href="mailto:events@peacepiece.org">events@peacepiece.org</a>
+          <a href="mailto:events@peacepiece.art">events@peacepiece.art</a>
         </div>
       </div>
     </section>
@@ -272,7 +272,7 @@
   .policy-section li {
     color: var(--text-color);
     line-height: 1.6;
-    margin-bottom: var(--space-2);
+    margin-bottom: 0px;
   }
 
   .policy-section li:last-child {

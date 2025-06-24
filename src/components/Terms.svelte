@@ -83,7 +83,7 @@
       <h2>11. Contact Information</h2>
       <p>If you have any questions about these Terms of Use, please contact us at:</p>
       <div class="contact-info">
-        <p>Email: <a href="mailto:legal@peacepiece.org">legal@peacepiece.org</a></p>
+        <p>Email: <a href="mailto:legal@peacepiece.art">legal@peacepiece.art</a></p>
         <p>Address: Peace Piece Legal Department<br>
         123 Harmony Street<br>
         Unity City, UC 12345</p>
@@ -159,7 +159,7 @@
   .terms-section li {
     color: var(--text-color);
     line-height: 1.6;
-    margin-bottom: var(--space-2);
+    margin-bottom: 0px;
   }
 
   .terms-section li:last-child {

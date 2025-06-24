@@ -133,7 +133,7 @@
       <div class="faq-list">
         <div class="faq-item">
           <h3>How can I contact support?</h3>
-          <p>You can reach our support team at <a href="mailto:support@peacepiece.org">support@peacepiece.org</a>. We typically respond within 24 hours during business days.</p>
+          <p>You can reach our support team at <a href="mailto:support@peacepiece.art">support@peacepiece.art</a>. We typically respond within 24 hours during business days.</p>
         </div>
 
         <div class="faq-item">
@@ -143,7 +143,7 @@
 
         <div class="faq-item">
           <h3>Can I suggest new features?</h3>
-          <p>Absolutely! We love hearing from our community. Send your feature suggestions to <a href="mailto:feedback@peacepiece.org">feedback@peacepiece.org</a>.</p>
+          <p>Absolutely! We love hearing from our community. Send your feature suggestions to <a href="mailto:feedback@peacepiece.art">feedback@peacepiece.art</a>.</p>
         </div>
       </div>
     </section>

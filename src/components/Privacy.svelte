@@ -136,7 +136,7 @@
       <h2>10. Contact Us</h2>
       <p>If you have questions about this Privacy Policy or our data practices, please contact us:</p>
       <div class="contact-info">
-        <p>Email: <a href="mailto:privacy@peacepiece.org">privacy@peacepiece.org</a></p>
+        <p>Email: <a href="mailto:privacy@peacepiece.art">privacy@peacepiece.art</a></p>
         <p>Address: Peace Piece Privacy Team<br>
         123 Harmony Street<br>
         Unity City, UC 12345</p>
