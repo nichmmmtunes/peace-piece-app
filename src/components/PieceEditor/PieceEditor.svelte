@@ -569,7 +569,7 @@ $: activeClips = clips
 
   /* Panel Resize Handles */
   .panel-resize-handle {
-    width: 5px;
+    width: 6px;
     background: var(--color-neutral-400);
     border-left: 1px solid var(--color-neutral-400);
     border-right: 1px solid var(--color-neutral-400);
@@ -610,13 +610,13 @@ $: activeClips = clips
   .resize-dots {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
     align-items: center;
   }
 
   .dot {
-    width: 2px;
-    height: 2px;
+    width: 3px;
+    height: 3px;
     border-radius: 50%;
     background: var(--color-neutral-100);
     transition: background 0.2s ease;

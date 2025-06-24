@@ -589,12 +589,12 @@
     display: grid;
     grid-template-columns: repeat(2, 2px);
     grid-template-rows: repeat(3, 2px);
-    gap: 2px;
+    gap: 3px;
   }
 
   .dot {
-    width: 2px;
-    height: 2px;
+    width: 3px;
+    height: 3px;
     background: var(--color-neutral-800);
     border-radius: 50%;
   }

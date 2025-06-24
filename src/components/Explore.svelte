@@ -627,6 +627,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    user-select: none;
   }
 
   .supporter-card .card-link:after,
@@ -654,6 +655,7 @@
     z-index: 2;
     margin-bottom: 0px;
     font-weight: 400;
+    color: var(--color-neutral-100);
   }
 
   .card-link {

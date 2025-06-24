@@ -368,7 +368,7 @@
 <style>
   /* Timeline Resize Handle */
   .timeline-resize-handle {
-    height: 5px;
+    height: 6px;
     background: var(--color-neutral-400);
     border-top: 1px solid var(--color-neutral-400);
     border-bottom: 1px solid var(--color-neutral-400);
@@ -398,13 +398,13 @@
 
   .resize-dots {
     display: flex;
-    gap: 2px;
+    gap: 3px;
     align-items: center;
   }
 
   .dot {
-    width: 2px;
-    height: 2px;
+    width: 3px;
+    height: 3px;
     border-radius: 50%;
     background: var(--color-neutral-100);
     transition: background 0.2s ease;
