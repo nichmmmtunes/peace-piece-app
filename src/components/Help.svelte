@@ -180,6 +180,11 @@
     gap: var(--space-8);
   }
 
+  .help-content h2 {
+    font-size: 1.4rem;
+    letter-spacing: -.015rem;
+  }
+
   .quick-links h2,
   .faq-section h2 {
     margin-bottom: var(--space-4);
