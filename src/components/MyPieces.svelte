@@ -451,12 +451,13 @@
   }
 
   .create-button {
-    background-color: var(--color-primary-600);
-    color: white;
+    background-color: var(--text-color);
+    color: var(--bg-color);
+    border-radius: 50px;
   }
 
   .create-button:hover {
-    background-color: var(--color-primary-700);
+    background-color: var(--text-muted);
   }
 
   .browse-button {

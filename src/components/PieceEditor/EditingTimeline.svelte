@@ -576,7 +576,7 @@
   .playhead-line-ruler {
     width: 2px;
     height: 100%;
-    background: #007AFF;
+    background: var(--color-accent-600);
   }
 
   .playhead-handle-ruler {
@@ -585,7 +585,7 @@
     left: -4px;
     width: 10px;
     height: 10px;
-    background: #007AFF;
+    background: var(--color-accent-600);
     border-radius: 50%;
   }
 
@@ -734,6 +734,6 @@
   .playhead-line-tracks {
     width: 2px;
     height: 100%;
-    background: #007AFF;
+    background: var(--color-accent-600);
   }
 </style>

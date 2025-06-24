@@ -722,6 +722,10 @@
     color: var(--text-muted);
   }
 
+  :global(.dark-mode) .card-placeholder {
+    background: linear-gradient(45deg, #262626, var(--color-neutral-900));
+  }
+
   .card-placeholder svg {
     width: 42px;
   }
