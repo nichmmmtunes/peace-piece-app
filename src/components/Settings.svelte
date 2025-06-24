@@ -738,7 +738,7 @@
     color: white;
     border: none;
     padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-md);
+    border-radius: 50px;
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s;

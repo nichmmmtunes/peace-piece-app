@@ -619,7 +619,7 @@
     justify-content: center;
     gap: var(--space-2);
     padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-md);
+    border-radius: 50px;
     font-weight: 500;
     text-decoration: none;
     transition: all 0.2s;

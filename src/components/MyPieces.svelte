@@ -444,10 +444,11 @@
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-md);
+    border-radius: 50px;
     font-weight: 500;
     text-decoration: none;
     transition: all 0.2s;
+    border-color: transparent !important;
   }
 
   .create-button {
@@ -458,6 +459,7 @@
 
   .create-button:hover {
     background-color: var(--text-muted);
+    border-color: var(--border-color) !important;
   }
 
   .browse-button {
@@ -468,6 +470,7 @@
 
   .browse-button:hover {
     background-color: var(--color-neutral-100);
+    border-color: var(--border-color) !important;
   }
 
   .pieces-grid {

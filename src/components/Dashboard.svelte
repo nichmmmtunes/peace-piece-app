@@ -1042,7 +1042,7 @@
     padding: var(--space-2) var(--space-3);
     background: var(--bg-color);
     border: none;
-    border-radius: var(--radius-sm);
+    border-radius: 50px;
     color: var(--text-color);
     font-size: 0.875rem;
     font-weight: 500;

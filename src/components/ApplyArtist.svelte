@@ -432,7 +432,7 @@
     display: inline-block;
     margin-top: var(--space-4);
     padding: var(--space-3) var(--space-6);
-    border-radius: var(--radius-md);
+    border-radius: 50px;
     text-decoration: none;
   }
 

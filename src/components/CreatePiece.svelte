@@ -877,8 +877,8 @@
 <style>
   .create-piece {
     padding:var(--space-8) var(--space-6) var(--space-6);
-    max-width: 900px;
-    margin: 0 auto;
+    max-width: 1000px;
+    margin: 0 auto 0 0;
   }
 
   .create-container {
