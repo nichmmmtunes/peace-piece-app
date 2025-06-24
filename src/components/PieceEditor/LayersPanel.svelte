@@ -468,6 +468,10 @@
     border-radius: 0px;
   }
 
+  button.tab-btn:focus {
+    outline: none;
+  }
+
   .tab-btn.active {
     color: var(--color-primary-600);
     border-bottom-color: var(--color-primary-500);

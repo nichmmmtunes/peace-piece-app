@@ -1097,6 +1097,10 @@
     border-radius: 0px;
   }
 
+  button.tab-btn:focus {
+    outline: none;
+  }
+
   .tab-btn:hover {
     background: #f8f8f8;
     color: #333;

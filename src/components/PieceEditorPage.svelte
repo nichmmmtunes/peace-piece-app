@@ -642,17 +642,19 @@
     top: 0;
     left: 0;
     position: absolute;
+    mix-blend-mode: overlay;
+    opacity: .8;
   }
 
   .status-badge.organizer {
-    background-color: var(--color-primary-100);
+    background-color: var(--color-neutral-400);
     color: var(--color-primary-700);
     outline-color: var(--color-primary-600);
     z-index: 1;
   }
 
   .status-badge.contributor {
-    background-color: var(--color-accent-100);
+    background-color: var(--color-neutral-400);
     color: var(--color-accent-700);
     outline-color: var(--color-accent-700);
   }

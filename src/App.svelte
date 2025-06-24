@@ -248,12 +248,12 @@
       const cleanPath = getCleanPath(currentPath);
       
       // DEBUG: Log the current location and route checks
-      console.log('🔍 DEBUG: Current location:', currentPath);
-      console.log('🔍 DEBUG: Clean path:', cleanPath);
-      console.log('🔍 DEBUG: topBarOnlyRoutes:', topBarOnlyRoutes);
-      console.log('🔍 DEBUG: isRouteInList(currentPath, topBarOnlyRoutes):', isRouteInList(currentPath, topBarOnlyRoutes));
-      console.log('🔍 DEBUG: $user:', $user ? 'authenticated' : 'not authenticated');
-      console.log('🔍 DEBUG: protectedRoutes.includes(cleanPath):', protectedRoutes.includes(cleanPath));
+      // console.log('🔍 DEBUG: Current location:', currentPath);
+      // console.log('🔍 DEBUG: Clean path:', cleanPath);
+      // console.log('🔍 DEBUG: topBarOnlyRoutes:', topBarOnlyRoutes);
+      // console.log('🔍 DEBUG: isRouteInList(currentPath, topBarOnlyRoutes):', isRouteInList(currentPath, topBarOnlyRoutes));
+      // console.log('🔍 DEBUG: $user:', $user ? 'authenticated' : 'not authenticated');
+      // console.log('🔍 DEBUG: protectedRoutes.includes(cleanPath):', protectedRoutes.includes(cleanPath));
       
       if (!$user && protectedRoutes.includes(cleanPath)) {
         console.log('🔍 DEBUG: Redirecting to auth - user not authenticated for protected route');
