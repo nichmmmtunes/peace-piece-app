@@ -2,7 +2,7 @@
   import type { VideoClip } from './types';
   import { createEventDispatcher } from 'svelte';
 
-  export let timelineHeight = 150;
+  export let timelineHeight = 350;
   export let activeClips: VideoClip[] = [];
   export let currentTime = 0;
   export let isPlaying = false;

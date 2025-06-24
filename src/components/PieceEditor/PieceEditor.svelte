@@ -17,7 +17,7 @@ let isPlaying = false;
 let selectedClip: VideoClip | null = null;
 let activeTab: 'layers' | 'assets' = 'layers';
 let zoomLevel = 100;
-let timelineHeight = 150;
+let timelineHeight = 220;
 
 // Panel width state
 let layersPanelWidth = 200;

@@ -478,6 +478,7 @@
     flex: 1;
     padding: 1rem;
     overflow-y: auto;
+    background: white;
   }
 
   .layers-panel {
@@ -497,7 +498,7 @@
     background: var(--color-primary-500);
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 100px;
     cursor: pointer;
     font-size: 0.8rem;
     margin-bottom: 0.5rem;
@@ -530,23 +531,22 @@
   .layer-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.1rem;
     padding: 0.5rem;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
     border: 2px solid transparent;
-    background: white;
+    background: var(--color-neutral-100);
   }
 
   .layer-item:hover {
-    background: var(--color-neutral-300);
+    background: var(--color-neutral-100);
   }
 
   .layer-item.selected {
-    background: var(--color-neutral-600);
-    color: white;
+    background: var(--color-neutral-200);
   }
 
   .layer-item.dragging {
@@ -595,12 +595,12 @@
   .dot {
     width: 2px;
     height: 2px;
-    background: var(--color-neutral-300);
+    background: var(--color-neutral-800);
     border-radius: 50%;
   }
 
   .layer-item.selected .dot {
-    background: var(--color-neutral-300);
+    background: var(--color-neutral-900);
   }
 
   .layer-icon {
@@ -614,18 +614,20 @@
     flex-direction: column;
     gap: 2px;
     overflow: hidden;
+    padding-left: 8px;
   }
 
   .layer-name {
-    font-size: 0.9rem;
+    font-size: 12px;
     font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    line-height: 1;
   }
 
   .layer-info-text {
-    font-size: 0.7rem;
+    font-size: 10px;
     opacity: 0.7;
   }
 
@@ -640,8 +642,8 @@
     cursor: pointer;
     font-size: 1.2rem;
     padding: 0;
-    width: 20px;
-    height: 20px;
+    width: 10px;
+    height: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -653,15 +655,6 @@
   .delete-layer-btn:hover {
     background: rgba(255, 0, 0, 0.1);
     color: #ff4444;
-  }
-
-  .layer-item.selected .delete-layer-btn {
-    color: rgba(255, 255, 255, 0.7);
-  }
-
-  .layer-item.selected .delete-layer-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
   }
 
   .empty-layers {
@@ -707,7 +700,7 @@
     background: var(--color-primary-500);
     color: white;
     text-align: center;
-    border-radius: 4px;
+    border-radius: 100px;
     cursor: pointer;
     font-size: 0.9rem;
   }

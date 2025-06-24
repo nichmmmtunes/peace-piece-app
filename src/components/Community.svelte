@@ -227,14 +227,14 @@
 
   .policy-section {
     background: var(--card-bg);
-    border: 1px solid var(--border-color);
+    border: none;
     border-radius: var(--radius-lg);
     padding: var(--space-6);
   }
 
   .policy-section h2 {
     margin-bottom: var(--space-4);
-    color: var(--color-primary-700);
+    color: var(--text-color);
   }
 
   .policy-section h3 {
@@ -275,13 +275,13 @@
 
   .values-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(2, minmax(250px, 1fr));
     gap: var(--space-4);
     margin-top: var(--space-4);
   }
 
   .value-card {
-    background-color: var(--color-neutral-50);
+    background-color: var(--bg-color);
     border-radius: var(--radius-lg);
     padding: var(--space-4);
     text-align: center;
@@ -313,16 +313,15 @@
   }
 
   .encouraged-list li {
-    color: var(--color-success-700);
+    color: var(--color-success-600);
   }
 
   .prohibited-list li {
-    color: var(--color-error-700);
+    color: var(--color-error-600);
   }
 
   .contact-section {
-    background: linear-gradient(135deg, var(--color-primary-50), var(--color-accent-50));
-    border-color: var(--color-primary-200);
+    background: var(--card-bg);
   }
 
   .contact-grid {
@@ -354,8 +353,9 @@
   }
 
   .contact-card a, .policy-section a {
-    color: var(--color-primary-600);
-    text-decoration: none;
+    color: var(--text-color);
+    text-decoration: underline;
+    text-underline-offset: 5px;
     font-weight: 500;
   }
 

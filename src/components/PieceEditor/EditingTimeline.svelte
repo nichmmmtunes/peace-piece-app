@@ -8,7 +8,7 @@
   export let totalDuration = 60;
   export let isPlaying = false;
   export let selectedClip: VideoClip | null = null;
-  export let timelineHeight = 150;
+  export let timelineHeight = 350;
 
   let timelineContainer: HTMLElement;
 
@@ -528,6 +528,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    background: white;
   }
 
   /* Sticky Time Ruler */

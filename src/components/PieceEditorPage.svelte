@@ -498,7 +498,7 @@
 
   .editor-header {
     padding: 0px var(--space-4);
-    background: var(--color-neutral-200);
+    background: white;
     border-bottom: 1px solid var(--color-neutral-300);
     display: flex;
     justify-content: space-between;
@@ -573,7 +573,7 @@
   .editor-status {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 1rem;
   }
 
   .editor-status .saved-indicator {
@@ -637,7 +637,7 @@
   .status-badge.contributor {
     background-color: var(--color-accent-100);
     color: var(--color-accent-700);
-    outline-color: var(--color-accent-600);
+    outline-color: var(--color-accent-700);
   }
 
   .editor-content {

@@ -1114,6 +1114,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    background: white;
   }
 
   .properties-header, .export-header {
@@ -1495,7 +1496,7 @@
     gap: 0.5rem;
     padding: 0.75rem 1rem;
     border: none;
-    border-radius: 6px;
+    border-radius: 100px;
     font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
