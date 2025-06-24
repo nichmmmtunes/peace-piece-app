@@ -34,6 +34,7 @@
   import OrganizerProfileSettings from './components/OrganizerProfileSettings.svelte';
   import ApplyArtist from './components/ApplyArtist.svelte';
   import ReviewApplication from './components/ReviewApplication.svelte';
+  import BoltBadge from './components/BoltBadge.svelte'
 
   let darkMode = false;
   let onboardingCompleted = false;
@@ -370,6 +371,7 @@
       {/if}
     </div>
   </div>
+  <BoltBadge />
 </main>
 
 <style>
