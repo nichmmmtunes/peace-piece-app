@@ -397,7 +397,7 @@
   .explore-container {
     padding: var(--space-6);
     max-width: 1400px;
-    margin: 0 auto;
+    margin: 0 auto 0 0;
   }
 
   .explore-header {
