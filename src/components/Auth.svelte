@@ -185,7 +185,7 @@
   }
 
   .auth-title h1 {
-    font-size: 2.2rem;
+    font-size: 2.7rem;
     font-weight: 700;
     margin: 0 0 var(--space-2) 0;
     color: var(--text-color);
