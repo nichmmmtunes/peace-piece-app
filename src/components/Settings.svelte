@@ -381,7 +381,7 @@
     background: var(--card-bg);
     border: none;
     border-radius: var(--radius-lg);
-    padding: var(--space-6);
+    padding: var(--space-6) var(--space-6) var(--space-4);
   }
 
   :global(.light-mode) .settings-card {
