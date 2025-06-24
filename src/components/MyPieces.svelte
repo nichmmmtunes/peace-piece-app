@@ -129,7 +129,7 @@
 
 <div class="my-pieces-container">
   <div class="my-pieces-header">
-    <h1>My Peace Pieces</h1>
+    <h1>My Pieces</h1>
     <p>Manage and track your involvement in Peace Pieces</p>
   </div>
 

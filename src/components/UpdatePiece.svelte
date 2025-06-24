@@ -335,7 +335,7 @@
         <div class="breadcrumb">
           <a href="/piece/{params.id}" use:link>← Back to Piece</a>
         </div>
-        <h1>Update Peace Piece</h1>
+        <h1>Update {title}</h1>
         <p>Make changes to your creative work</p>
       </div>
 

@@ -177,8 +177,9 @@
 
   .logo-text {
     font-weight: 700;
-    font-size: 22px;
+    font-size: 1.5rem;
     color: var(--text-color);
+    font-family: var(--font-instrument-sans);
   }
 
   .forgot-password-title h1 {

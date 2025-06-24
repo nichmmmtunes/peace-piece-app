@@ -151,7 +151,7 @@
 <div class="explore-container">
   <div class="explore-header">
     <div class="header-content">
-      <h1>Featured Projects</h1>
+      <h1>Featured</h1>
       <div class="header-controls">
         <div class="search-container">
           <input 

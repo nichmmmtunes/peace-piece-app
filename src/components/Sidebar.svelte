@@ -456,11 +456,12 @@
 
   .logo-text {
     font-weight: 500;
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     color: var(--text-color);
     white-space: nowrap;
     position: relative;
     top: 3px;
+    font-family: var(--font-instrument-sans);
   }
 
   .collapse-btn {

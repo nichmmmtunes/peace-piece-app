@@ -270,7 +270,7 @@
       <div class="breadcrumb">
         <a href="/dashboard" use:link>← Back to Dashboard</a>
       </div>
-      <h1>Create New Peace Piece</h1>
+      <h1>Create a New Piece</h1>
       <p>Share your creative vision and make a positive impact</p>
     </div>
 
@@ -888,7 +888,7 @@
   }
 
   .create-header {
-    text-align: center;
+    text-align: left;
   }
 
   .breadcrumb {
