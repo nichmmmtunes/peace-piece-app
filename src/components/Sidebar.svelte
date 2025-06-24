@@ -395,12 +395,16 @@
     height: 100vh;
     width: 280px;
     background: var(--card-bg);
-    border-right: 1px solid var(--border-color);
+    border-right: none;
     display: flex;
     flex-direction: column;
     transition: width 0.3s ease;
     z-index: 100;
     overflow: hidden;
+  }
+
+  :global(.light-mode) .sidebar {
+    border-right: solid 1px var(--border-color);
   }
 
   .sidebar.collapsed {
