@@ -5,7 +5,7 @@
 <footer class="footer">
   <div class="footer-content">
     <p class="copyright">
-      Copyright © 2025 Go Arts Productions LLC - All Rights Reserved
+      Copyright &copy; 2025 Peace Piece. All Rights Reserved.
     </p>
   </div>
 </footer>
