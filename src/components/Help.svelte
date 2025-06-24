@@ -198,7 +198,7 @@
     gap: var(--space-3);
     padding: var(--space-4);
     background: var(--card-bg);
-    border: 1px solid var(--border-color);
+    border: none;
     border-radius: var(--radius-lg);
     text-decoration: none;
     color: inherit;
@@ -238,7 +238,7 @@
 
   .faq-section {
     background: var(--card-bg);
-    border: 1px solid var(--border-color);
+    border: none;
     border-radius: var(--radius-lg);
     padding: var(--space-6);
   }
@@ -273,8 +273,9 @@
   }
 
   .faq-item a {
-    color: var(--color-primary-600);
-    text-decoration: none;
+    color: var(--text-color);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .faq-item a:hover {

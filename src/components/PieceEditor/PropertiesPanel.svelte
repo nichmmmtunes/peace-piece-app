@@ -1504,7 +1504,7 @@
   }
 
   .export-btn.primary {
-    background: var(--color-primary-500);
+    background: black;
     color: white;
   }
 

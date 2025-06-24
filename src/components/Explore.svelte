@@ -715,7 +715,7 @@
   .card-placeholder {
     width: 100%;
     height: 60%;
-    background-color: #181818;
+    background: linear-gradient(45deg, var(--color-neutral-200), var(--color-primary-00));
     display: flex;
     align-items: center;
     justify-content: center;

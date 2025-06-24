@@ -495,7 +495,7 @@
   .add-layer-btn {
     width: 100%;
     padding: 0.5rem;
-    background: var(--color-primary-500);
+    background: black;
     color: white;
     border: none;
     border-radius: 100px;
@@ -697,7 +697,7 @@
   .upload-btn {
     display: block;
     padding: 0.75rem;
-    background: var(--color-primary-500);
+    background: black;
     color: white;
     text-align: center;
     border-radius: 100px;

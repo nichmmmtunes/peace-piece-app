@@ -364,7 +364,11 @@
 
   .info-card {
     background-color: var(--color-primary-50);
-    border-color: var(--color-primary-200);
+    border: none;
+  }
+
+  .info-card a {
+    border-radius: 50px;
   }
 
   .info-card h2 {
@@ -526,6 +530,14 @@
     border-top: 1px solid var(--border-color);
   }
 
+  .form-actions button.primary {
+    background: var(--text-color);
+    color: var(--bg-color);
+    border: none;
+    padding: var(--space-2) var(--space-4);
+    border-radius: 50px;
+  }
+
   .spinner {
     animation: spin 1s linear infinite;
   }
@@ -560,7 +572,7 @@
   }
 
   .create-button:hover {
-    background-color: var(--color-primary-700);
+    background-color: var(--color-primary-500);
   }
 
   @media (max-width: 768px) {

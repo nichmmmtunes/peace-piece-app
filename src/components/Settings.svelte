@@ -157,18 +157,21 @@
               : 'Create an artist profile to apply for Peace Pieces and showcase your work'}
           </p>
         </div>
+      </div>
+
+      <div class="artist-profile-actions">
         <a href="/settings/artist-profile" use:link class="artist-profile-button">
           {hasArtistProfile ? 'Manage Artist Profile' : 'Create Artist Profile'}
         </a>
+        
+        {#if hasArtistProfile && artistUsername !==''}
+          <div class="artist-profile-status">
+            <a href="/artist/{ artistUsername }" use:link class="artist-profile-button">
+            View Artist Profile
+            </a>
+          </div>
+        {/if}
       </div>
-      
-      {#if hasArtistProfile && artistUsername !==''}
-        <div class="artist-profile-status">
-          <a href="/artist/{ artistUsername }" use:link class="artist-profile-button">
-          View Artist Profile
-          </a>
-        </div>
-      {/if}
     </div>
 
     <!-- Organizer Profile Section -->
@@ -182,18 +185,20 @@
               : 'Create an organizer profile to start new Peace Pieces and manage projects'}
           </p>
         </div>
+      </div>
+      
+      <div class="organizer-profile-actions">
         <a href="/settings/organizer-profile" use:link class="organizer-profile-button">
           {hasOrganizerProfile ? 'Manage Organizer Profile' : 'Create Organizer Profile'}
         </a>
+        {#if hasOrganizerProfile && organizerUsername !== ''}
+          <div class="organizer-profile-status">
+            <a href="/organizer/{ organizerUsername }" use:link class="organizer-profile-button">
+              View Organizer Profile
+            </a>
+          </div>
+        {/if}
       </div>
-      
-      {#if hasOrganizerProfile && organizerUsername !== ''}
-        <div class="organizer-profile-status">
-          <a href="/organizer/{ organizerUsername }" use:link class="organizer-profile-button">
-            View Organizer Profile
-          </a>
-        </div>
-      {/if}
     </div>
 
     <div class="settings-card">
@@ -421,9 +426,9 @@
     display: inline-flex;
     align-items: center;
     padding: var(--space-2) var(--space-4);
-    background-color: var(--color-primary-600);
-    color: white;
-    border-radius: var(--radius-md);
+    background: var(--text-color);
+    color: var(--bg-color);
+    border-radius: 50px;
     text-decoration: none;
     font-weight: 500;
     transition: background-color 0.2s;
@@ -432,14 +437,17 @@
 
   .artist-profile-button:hover,
   .organizer-profile-button:hover {
-    background-color: var(--color-primary-700);
+    background-color: var(--text-muted);
   }
 
-  .artist-profile-status,
-  .organizer-profile-status {
-    margin-top: var(--space-4);
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--border-color);
+  .artist-profile-actions,
+  .organizer-profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: var(--space-2);
+    margin-right: calc(var(--space-2) * -1);
+    gap: var(--space-4);
   }
 
   .status-badge {
@@ -609,6 +617,14 @@
     margin-top: var(--space-6);
     padding-top: var(--space-6);
     border-top: 1px solid var(--border-color);
+  }
+
+  .form-actions button.primary {
+    background: var(--text-color);
+    color: var(--bg-color);
+    border: none;
+    padding: var(--space-2) var(--space-4);
+    border-radius: 50px;
   }
 
   .spinner {

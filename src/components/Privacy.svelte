@@ -178,17 +178,21 @@
   }
 
   .privacy-section {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: var(--space-6);
+    background: transparent;
+    border: none;
+    border-radius: 0px;
+    padding: var(--space-6) 0px;
+  }
+
+  .privacy-section:not(:first-of-type) {
+    border-top: 1px solid var(--border-color);
   }
 
   .privacy-section h2 {
     font-size: 1.25rem;
     font-weight: 500;
     margin-bottom: var(--space-3);
-    color: var(--color-primary-700);
+    color: var(--text-color);
   }
 
   .privacy-section h3 {
@@ -196,6 +200,10 @@
     font-weight: 500;
     margin: var(--space-4) 0 var(--space-2) 0;
     color: var(--text-color);
+  }
+
+  .privacy-section ul:last-child {
+    margin-bottom: 0;
   }
 
   .privacy-section h3:first-of-type {
@@ -228,9 +236,9 @@
   }
 
   .contact-info {
-    background-color: var(--color-neutral-50);
+    background-color: var(--card-bg);
     border-radius: var(--radius-md);
-    padding: var(--space-4);
+    padding: var(--space-2) 0;
     margin-top: var(--space-3);
   }
 
@@ -244,8 +252,9 @@
   }
 
   .contact-info a {
-    color: var(--color-primary-600);
-    text-decoration: none;
+    color: var(--text-color);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .contact-info a:hover {
