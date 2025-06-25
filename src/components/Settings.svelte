@@ -152,9 +152,11 @@
         <div>
           <h2>Artist Profile</h2>
           <p class="artist-profile-description">
-            {hasArtistProfile 
-              ? 'Manage your artist profile to update your artistic mediums and bio' 
-              : 'Create an artist profile to apply for Peace Pieces and showcase your work'}
+            {#if hasArtistProfile }
+              Manage your artist profile to update your artistic mediums and&nbsp;bio 
+            {:else}
+              Create an artist profile to apply for Peace Pieces and showcase your&nbsp;work
+            {/if}
           </p>
         </div>
       </div>
@@ -180,9 +182,11 @@
         <div>
           <h2>Organizer Profile</h2>
           <p class="organizer-profile-description">
-            {hasOrganizerProfile 
-              ? 'Manage your organizer profile to update your organization details' 
-              : 'Create an organizer profile to start new Peace Pieces and manage projects'}
+            {#if hasOrganizerProfile }
+              Manage your organizer profile to update your organization&nbsp;details
+            {:else}
+              Create an organizer profile to start new Peace Pieces and manage&nbsp;projects
+            {/if}
           </p>
         </div>
       </div>
@@ -785,6 +789,14 @@
       align-self: stretch;
       justify-content: center;
       margin-top: var(--space-2);
+      width: fit-content;
+      margin-left: -.5rem;
+    }
+
+    .artist-profile-actions,
+    .organizer-profile-actions {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 </style>

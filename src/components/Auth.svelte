@@ -36,7 +36,7 @@
 <div class="auth-container">
   <div class="auth-content">
     <div class="auth-header" in:fade>
-      <div class="logo">
+      <a href="https://www.peacepiece.art" title="Learn more about Peace Piece." target="_self" class="logo">
         <div class="logo-icon">
           <svg viewBox="0 0 597 933" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M295.474 730.578C296.983 727.764 301.017 727.764 302.526 730.578L402.365 916.86C403.793 919.525 401.862 922.75 398.839 922.75H199.161C196.138 922.75 194.207 919.525 195.635 916.86L295.474 730.578Z" fill="currentColor" stroke="currentColor" stroke-width="20"/>
@@ -50,7 +50,7 @@
           </svg>
         </div>
         <span class="logo-text">Peace Piece</span>
-      </div>
+      </a>
       
       <div class="auth-title">
         <h1>{isSignUp ? 'Create Account' : 'Welcome Back'}</h1>
@@ -238,8 +238,8 @@
   }
 
   .forgot-password-link {
-    text-align: right;
-    margin-top: -var(--space-2);
+    text-align: center;
+    margin: var(--space-2) 0;
   }
 
   .forgot-link {
