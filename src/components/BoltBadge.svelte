@@ -8,8 +8,8 @@
 <style>
     .bolt-badge {
         position: fixed;
-        bottom: clamp(20px, 6vw, 40px);
-        right: clamp(20px, 6vw, 40px);
+        bottom: clamp(15px, 6vw, 30px);
+        right: clamp(12px, 6vw, 25px);
         width: max(6vw, 60px);
         height: max(6vw, 60px);
         z-index: 2000;
@@ -25,11 +25,15 @@
         background: url('/bolt-black_circle_360x360.png');
         background-size: contain;
         background-repeat: no-repeat;
+        border: solid 2px var(--bg-color);
+        border-radius: 100px;
     }
 
     :global(.dark-mode) .bolt-badge {
         background: url('/bolt-white_circle_360x360.png');
         background-size: contain;
         background-repeat: no-repeat;
+        border: solid 2px var(--bg-color);
+        border-radius: 100px;
     }
 </style>
