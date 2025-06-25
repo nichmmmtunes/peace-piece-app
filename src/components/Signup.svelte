@@ -193,7 +193,8 @@
 
   .auth-title p {
     color: var(--text-muted);
-    margin: 0;
+    margin: 0 auto;
+    max-width: 20ch;
   }
 
   .auth-form {
@@ -237,8 +238,8 @@
   }
 
   .forgot-password-link {
-    text-align: right;
-    margin-top: -var(--space-2);
+    text-align: center;
+    margin: var(--space-2) 0;
   }
 
   .forgot-link {
@@ -274,7 +275,7 @@
     padding: var(--space-3) var(--space-6);
     font-size: 1rem;
     font-weight: 500;
-    margin-top: var(--space-2);
+    margin: var(--space-2) auto 0;
     background: var(--bg-color);
     color: var(--text-color);
   }
