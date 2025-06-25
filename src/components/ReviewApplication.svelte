@@ -391,7 +391,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 400px;
+    min-height: 200px;
     gap: var(--space-4);
   }
 
