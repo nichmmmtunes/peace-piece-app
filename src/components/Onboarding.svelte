@@ -191,6 +191,11 @@
     border-radius: unset;
   }
 
+  .item-header:focus {
+    outline-offset: 0px;
+    outline: none;
+  }
+
   .expand-icon {
     font-size: 22px;
     color: var(--text-muted);
