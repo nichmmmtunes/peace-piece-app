@@ -5,7 +5,7 @@
 <footer class="footer">
   <div class="footer-content">
     <p class="copyright">
-      Copyright &copy; 2025 Peace Piece. All Rights Reserved.
+      Copyright &copy; 2025 Peace Piece. All&nbsp;Rights&nbsp;Reserved.
     </p>
   </div>
 </footer>
