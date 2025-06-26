@@ -432,6 +432,7 @@
     transition: height 0.1s ease;
     min-height: 100px;
     z-index: 10;
+    max-width: 100vw;
   }
 
   .timeline-controls {
