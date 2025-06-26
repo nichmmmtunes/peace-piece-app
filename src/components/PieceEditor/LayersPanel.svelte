@@ -506,8 +506,8 @@
   }
 
   .tab-btn.active {
-    color: var(--color-primary-600);
-    border-bottom-color: var(--color-primary-500);
+    color: #000;
+    border-bottom-color: var(--color-neutral-800);
     background-color: #FBFBFB;
   }
 
