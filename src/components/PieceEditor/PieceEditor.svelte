@@ -39,9 +39,9 @@ let newLayerType: 'video' | 'image' | 'sticker' | 'music' | 'text' = 'video';
 let newLayerContent = '';
 let newLayerFile: File | null = null;
 
-// Auto-save timer
-let autoSaveTimer: number;
-const AUTO_SAVE_INTERVAL = 10000; // 10 seconds
+// Edit counter for auto-save
+let editCounter = 0;
+const EDITS_BEFORE_SAVE = 10;
 
 // Event dispatcher for saving data
 const dispatch = createEventDispatcher();
@@ -62,13 +62,9 @@ onMount(() => {
   document.addEventListener('mousemove', handleGlobalMouseMove);
   document.addEventListener('mouseup', handleGlobalMouseUp);
   
-  // Set up auto-save timer
-  autoSaveTimer = setInterval(saveEditorData, AUTO_SAVE_INTERVAL);
-  
   return () => {
     document.removeEventListener('mousemove', handleGlobalMouseMove);
     document.removeEventListener('mouseup', handleGlobalMouseUp);
-    clearInterval(autoSaveTimer);
   };
 });
 
@@ -145,8 +141,8 @@ function deleteClip(event) {
     selectedClip = null;
   }
   
-  // Save after deleting a clip
-  saveEditorData();
+  // Increment edit counter and save if needed
+  incrementEditCounter();
 }
 
 function createLayer(event) {
@@ -173,8 +169,8 @@ function createLayer(event) {
   clips = [...clips, newClip];
   selectedClip = newClip;
   
-  // Save after creating a new layer
-  saveEditorData();
+  // Increment edit counter and save if needed
+  incrementEditCounter();
 }
 
 function reorderLayers(event) {
@@ -212,8 +208,8 @@ function reorderLayers(event) {
     selectedClip = draggedClip;
   }
   
-  // Save after reordering layers
-  saveEditorData();
+  // Increment edit counter and save if needed
+  incrementEditCounter();
 }
 
 async function addMediaFile(event) {
@@ -277,8 +273,8 @@ async function addMediaFile(event) {
       
       clips = [...clips, clip];
       
-      // Save after adding a media file
-      saveEditorData();
+      // Increment edit counter and save if needed
+      incrementEditCounter();
     };
     
     mediaElement.src = url;
@@ -314,8 +310,8 @@ async function addMediaFile(event) {
     
     clips = [...clips, clip];
     
-    // Save after adding an image file
-    saveEditorData();
+    // Increment edit counter and save if needed
+    incrementEditCounter();
   }
 }
 
@@ -334,14 +330,8 @@ function updateClipProperty(event) {
     return clip;
   });
   
-  // Save after updating a clip property
-  // Throttle saveEditorData to avoid excessive calls
-  if (!updateClipProperty._throttleTimeout) {
-    updateClipProperty._throttleTimeout = setTimeout(() => {
-      saveEditorData();
-      updateClipProperty._throttleTimeout = null;
-    }, 800);
-  }
+  // Increment edit counter and save if needed
+  incrementEditCounter();
 }
 
 function updateClipTiming(event) {
@@ -381,8 +371,19 @@ function updateClipTiming(event) {
     return clip;
   });
   
-  // Save after updating clip timing
-  saveEditorData();
+  // Increment edit counter and save if needed
+  incrementEditCounter();
+}
+
+// Function to increment edit counter and save if needed
+function incrementEditCounter() {
+  editCounter++;
+  
+  // Save after every EDITS_BEFORE_SAVE edits
+  if (editCounter >= EDITS_BEFORE_SAVE) {
+    saveEditorData();
+    editCounter = 0; // Reset counter after saving
+  }
 }
 
 function handlePlayPause() {
