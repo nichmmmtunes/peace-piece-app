@@ -216,7 +216,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
-    margin-bottom: 10px;
+    margin: 1rem 0;
   }
 
   .support-option {
