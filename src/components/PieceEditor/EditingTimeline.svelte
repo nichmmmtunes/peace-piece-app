@@ -548,7 +548,6 @@
     background: #FBFBFB;
     flex-shrink: 0;
     cursor: pointer;
-    overflow: hidden;
   }
 
   .time-tick {
