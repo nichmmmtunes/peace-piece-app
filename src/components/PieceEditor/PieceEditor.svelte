@@ -1,3 +1,4 @@
+<script lang="ts">
 import { onMount, createEventDispatcher } from 'svelte';
 import LayersPanel from './LayersPanel.svelte';
 import CanvasArea from './CanvasArea.svelte';
