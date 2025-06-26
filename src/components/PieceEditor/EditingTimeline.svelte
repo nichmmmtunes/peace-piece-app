@@ -715,7 +715,7 @@
     margin-right: 4px;
   }
 
-  .clip-icon svg {
+  .clip-content .clip-icon svg {
     width: 100%;
     height: 100%;
     object-fit: contain;
