@@ -151,7 +151,7 @@
     border-radius: 4px;
     padding: 4px 8px;
     font-size: 12px;
-    min-width: 180px;
+    min-width: 168px;
     cursor: pointer;
     color: #000;
   }
