@@ -8,7 +8,7 @@
   export let currentProjectStatus: string = '';
 
   // Tab state
-  let activeTab: 'properties' | 'export' = 'properties';
+  let activeTab: 'properties' | 'export' | 'history' = 'properties';
 
   // Export settings
   let exportSettings = {
@@ -325,6 +325,10 @@
       filename: 'my-video'
     };
   }
+  
+  function createNamedVersion() {
+    dispatch('createNamedVersion');
+  }
 
   // Calculate estimated file size (rough approximation)
   function getEstimatedFileSize() {
@@ -367,6 +371,13 @@
       on:click={() => activeTab = 'properties'}
     >
       Properties
+    </button>
+    <button 
+      class="tab-btn" 
+      class:active={activeTab === 'history'}
+      on:click={() => activeTab = 'history'}
+    >
+      History
     </button>
     <button 
       class="tab-btn" 
@@ -884,6 +895,79 @@
             </div>
           </div>
         {/if}
+        
+        <!-- Version Control -->
+        <div class="property-section">
+          <h4>Version Control</h4>
+          <div class="property-group">
+            <button class="version-button" on:click={createNamedVersion}>
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+              Save Named Version
+            </button>
+            <p class="version-help">Create a named snapshot of your current work that you can return to later.</p>
+          </div>
+        </div>
+      </div>
+
+    {:else if activeTab === 'history'}
+      <!-- History Tab Content -->
+      <div class="history-header">
+        <h3>Version History</h3>
+      </div>
+      <div class="history-content">
+        <p class="history-info">
+          View and restore previous versions of your project. Each time you save, a snapshot is automatically created.
+        </p>
+        
+        <div class="history-list">
+          <div class="history-item">
+            <div class="history-item-header">
+              <div class="history-item-info">
+                <span class="history-item-name">Current Version</span>
+                <span class="history-item-date">Just now</span>
+              </div>
+              <div class="history-item-badge current">Current</div>
+            </div>
+          </div>
+          
+          <div class="history-item">
+            <div class="history-item-header">
+              <div class="history-item-info">
+                <span class="history-item-name">Final Draft</span>
+                <span class="history-item-date">2 hours ago</span>
+              </div>
+              <button class="history-restore-btn">Restore</button>
+            </div>
+          </div>
+          
+          <div class="history-item">
+            <div class="history-item-header">
+              <div class="history-item-info">
+                <span class="history-item-name">Auto Save</span>
+                <span class="history-item-date">Yesterday, 3:45 PM</span>
+              </div>
+              <button class="history-restore-btn">Restore</button>
+            </div>
+          </div>
+          
+          <div class="history-item">
+            <div class="history-item-header">
+              <div class="history-item-info">
+                <span class="history-item-name">First Draft</span>
+                <span class="history-item-date">June 22, 2025</span>
+              </div>
+              <button class="history-restore-btn">Restore</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="history-note">
+          <p>Note: Restoring a previous version will replace your current work. Make sure to save a version first if you want to keep your current changes.</p>
+        </div>
       </div>
 
     {:else if activeTab === 'export'}
@@ -1118,7 +1202,7 @@
     background: #FBFBFB;
   }
 
-  .properties-header, .export-header {
+  .properties-header, .export-header, .history-header {
     padding: 1rem;
     border-bottom: 1px solid #d0d0d0;
     flex-shrink: 0;
@@ -1127,7 +1211,7 @@
     justify-content: space-between;
   }
 
-  .properties-header h3, .export-header h3 {
+  .properties-header h3, .export-header h3, .history-header h3 {
     margin: 0;
     font-size: 1rem;
     font-weight: 500;
@@ -1147,7 +1231,7 @@
     background: #f0f0f0;
   }
 
-  .properties-content, .export-content {
+  .properties-content, .export-content, .history-content {
     flex: 1;
     padding: 1rem;
     overflow-y: auto;
@@ -1375,6 +1459,119 @@
 
   .upload-text {
     font-weight: 500;
+  }
+  
+  /* Version Control Styles */
+  .version-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--color-primary-600);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .version-button:hover {
+    background: var(--color-primary-700);
+  }
+  
+  .version-help {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 0.5rem;
+    text-align: center;
+  }
+  
+  /* History Tab Styles */
+  .history-info {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: #f0f8ff;
+    border: 1px solid #d0e8ff;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #0066cc;
+  }
+  
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .history-item {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .history-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f8f8f8;
+  }
+  
+  .history-item-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .history-item-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+  
+  .history-item-date {
+    font-size: 0.8rem;
+    color: #666;
+  }
+  
+  .history-item-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background: #e0e0e0;
+    color: #666;
+  }
+  
+  .history-item-badge.current {
+    background: #d1f7c4;
+    color: #2e7d32;
+  }
+  
+  .history-restore-btn {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    background: #007AFF;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .history-restore-btn:hover {
+    background: #0056CC;
+  }
+  
+  .history-note {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: #ff8f00;
   }
 
   /* Export Specific Styles */

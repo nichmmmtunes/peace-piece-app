@@ -83,6 +83,17 @@ function saveEditorData() {
   dispatch('save', editorData);
 }
 
+// Create a named version
+function createNamedVersion() {
+  const editorData = {
+    clips,
+    totalDuration,
+    lastEditedAt: new Date().toISOString()
+  };
+  
+  dispatch('createNamedVersion', editorData);
+}
+
 // Panel resizing functions
 function startLayersPanelResize(event: MouseEvent) {
   isResizingLayersPanel = true;
@@ -435,6 +446,12 @@ function handleKeyDown(event: KeyboardEvent) {
     event.preventDefault();
     saveEditorData();
   }
+  
+  // Create named version on Ctrl+Shift+S or Cmd+Shift+S
+  if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 's') {
+    event.preventDefault();
+    createNamedVersion();
+  }
 }
 
 // Get active clips at current time for canvas rendering
@@ -517,6 +534,7 @@ $: activeClips = clips
         {currentProjectStatus}
         on:updateClipProperty={updateClipProperty}
         on:publishPiece={handlePublishPiece}
+        on:createNamedVersion={createNamedVersion}
       />
     </div>
   </div>

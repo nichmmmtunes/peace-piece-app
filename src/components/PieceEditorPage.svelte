@@ -21,6 +21,10 @@
   let canEdit = false;
   let isOrganizer = false;
   let isContributor = false;
+  let versionName = '';
+  let showVersionDialog = false;
+  let isCreatingNamedVersion = false;
+  let pendingEditorData: any = null;
   
   async function loadPiece() {
     try {
@@ -151,12 +155,66 @@
     return publicUrl;
   }
   
-  async function saveEditorData(data: any) {
+  async function saveEditorData(data: any, createNamedVersion = false) {
     if (!$user || !canEdit || !piece) return;
     
     try {
       saving = true;
       saveMessage = 'Saving...';
+      
+      // If we're creating a named version, first get the current editor data
+      if (createNamedVersion && versionName.trim()) {
+        // Get the current editor data from the database
+        const { data: currentPieceData, error: currentDataError } = await supabase
+          .from('pieces')
+          .select('editor_data')
+          .eq('id', params.id)
+          .single();
+          
+        if (currentDataError) throw currentDataError;
+        
+        if (currentPieceData && currentPieceData.editor_data) {
+          // Save the current editor data to the history table with the version name
+          const { error: historyError } = await supabase
+            .from('editor_data_history')
+            .insert({
+              piece_id: params.id,
+              editor_data: currentPieceData.editor_data,
+              version_name: versionName.trim(),
+              created_by: $user.id
+            });
+            
+          if (historyError) throw historyError;
+          
+          saveMessage = `Version "${versionName}" saved successfully!`;
+          versionName = '';
+        }
+      } else {
+        // For regular saves (not named versions), save the current state to history
+        // Get the current editor data from the database
+        const { data: currentPieceData, error: currentDataError } = await supabase
+          .from('pieces')
+          .select('editor_data')
+          .eq('id', params.id)
+          .single();
+          
+        if (currentDataError) throw currentDataError;
+        
+        if (currentPieceData && currentPieceData.editor_data) {
+          // Save the current editor data to the history table (without a version name)
+          const { error: historyError } = await supabase
+            .from('editor_data_history')
+            .insert({
+              piece_id: params.id,
+              editor_data: currentPieceData.editor_data,
+              created_by: $user.id
+            });
+            
+          if (historyError) {
+            console.warn('Failed to save history, but continuing with update:', historyError);
+          }
+        }
+      }
       
       // Process clips to upload any local files to storage
       if (data.clips && Array.isArray(data.clips)) {
@@ -234,7 +292,9 @@
         
       if (updateError) throw updateError;
       
-      saveMessage = 'Changes saved successfully!';
+      if (!createNamedVersion) {
+        saveMessage = 'Changes saved successfully!';
+      }
       
       // Clear the message after 3 seconds
       if (saveTimeout) clearTimeout(saveTimeout);
@@ -247,6 +307,9 @@
       console.error('DEBUG: Error in saveEditorData:', e);
     } finally {
       saving = false;
+      showVersionDialog = false;
+      isCreatingNamedVersion = false;
+      pendingEditorData = null;
     }
   }
   
@@ -278,6 +341,25 @@
   function handleEditorSave(event: CustomEvent<any>) {
     const editorData = event.detail;
     throttledSaveEditorData(editorData);
+  }
+  
+  function handleCreateNamedVersion(event: CustomEvent<any>) {
+    pendingEditorData = event.detail;
+    showVersionDialog = true;
+    isCreatingNamedVersion = true;
+  }
+  
+  function confirmCreateNamedVersion() {
+    if (pendingEditorData && versionName.trim()) {
+      saveEditorData(pendingEditorData, true);
+    }
+  }
+  
+  function cancelCreateNamedVersion() {
+    showVersionDialog = false;
+    isCreatingNamedVersion = false;
+    pendingEditorData = null;
+    versionName = '';
   }
 
   async function handlePublishPiece(event: CustomEvent<{ pieceId: string, videoUrl: string, newProjectStatus: string }>) {
@@ -414,10 +496,50 @@
           pieceId={params.id}
           currentProjectStatus={piece.project_status}
           on:save={handleEditorSave}
+          on:createNamedVersion={handleCreateNamedVersion}
           on:publishPiece={handlePublishPiece}
         />
       </div>
     </div>
+    
+    <!-- Version Name Dialog -->
+    {#if showVersionDialog}
+      <div class="version-dialog-overlay" transition:fade>
+        <div class="version-dialog" in:fly={{ y: 20, duration: 300 }}>
+          <h2>Save Version</h2>
+          <p>Enter a name for this version to help you identify it later.</p>
+          
+          <div class="version-form">
+            <input 
+              type="text" 
+              bind:value={versionName} 
+              placeholder="Version name (e.g., First Draft, Final Cut)"
+              class="version-input"
+            />
+            
+            <div class="version-actions">
+              <button class="cancel-button" on:click={cancelCreateNamedVersion}>Cancel</button>
+              <button 
+                class="save-button" 
+                on:click={confirmCreateNamedVersion}
+                disabled={!versionName.trim() || saving}
+              >
+                {#if saving}
+                  <svg class="spinner" viewBox="0 0 24 24" width="16" height="16">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="60" stroke-dashoffset="60" stroke-linecap="round">
+                      <animate attributeName="stroke-dashoffset" dur="2s" values="60;0" repeatCount="indefinite"/>
+                    </circle>
+                  </svg>
+                  Saving...
+                {:else}
+                  Save Version
+                {/if}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    {/if}
   {/if}
 </div>
 
@@ -663,6 +785,98 @@
     flex: 1;
     overflow: hidden;
   }
+  
+  /* Version Dialog Styles */
+  .version-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+  }
+  
+  .version-dialog {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  .version-dialog h2 {
+    margin: 0 0 8px 0;
+    font-size: 1.5rem;
+    color: var(--color-neutral-900);
+  }
+  
+  .version-dialog p {
+    margin: 0 0 20px 0;
+    color: var(--color-neutral-600);
+  }
+  
+  .version-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .version-input {
+    padding: 12px;
+    border: 1px solid var(--color-neutral-300);
+    border-radius: 6px;
+    font-size: 1rem;
+  }
+  
+  .version-input:focus {
+    outline: none;
+    border-color: var(--color-primary-500);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+  
+  .version-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+  
+  .cancel-button {
+    padding: 8px 16px;
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-700);
+    border: 1px solid var(--color-neutral-300);
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  .save-button {
+    padding: 8px 16px;
+    background: var(--color-primary-600);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .save-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .spinner {
+    animation: spin 1s linear infinite;
+  }
 
   @media (max-width: 768px) {
     .editor-header {
@@ -683,6 +897,19 @@
       flex-direction: column;
       align-items: flex-start;
       gap: var(--space-2);
+    }
+    
+    .version-dialog {
+      width: 95%;
+      padding: 16px;
+    }
+    
+    .version-actions {
+      flex-direction: column;
+    }
+    
+    .cancel-button, .save-button {
+      width: 100%;
     }
   }
 </style>
