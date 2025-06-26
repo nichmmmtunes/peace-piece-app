@@ -603,6 +603,7 @@
     overflow-x: auto;
     overflow-y: auto;
     background: #FBFBFB;
+    max-width: calc(100vw - 20px);
   }
 
   .timeline-tracks {
