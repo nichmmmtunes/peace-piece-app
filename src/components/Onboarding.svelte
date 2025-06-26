@@ -219,10 +219,10 @@
   }
 
   .support-option {
-    padding: var(--space-4);
-    background: var(--card-bg);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
+    padding: 0px;
+    background: transparent;
+    border-radius: 0px;
+    border: none;
   }
 
   .support-option h4 {
