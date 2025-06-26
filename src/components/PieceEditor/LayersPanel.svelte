@@ -214,6 +214,9 @@
       file: newLayerFile,
       url: url,
       content: newLayerType === 'text' ? newLayerContent : undefined,
+      // Set proper position and scale for all layer types
+      position: { x: 50, y: 50 },
+      scale: { x: 20, y: 20 },
       // Set proper sampleData type for correct identification
       sampleData: {
         type: newLayerType === 'sticker' ? 'sticker' : 

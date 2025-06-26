@@ -254,14 +254,9 @@
     return 'No media selected';
   }
 
-  // Check if current clip is an image layer (not sticker)
-  function isImageLayer() {
-    return selectedClip?.type === 'image' && selectedClip?.sampleData?.type !== 'sticker';
-  }
-
-  // Check if current clip is a video layer
-  function isVideoLayer() {
-    return selectedClip?.type === 'video';
+  // Check if current clip is a background layer (layer 0)
+  function isBackgroundLayer() {
+    return selectedClip?.layer === 0;
   }
 
   // Check if current clip supports media replacement
@@ -468,8 +463,8 @@
           <div class="property-section">
             <h4>Transform</h4>
             
-            <!-- Position controls - hidden for image and video layers -->
-            {#if !isImageLayer() && !isVideoLayer()}
+            <!-- Position controls - show for all overlay elements (layer > 0) except text -->
+            {#if selectedClip.layer > 0 && selectedClip.type !== 'text'}
               <div class="property-row">
                 <div class="property-group">
                   <label>X Position (%)</label>
@@ -498,8 +493,8 @@
               </div>
             {/if}
 
-            <!-- Size controls - hidden for image and video layers -->
-            {#if !isImageLayer() && !isVideoLayer()}
+            <!-- Size controls - show for all overlay elements (layer > 0) except text -->
+            {#if selectedClip.layer > 0 && selectedClip.type !== 'text'}
               <div class="property-row">
                 <div class="property-group">
                   <label>Width (% of canvas)</label>

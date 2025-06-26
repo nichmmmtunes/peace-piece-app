@@ -132,23 +132,15 @@
 
   // Helper function to get position styles (left and top only)
   function getPositionStyle(clip: VideoClip): string {
-    // For image layers (not stickers), use fixed center position
-    if (clip.type === 'image' && clip.sampleData?.type !== 'sticker') {
+    // For background layers (layer 0), use fixed position
+    if (clip.layer === 0) {
       return `
-        left: 50%;
-        top: 50%;
+        left: 0;
+        top: 0;
       `;
     }
     
-    // For video layers, use fixed center position
-    if (clip.type === 'video') {
-      return `
-        left: 50%;
-        top: 50%;
-      `;
-    }
-    
-    // For other elements, use custom position
+    // For overlay elements, use position from clip properties
     const position = clip.position || { x: 50, y: 50 };
     
     return `
@@ -159,6 +151,13 @@
 
   // Helper function to get base transform components (always applied)
   function getBaseTransformComponents(clip: VideoClip): string {
+    // For background layers (layer 0), don't apply centering transform
+    if (clip.layer === 0) {
+      const rotation = clip.rotation || 0;
+      return `rotate(${rotation}deg)`;
+    }
+    
+    // For overlay elements, center them and apply rotation
     const rotation = clip.rotation || 0;
     return `translate(-50%, -50%) rotate(${rotation}deg)`;
   }
@@ -255,23 +254,15 @@
 
   // Helper function to get size styles for overlay elements
   function getSizeStyle(clip: VideoClip): string {
-    // For image layers (not stickers), fill the canvas
-    if (clip.type === 'image' && clip.sampleData?.type !== 'sticker') {
+    // For background layers (layer 0), fill the canvas
+    if (clip.layer === 0) {
       return `
         width: 100%;
         height: 100%;
       `;
     }
     
-    // For video layers, fill the canvas
-    if (clip.type === 'video') {
-      return `
-        width: 100%;
-        height: 100%;
-      `;
-    }
-    
-    // For other elements, use scale as percentage of canvas
+    // For overlay elements, use scale as percentage of canvas
     const scale = clip.scale || { x: 20, y: 20 }; // Default to 20% of canvas
     
     return `
