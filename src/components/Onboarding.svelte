@@ -164,7 +164,7 @@
   }
 
   .onboarding-item {
-    background: transparent;
+    background: var(--bg-color);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     overflow: hidden;
