@@ -134,6 +134,10 @@
     gap: 8px;
     position: relative;
   }
+
+  .save-status {
+    visibility: hidden;
+  }
   
   .save-status-indicator {
     width: 8px;
