@@ -232,10 +232,13 @@
       } else if (resizeDirection === 'right') {
         const newTimelineEnd = Math.min(totalDuration, Math.max(mouseTime, draggedClip.timelineStart + 1));
         const deltaTimeline = newTimelineEnd - draggedClip.timelineEnd;
-        const newContentEndTime = Math.min(draggedClip.duration, Math.max(
-          resizeStartContentEndTime + deltaTimeline,
-          draggedClip.contentStartTime + 0.1
-        ));
+        
+        // IMPORTANT CHANGE: Remove the constraint that limits contentEndTime to the clip's duration
+        // This allows clips to be extended beyond their original duration
+        const newContentEndTime = Math.max(
+          draggedClip.contentStartTime + 0.1,
+          resizeStartContentEndTime + deltaTimeline
+        );
         
         dispatch('updateClipTiming', {
           clipId: draggedClip.id,
