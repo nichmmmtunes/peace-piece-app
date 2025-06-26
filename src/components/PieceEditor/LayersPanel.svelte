@@ -640,6 +640,13 @@
   .layer-icon {
     font-size: 0.9rem;
     flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+  }
+
+  .layer-icon svg {
+    width: 100%;
+    height: 100%;
   }
 
   .layer-content {
