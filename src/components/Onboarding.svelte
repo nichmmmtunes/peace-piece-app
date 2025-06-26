@@ -199,13 +199,11 @@
 
   .item-content {
     padding: 0 var(--space-4) var(--space-4) var(--space-4);
-    border-top: 1px solid var(--border-color);
-    background-color: var(--color-neutral-50);
   }
 
   .item-description {
     color: var(--text-muted);
-    margin-bottom: var(--space-4);
+    margin-bottom: var(--space-2);
     line-height: 1.5;
   }
 
