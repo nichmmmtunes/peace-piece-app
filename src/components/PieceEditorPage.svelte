@@ -336,8 +336,8 @@
     };
   }
 
-  // Throttled save handler
-  const throttledSaveEditorData = throttle(saveEditorData, 1000);
+  // Throttled save handler - changed from 1000ms to 30000ms (30 seconds)
+  const throttledSaveEditorData = throttle(saveEditorData, 30000);
 
   function handleEditorSave(event: CustomEvent<any>) {
     const editorData = event.detail;

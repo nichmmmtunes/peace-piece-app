@@ -19,6 +19,7 @@
   let selectedVersionId: string = 'current';
   let loadingVersions: boolean = false;
   let saveStatusColor: string = 'var(--color-success-600)';
+  let currentTime: string = '';
 
   const dispatch = createEventDispatcher();
 
@@ -32,7 +33,8 @@
         .from('editor_data_history')
         .select('*')
         .eq('piece_id', pieceId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(10); // Limit to 10 most recent versions
         
       if (error) throw error;
       
@@ -68,8 +70,24 @@
     });
   }
 
+  function updateCurrentTime() {
+    const now = new Date();
+    currentTime = now.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  }
+
   onMount(() => {
     loadVersions();
+    updateCurrentTime();
+    
+    // Update current time every minute
+    const interval = setInterval(updateCurrentTime, 60000);
+    
+    return () => {
+      clearInterval(interval);
+    };
   });
 
   // Update save status color based on saving state and message
@@ -81,6 +99,11 @@
     } else {
       saveStatusColor = 'var(--color-success-600)'; // Green when saved
     }
+  }
+  
+  // Reload versions when a save completes
+  $: if (!isSaving && saveMessage && !saveMessage.includes('Error')) {
+    loadVersions();
   }
 </script>
 
@@ -94,7 +117,7 @@
       disabled={loadingVersions || isSaving}
       class="version-select"
     >
-      <option value="current">Current Version</option>
+      <option value="current">Current Version ({currentTime})</option>
       {#each versions as version}
         <option value={version.id}>
           {version.version_name ? version.version_name : formatDate(version.created_at)}
