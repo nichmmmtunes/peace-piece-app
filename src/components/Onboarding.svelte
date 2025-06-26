@@ -164,7 +164,7 @@
   }
 
   .onboarding-item {
-    background: var(--card-bg);
+    background: transparent;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     overflow: hidden;
