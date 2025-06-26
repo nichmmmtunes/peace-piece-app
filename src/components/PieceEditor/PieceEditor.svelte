@@ -41,7 +41,7 @@ let newLayerFile: File | null = null;
 
 // Edit counter for auto-save
 let editCounter = 0;
-const EDITS_BEFORE_SAVE = 2;
+const EDITS_BEFORE_SAVE = 3;
 
 // Event dispatcher for saving data
 const dispatch = createEventDispatcher();
