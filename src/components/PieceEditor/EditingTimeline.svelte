@@ -11,6 +11,10 @@
   export let timelineHeight = 350;
 
   let timelineContainer: HTMLElement;
+  let timelineContent: HTMLElement;
+
+  // Calculate timeline width based on total duration
+  $: timelineWidthPx = Math.max(totalDuration * PIXELS_PER_SECOND + 100, 1200);
 
   // Timeline resize functionality
   let isResizing = false;
@@ -102,10 +106,9 @@
   function seek(event: MouseEvent) {
     if (isDraggingLayer || isResizingLayer) return;
     
-    const rect = timelineContainer.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const timelineWidth = rect.width;
-    const newTime = Math.max(0, Math.min(totalDuration, (x / timelineWidth) * totalDuration));
+    const rect = timelineContent.getBoundingClientRect();
+    const x = event.clientX - rect.left + timelineContent.scrollLeft;
+    const newTime = Math.max(0, Math.min(totalDuration, (x / PIXELS_PER_SECOND)));
     dispatch('seek', newTime);
   }
 
@@ -150,9 +153,9 @@
     dragStartX = event.clientX;
     dragStartTimelineStart = clip.timelineStart;
     
-    const timelineRect = timelineContainer.getBoundingClientRect();
+    const timelineRect = timelineContent.getBoundingClientRect();
     const clipStartPixel = clip.timelineStart * PIXELS_PER_SECOND;
-    dragOffset = event.clientX - timelineRect.left - clipStartPixel;
+    dragOffset = event.clientX - timelineRect.left - clipStartPixel + timelineContent.scrollLeft;
     
     selectClip(clip);
     event.preventDefault();
@@ -193,8 +196,8 @@
     }
     
     if (isDraggingLayer && draggedClip) {
-      const rect = timelineContainer.getBoundingClientRect();
-      const mouseX = event.clientX - rect.left - dragOffset;
+      const rect = timelineContent.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left + timelineContent.scrollLeft - dragOffset;
       const newTimelineStart = Math.max(0, mouseX / PIXELS_PER_SECOND);
       const clipDuration = draggedClip.timelineEnd - draggedClip.timelineStart;
       const newTimelineEnd = newTimelineStart + clipDuration;
@@ -209,8 +212,8 @@
     }
     
     if (isResizingLayer && draggedClip && resizeDirection) {
-      const rect = timelineContainer.getBoundingClientRect();
-      const mouseX = event.clientX - rect.left;
+      const rect = timelineContent.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left + timelineContent.scrollLeft;
       const mouseTime = mouseX / PIXELS_PER_SECOND;
       
       if (resizeDirection === 'left') {
@@ -300,13 +303,14 @@
     </div>
   </div>
 
-  <div class="timeline-content">
+  <div class="timeline-content" bind:this={timelineContent}>
     <!-- Time Ruler (Sticky) -->
     <div 
       class="time-ruler"
       on:mousedown={startScrubbing}
+      style="width: {timelineWidthPx}px;"
     >
-      {#each Array(Math.ceil(totalDuration / 5)) as _, i}
+      {#each Array(Math.ceil(totalDuration / 5) + 1) as _, i}
         <div class="time-tick" style="left: {(i * 5 * PIXELS_PER_SECOND)}px">
           <div class="tick-mark"></div>
           {#if i % 2 === 0}
@@ -327,9 +331,10 @@
 
     <!-- Timeline Container (Scrollable) -->
     <div 
-      class="timeline-container"
+      class="timeline-tracks-container"
       bind:this={timelineContainer}
       on:click={seek}
+      style="width: {timelineWidthPx}px;"
     >
       <!-- Timeline Tracks -->
       <div class="timeline-tracks">
@@ -544,6 +549,7 @@
     height: 24px;
     position: sticky;
     top: 0;
+    left: 0;
     z-index: 20;
     border-bottom: 1px solid #e0e0e0;
     background: #FBFBFB;
@@ -597,8 +603,7 @@
   }
 
   /* Scrollable Timeline Container */
-  .timeline-container {
-    flex: 1;
+  .timeline-tracks-container {
     position: relative;
     overflow-y: auto;
     background: #FBFBFB;
