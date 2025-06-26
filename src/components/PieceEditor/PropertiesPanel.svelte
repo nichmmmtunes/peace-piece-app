@@ -1,1729 +1,1427 @@
 <script lang="ts">
-  import type { VideoClip } from './types';
   import { createEventDispatcher } from 'svelte';
+  import type { VideoClip } from './types';
 
   export let selectedClip: VideoClip | null = null;
-  export let totalDuration = 60;
+  export let totalDuration: number = 60;
   export let pieceId: string = '';
   export let currentProjectStatus: string = '';
 
-  // Tab state
-  let activeTab: 'properties' | 'export' | 'history' = 'properties';
-
-  // Export settings
-  let exportSettings = {
-    format: 'mp4',
-    quality: 'high',
-    resolution: '1920x1080',
-    framerate: 30,
-    bitrate: 'auto',
-    audioQuality: 'high',
-    includeAudio: true,
-    filename: 'my-video'
-  };
+  let activeTab: 'properties' | 'effects' | 'animation' | 'export' = 'properties';
+  let versionName = '';
+  let isCreatingNamedVersion = false;
+  let exportVideoUrl = '';
+  let isExporting = false;
+  let exportError = '';
+  let newProjectStatus = currentProjectStatus;
 
   const dispatch = createEventDispatcher();
 
-  // Reactive console.log to track selectedClip changes
-  $: {
-    console.log('PropertiesPanel - selectedClip changed:', selectedClip);
-    if (selectedClip) {
-      console.log('  - ID:', selectedClip.id);
-      console.log('  - Name:', selectedClip.name);
-      console.log('  - Position:', selectedClip.position);
-      console.log('  - Scale:', selectedClip.scale);
-      console.log('  - Rotation:', selectedClip.rotation);
-      console.log('  - Opacity:', selectedClip.opacity);
-    }
-  }
+  // Properties for text clips
+  let fontSize = 2.5; // % of canvas width
+  let fontFamily = 'Arial, sans-serif';
+  let fontWeight = 'normal';
+  let fontStyle = 'normal';
+  let textColor = '#FFFFFF';
+  let textAlign = 'center';
+  let textShadow = 'none';
+  let lineHeight = 1.2;
+  let letterSpacing = 0;
 
-  // Font options
-  const fontFamilies = [
-    'Arial, sans-serif',
-    'Helvetica, sans-serif',
-    'Georgia, serif',
-    'Times New Roman, serif',
-    'Courier New, monospace',
-    'Verdana, sans-serif',
-    'Impact, sans-serif',
-    'Comic Sans MS, cursive',
-    'Trebuchet MS, sans-serif',
-    'Palatino, serif'
+  // Properties for media clips
+  let volume = 0.6; // 0-1
+  let playbackRate = 1.0; // 0.5-2.0
+  let brightness = 1.0; // 0-2
+  let contrast = 1.0; // 0-2
+  let saturation = 1.0; // 0-2
+  let blur = 0; // 0-10px
+  let mixBlendMode = 'normal';
+
+  // Properties for all clips
+  let opacity = 1.0; // 0-1
+  let positionX = 50; // % of canvas width
+  let positionY = 50; // % of canvas height
+  let scaleX = 100; // % of original size
+  let scaleY = 100; // % of original size
+  let rotation = 0; // degrees
+
+  // Animation properties
+  let animation = 'none';
+  let animationDuration = 1; // seconds
+  let animationDelay = 0; // seconds
+
+  // Timing properties
+  let timelineStart = 0;
+  let timelineEnd = 10;
+  let contentStartTime = 0;
+  let contentEndTime = 10;
+  let clipDuration = 10;
+
+  // Project status options
+  const projectStatusOptions = [
+    { value: 'open_to_applications', label: 'Open to Applications' },
+    { value: 'seeking_funding', label: 'Seeking Funding' },
+    { value: 'published', label: 'Published' }
   ];
 
-  const fontWeights = [
-    { value: 'normal', label: 'Normal' },
-    { value: 'bold', label: 'Bold' },
-    { value: '100', label: 'Thin' },
-    { value: '300', label: 'Light' },
-    { value: '500', label: 'Medium' },
-    { value: '600', label: 'Semi Bold' },
-    { value: '700', label: 'Bold' },
-    { value: '800', label: 'Extra Bold' },
-    { value: '900', label: 'Black' }
+  // Blend mode options
+  const blendModes = [
+    'normal', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 
+    'color-dodge', 'color-burn', 'hard-light', 'soft-light', 'difference', 
+    'exclusion', 'hue', 'saturation', 'color', 'luminosity'
   ];
 
-  const textAlignOptions = [
-    { value: 'left', label: 'Left', icon: '⬅️' },
-    { value: 'center', label: 'Center', icon: '↔️' },
-    { value: 'right', label: 'Right', icon: '➡️' },
-    { value: 'justify', label: 'Justify', icon: '⬌' }
-  ];
-
-  const animationOptions = [
+  // Animation options
+  const animations = [
     { value: 'none', label: 'None' },
     { value: 'fadeIn', label: 'Fade In' },
-    { value: 'slideInLeft', label: 'Slide In Left' },
-    { value: 'slideInRight', label: 'Slide In Right' },
-    { value: 'slideInUp', label: 'Slide In Up' },
-    { value: 'slideInDown', label: 'Slide In Down' },
+    { value: 'slideInLeft', label: 'Slide In (Left)' },
+    { value: 'slideInRight', label: 'Slide In (Right)' },
+    { value: 'slideInUp', label: 'Slide In (Up)' },
+    { value: 'slideInDown', label: 'Slide In (Down)' },
     { value: 'zoomIn', label: 'Zoom In' }
   ];
 
-  const mixBlendModeOptions = [
-    { value: 'normal', label: 'Normal' },
-    { value: 'multiply', label: 'Multiply' },
-    { value: 'screen', label: 'Screen' },
-    { value: 'overlay', label: 'Overlay' },
-    { value: 'darken', label: 'Darken' },
-    { value: 'lighten', label: 'Lighten' },
-    { value: 'color-dodge', label: 'Color Dodge' },
-    { value: 'color-burn', label: 'Color Burn' },
-    { value: 'hard-light', label: 'Hard Light' },
-    { value: 'soft-light', label: 'Soft Light' },
-    { value: 'difference', label: 'Difference' },
-    { value: 'exclusion', label: 'Exclusion' },
-    { value: 'hue', label: 'Hue' },
-    { value: 'saturation', label: 'Saturation' },
-    { value: 'color', label: 'Color' },
-    { value: 'luminosity', label: 'Luminosity' }
+  // Font family options
+  const fontFamilies = [
+    'Arial, sans-serif',
+    'Helvetica, sans-serif',
+    'Times New Roman, serif',
+    'Georgia, serif',
+    'Courier New, monospace',
+    'Verdana, sans-serif',
+    'Impact, sans-serif',
+    'Comic Sans MS, cursive'
   ];
 
-  // Export options
-  const exportFormats = [
-    { value: 'mp4', label: 'MP4 (H.264)', description: 'Best for web and general use' },
-    { value: 'webm', label: 'WebM (VP9)', description: 'Optimized for web streaming' },
-    { value: 'mov', label: 'MOV (QuickTime)', description: 'High quality for editing' },
-    { value: 'avi', label: 'AVI', description: 'Compatible with older systems' }
+  // Font weight options
+  const fontWeights = [
+    'normal',
+    'bold',
+    '100',
+    '200',
+    '300',
+    '400',
+    '500',
+    '600',
+    '700',
+    '800',
+    '900'
   ];
 
-  const qualityPresets = [
-    { value: 'low', label: 'Low', description: 'Smaller file size, lower quality' },
-    { value: 'medium', label: 'Medium', description: 'Balanced quality and file size' },
-    { value: 'high', label: 'High', description: 'Best quality, larger file size' },
-    { value: 'custom', label: 'Custom', description: 'Manual bitrate control' }
+  // Text align options
+  const textAligns = [
+    'left',
+    'center',
+    'right',
+    'justify'
   ];
 
-  const resolutionOptions = [
-    { value: '3840x2160', label: '4K (3840×2160)', description: 'Ultra HD' },
-    { value: '2560x1440', label: '2K (2560×1440)', description: 'Quad HD' },
-    { value: '1920x1080', label: 'Full HD (1920×1080)', description: 'Standard HD' },
-    { value: '1280x720', label: 'HD (1280×720)', description: 'HD Ready' },
-    { value: '854x480', label: 'SD (854×480)', description: 'Standard Definition' },
-    { value: 'custom', label: 'Custom', description: 'Set custom dimensions' }
-  ];
-
-  const framerateOptions = [
-    { value: 24, label: '24 fps', description: 'Cinematic' },
-    { value: 25, label: '25 fps', description: 'PAL standard' },
-    { value: 30, label: '30 fps', description: 'NTSC standard' },
-    { value: 50, label: '50 fps', description: 'Smooth motion' },
-    { value: 60, label: '60 fps', description: 'Ultra smooth' }
-  ];
-
-  const bitrateOptions = [
-    { value: 'auto', label: 'Auto', description: 'Automatic based on quality' },
-    { value: '1000', label: '1 Mbps', description: 'Low bandwidth' },
-    { value: '2500', label: '2.5 Mbps', description: 'Standard web' },
-    { value: '5000', label: '5 Mbps', description: 'High quality web' },
-    { value: '10000', label: '10 Mbps', description: 'Professional' },
-    { value: 'custom', label: 'Custom', description: 'Manual bitrate' }
-  ];
-
-  const audioQualityOptions = [
-    { value: 'low', label: 'Low (96 kbps)', description: 'Smaller file size' },
-    { value: 'medium', label: 'Medium (128 kbps)', description: 'Standard quality' },
-    { value: 'high', label: 'High (192 kbps)', description: 'CD quality' },
-    { value: 'lossless', label: 'Lossless (320 kbps)', description: 'Maximum quality' }
-  ];
-
-  function updateClipProperty(clipId: string, property: keyof VideoClip, value: any) {
-    dispatch('updateClipProperty', { clipId, property, value });
+  // Update local state when selectedClip changes
+  $: if (selectedClip) {
+    // Update common properties
+    opacity = selectedClip.opacity !== undefined ? selectedClip.opacity : 1;
+    
+    if (selectedClip.position) {
+      positionX = selectedClip.position.x;
+      positionY = selectedClip.position.y;
+    }
+    
+    if (selectedClip.scale) {
+      scaleX = selectedClip.scale.x;
+      scaleY = selectedClip.scale.y;
+    }
+    
+    rotation = selectedClip.rotation || 0;
+    
+    // Update timing properties
+    timelineStart = selectedClip.timelineStart;
+    timelineEnd = selectedClip.timelineEnd;
+    contentStartTime = selectedClip.contentStartTime || 0;
+    contentEndTime = selectedClip.contentEndTime || selectedClip.duration;
+    clipDuration = selectedClip.duration;
+    
+    // Update animation properties
+    animation = selectedClip.animation || 'none';
+    animationDuration = selectedClip.animationDuration || 1;
+    animationDelay = selectedClip.animationDelay || 0;
+    
+    // Update type-specific properties
+    if (selectedClip.type === 'text') {
+      fontSize = selectedClip.fontSize || 2.5;
+      fontFamily = selectedClip.fontFamily || 'Arial, sans-serif';
+      fontWeight = selectedClip.fontWeight || 'normal';
+      fontStyle = selectedClip.fontStyle || 'normal';
+      textColor = selectedClip.textColor || '#FFFFFF';
+      textAlign = selectedClip.textAlign || 'center';
+      textShadow = selectedClip.textShadow || 'none';
+      lineHeight = selectedClip.lineHeight || 1.2;
+      letterSpacing = selectedClip.letterSpacing || 0;
+    } else if (selectedClip.type === 'video' || selectedClip.type === 'image') {
+      brightness = selectedClip.brightness !== undefined ? selectedClip.brightness : 1;
+      contrast = selectedClip.contrast !== undefined ? selectedClip.contrast : 1;
+      saturation = selectedClip.saturation !== undefined ? selectedClip.saturation : 1;
+      blur = selectedClip.blur || 0;
+      mixBlendMode = selectedClip.mixBlendMode || 'normal';
+      
+      if (selectedClip.type === 'video' || selectedClip.type === 'audio') {
+        volume = selectedClip.volume !== undefined ? selectedClip.volume : 0.6;
+        playbackRate = selectedClip.playbackRate || 1.0;
+      }
+    }
   }
 
-  function handleTimelineStartChange(value: number) {
+  function updateClipProperty(property: string, value: any) {
     if (!selectedClip) return;
     
-    const newStart = Math.max(0, Math.min(value, selectedClip.timelineEnd - 0.1));
-    updateClipProperty(selectedClip.id, 'timelineStart', newStart);
+    dispatch('updateClipProperty', {
+      clipId: selectedClip.id,
+      property,
+      value
+    });
   }
 
-  function handleTimelineEndChange(value: number) {
+  function updatePosition() {
     if (!selectedClip) return;
     
-    const newEnd = Math.min(totalDuration, Math.max(value, selectedClip.timelineStart + 0.1));
-    updateClipProperty(selectedClip.id, 'timelineEnd', newEnd);
+    updateClipProperty('position', { x: positionX, y: positionY });
   }
 
-  // Media replacement functionality
-  function handleMediaFileUpload(event: Event) {
-    const target = event.target as HTMLInputElement;
-    if (!target.files || !target.files[0] || !selectedClip) return;
+  function updateScale() {
+    if (!selectedClip) return;
     
-    const file = target.files[0];
-    
-    // Validate file object and its name property
-    if (!file || typeof file.name !== 'string' || !file.name.trim()) {
-      console.error('Invalid file: file name is missing or invalid');
-      return;
-    }
-    
-    const url = URL.createObjectURL(file);
-    
-    // Clean up old URL if it exists
-    if (selectedClip.url && selectedClip.url.startsWith('blob:')) {
-      URL.revokeObjectURL(selectedClip.url);
-    }
-    
-    // Update clip with new file and URL
-    updateClipProperty(selectedClip.id, 'file', file);
-    updateClipProperty(selectedClip.id, 'url', url);
-    
-    // For video/audio files, update duration if possible
-    if (selectedClip.type === 'video' || selectedClip.type === 'audio') {
-      const media = document.createElement(selectedClip.type === 'video' ? 'video' : 'audio');
-      media.onloadedmetadata = () => {
-        if (selectedClip) {
-          const newDuration = media.duration;
-          const currentClipDuration = selectedClip.timelineEnd - selectedClip.timelineStart;
-          const newTimelineEnd = selectedClip.timelineStart + Math.min(newDuration, currentClipDuration);
-          
-          updateClipProperty(selectedClip.id, 'duration', newDuration);
-          updateClipProperty(selectedClip.id, 'contentEndTime', newDuration);
-          updateClipProperty(selectedClip.id, 'timelineEnd', newTimelineEnd);
-        }
-      };
-      media.src = url;
-    }
-    
-    // Reset file input
-    target.value = '';
+    updateClipProperty('scale', { x: scaleX, y: scaleY });
   }
 
-  function getMediaAcceptType() {
-    if (!selectedClip) return '';
-    
-    switch (selectedClip.type) {
-      case 'video':
-        return 'video/*';
-      case 'audio':
-        return 'audio/*';
-      case 'image':
-        return selectedClip.sampleData?.type === 'sticker' ? 'image/png,image/svg+xml' : 'image/*';
-      default:
-        return '';
-    }
-  }
-
-  function getMediaTypeLabel() {
-    if (!selectedClip) return '';
-    
-    switch (selectedClip.type) {
-      case 'video':
-        return 'Video';
-      case 'audio':
-        return 'Audio';
-      case 'image':
-        return selectedClip.sampleData?.type === 'sticker' ? 'Sticker' : 'Image';
-      default:
-        return 'Media';
-    }
-  }
-
-  function getCurrentMediaName() {
-    if (!selectedClip) return 'No media selected';
-    
-    if (selectedClip.file) {
-      return selectedClip.file.name;
-    } else if (selectedClip.url) {
-      return 'External media';
-    } else if (selectedClip.sampleData?.thumbnail) {
-      return 'Sample media';
-    }
-    
-    return 'No media selected';
-  }
-
-  // Check if current clip is an image layer (not sticker)
-  function isImageLayer() {
-    return selectedClip?.type === 'image' && selectedClip?.sampleData?.type !== 'sticker';
-  }
-
-  // Check if current clip is a video layer
-  function isVideoLayer() {
-    return selectedClip?.type === 'video';
-  }
-
-  // Check if current clip supports media replacement
-  function supportsMediaReplacement() {
-    return selectedClip && ['video', 'audio', 'image'].includes(selectedClip.type);
-  }
-
-  // Check if current clip supports blending
-  function supportsBlending() {
-    return selectedClip && ['video', 'image', 'text'].includes(selectedClip.type);
-  }
-
-  // Export functions
-  async function handleExport() {
-    // Display upgrade popup
-    alert('You must upgrade to export video.\nPlease contact support for more information.');
-
-    // // Example: Call a backend API to generate the video
-    // try {
-    //   // Prepare export payload
-    //   const payload = {
-    //     pieceId,
-    //     exportSettings,
-    //   };
-
-    //   // Replace with your actual API endpoint
-    //   const response = await fetch('/api/export-video', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify(payload)
-    //   });
-
-    //   if (!response.ok) {
-    //     throw new Error('Export failed');
-    //   }
-
-    //   const result = await response.json();
-
-    //   // Assume result.videoUrl contains the generated video URL
-    //   dispatch('publishPiece', {
-    //     pieceId,
-    //     videoUrl: result.videoUrl,
-    //     newProjectStatus: 'published'
-    //   });
-
-    //   alert(`Publishing started!\nFormat: ${exportSettings.format}\nQuality: ${exportSettings.quality}\nResolution: ${exportSettings.resolution}`);
-    // } catch (err) {
-    //   alert('Export failed: ' + err.message);
-    // }
-  }
-
-  function resetExportSettings() {
-    exportSettings = {
-      format: 'mp4',
-      quality: 'high',
-      resolution: '1920x1080',
-      framerate: 30,
-      bitrate: 'auto',
-      audioQuality: 'high',
-      includeAudio: true,
-      filename: 'my-video'
-    };
-  }
-  
   function createNamedVersion() {
-    dispatch('createNamedVersion');
+    isCreatingNamedVersion = true;
   }
 
-  // Calculate estimated file size (rough approximation)
-  function getEstimatedFileSize() {
-    const durationInSeconds = totalDuration;
-    let bitrate = 5000; // Default 5 Mbps
+  function cancelNamedVersion() {
+    isCreatingNamedVersion = false;
+    versionName = '';
+  }
+
+  function confirmNamedVersion() {
+    if (!versionName.trim()) return;
     
-    if (exportSettings.bitrate !== 'auto' && exportSettings.bitrate !== 'custom') {
-      bitrate = parseInt(exportSettings.bitrate);
-    } else {
-      // Estimate based on quality and resolution
-      const resolutionMultiplier = exportSettings.resolution.includes('3840') ? 4 : 
-                                   exportSettings.resolution.includes('2560') ? 2.5 :
-                                   exportSettings.resolution.includes('1920') ? 1 :
-                                   exportSettings.resolution.includes('1280') ? 0.6 : 0.3;
+    dispatch('createNamedVersion', { versionName: versionName.trim() });
+    isCreatingNamedVersion = false;
+    versionName = '';
+  }
+
+  async function exportVideo() {
+    if (!pieceId) return;
+    
+    try {
+      isExporting = true;
+      exportError = '';
+      exportVideoUrl = '';
       
-      const qualityMultiplier = exportSettings.quality === 'low' ? 0.5 :
-                               exportSettings.quality === 'medium' ? 1 :
-                               exportSettings.quality === 'high' ? 1.5 : 1;
+      // In a real implementation, this would call an API endpoint to render the video
+      // For now, we'll simulate a successful export after a delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      bitrate = Math.round(2500 * resolutionMultiplier * qualityMultiplier);
+      // Simulate a successful export with a placeholder URL
+      exportVideoUrl = 'https://example.com/exported-video.mp4';
+      
+    } catch (error: any) {
+      exportError = error.message || 'Failed to export video';
+    } finally {
+      isExporting = false;
     }
+  }
+
+  function publishPiece() {
+    if (!pieceId || !exportVideoUrl) return;
     
-    // Calculate file size in MB
-    const fileSizeMB = (bitrate * durationInSeconds) / (8 * 1000);
-    
-    if (fileSizeMB < 1000) {
-      return `~${Math.round(fileSizeMB)} MB`;
-    } else {
-      return `~${(fileSizeMB / 1000).toFixed(1)} GB`;
-    }
+    dispatch('publishPiece', {
+      pieceId,
+      videoUrl: exportVideoUrl,
+      newProjectStatus
+    });
   }
 </script>
 
-<div class="right-sidebar">
-  <!-- Tab Navigation -->
-  <div class="tab-nav">
-    <button 
-      class="tab-btn" 
-      class:active={activeTab === 'properties'}
-      on:click={() => activeTab = 'properties'}
-    >
-      Properties
-    </button>
-    <button 
-      class="tab-btn" 
-      class:active={activeTab === 'history'}
-      on:click={() => activeTab = 'history'}
-    >
-      History
-    </button>
-    <button 
-      class="tab-btn" 
-      class:active={activeTab === 'export'}
-      on:click={() => activeTab = 'export'}
-    >
-      Publishing
-    </button>
+<div class="properties-panel">
+  <div class="panel-header">
+    <div class="tab-buttons">
+      <button 
+        class:active={activeTab === 'properties'} 
+        on:click={() => activeTab = 'properties'}
+      >
+        Properties
+      </button>
+      <button 
+        class:active={activeTab === 'effects'} 
+        on:click={() => activeTab = 'effects'}
+      >
+        Effects
+      </button>
+      <button 
+        class:active={activeTab === 'animation'} 
+        on:click={() => activeTab = 'animation'}
+      >
+        Animation
+      </button>
+      <button 
+        class:active={activeTab === 'export'} 
+        on:click={() => activeTab = 'export'}
+      >
+        Export
+      </button>
+    </div>
   </div>
-
-  <!-- Tab Content -->
-  <div class="tab-content">
+  
+  <div class="panel-content">
     {#if activeTab === 'properties'}
-      <!-- Properties Tab Content -->
-      <div class="properties-header">
-        <h3>Properties</h3>
-      </div>
       <div class="properties-content">
         {#if selectedClip}
-          <!-- Basic Properties -->
-          <div class="property-section">
-            <h4>Basic</h4>
-            
-            <div class="property-group">
-              <label>Layer Name</label>
-              <input 
-                type="text" 
-                value={selectedClip.name ?? ''}
-                on:input={(e) => updateClipProperty(selectedClip.id, 'name', e.target.value)}
-                class="property-input" 
-              />
-            </div>
-
-            <div class="property-row">
-              <div class="property-group">
-                <label>Start Time</label>
-                <input 
-                  type="number" 
-                  value={(selectedClip.timelineStart ?? 0).toFixed(1)}
-                  on:input={(e) => handleTimelineStartChange(parseFloat(e.target.value) || 0)}
-                  step="0.1"
-                  min="0"
-                  max={totalDuration}
-                  class="property-input" 
-                />
-              </div>
-              <div class="property-group">
-                <label>End Time</label>
-                <input 
-                  type="number" 
-                  value={(selectedClip.timelineEnd ?? 0).toFixed(1)}
-                  on:input={(e) => handleTimelineEndChange(parseFloat(e.target.value) || 0)}
-                  step="0.1"
-                  min={selectedClip.timelineStart + 0.1}
-                  max={totalDuration}
-                  class="property-input" 
-                />
-              </div>
-            </div>
-
-            <div class="property-group">
-              <label>Duration</label>
-              <span class="property-value">
-                {(selectedClip.timelineEnd - selectedClip.timelineStart).toFixed(1)}s
-              </span>
-            </div>
+          <div class="section-title">
+            <h3>{selectedClip.name}</h3>
+            <span class="clip-type">{selectedClip.type}</span>
           </div>
-
-          <!-- Media Source (for video, audio, image, sticker layers) -->
-          {#if supportsMediaReplacement()}
-            <div class="property-section">
-              <h4>Media Source</h4>
-              
-              <div class="property-group">
-                <label>Current {getMediaTypeLabel()}</label>
-                <div class="current-media-info">
-                  <span class="media-name">{getCurrentMediaName()}</span>
-                </div>
-              </div>
-              
-              <div class="property-group">
-                <label>Replace {getMediaTypeLabel()}</label>
-                <input
-                  type="file"
-                  accept={getMediaAcceptType()}
-                  on:change={handleMediaFileUpload}
-                  class="file-input"
-                  id="media-replace-input"
-                />
-                <label for="media-replace-input" class="media-upload-btn">
-                  <span class="upload-icon">📁</span>
-                  <span class="upload-text">Choose New {getMediaTypeLabel()}</span>
-                </label>
-              </div>
-            </div>
-          {/if}
-
-          <!-- Transform Properties -->
+          
+          <!-- Common Properties -->
           <div class="property-section">
-            <h4>Transform</h4>
+            <h4>Position & Size</h4>
             
-            <!-- Position controls - hidden for image and video layers -->
-            {#if !isImageLayer() && !isVideoLayer()}
-              <div class="property-row">
-                <div class="property-group">
-                  <label>X Position (%)</label>
-                  <input 
-                    type="number" 
-                    value={selectedClip.position?.x ?? 50}
-                    on:input={(e) => updateClipProperty(selectedClip.id, 'position', { ...(selectedClip.position || { x: 50, y: 50 }), x: parseFloat(e.target.value) || 0 })}
-                    step="0.1"
-                    min="0"
-                    max="100"
-                    class="property-input" 
-                  />
-                </div>
-                <div class="property-group">
-                  <label>Y Position (%)</label>
-                  <input 
-                    type="number" 
-                    value={selectedClip.position?.y ?? 50}
-                    on:input={(e) => updateClipProperty(selectedClip.id, 'position', { ...(selectedClip.position || { x: 50, y: 50 }), y: parseFloat(e.target.value) || 0 })}
-                    step="0.1"
-                    min="0"
-                    max="100"
-                    class="property-input" 
-                  />
-                </div>
-              </div>
-            {/if}
-
-            <!-- Size controls - hidden for image and video layers -->
-            {#if !isImageLayer() && !isVideoLayer()}
-              <div class="property-row">
-                <div class="property-group">
-                  <label>Width (% of canvas)</label>
-                  <input 
-                    type="number" 
-                    value={selectedClip.scale?.x ?? 20}
-                    on:input={(e) => updateClipProperty(selectedClip.id, 'scale', { ...(selectedClip.scale || { x: 20, y: 20 }), x: parseFloat(e.target.value) || 1 })}
-                    step="1"
-                    min="1"
-                    max="200"
-                    class="property-input" 
-                  />
-                </div>
-                <div class="property-group">
-                  <label>Height (% of canvas)</label>
-                  <input 
-                    type="number" 
-                    value={selectedClip.scale?.y ?? 20}
-                    on:input={(e) => updateClipProperty(selectedClip.id, 'scale', { ...(selectedClip.scale || { x: 20, y: 20 }), y: parseFloat(e.target.value) || 1 })}
-                    step="1"
-                    min="1"
-                    max="200"
-                    class="property-input" 
-                  />
-                </div>
-              </div>
-            {/if}
-
             <div class="property-group">
-              <label>Rotation (degrees)</label>
-              <input 
-                type="number" 
-                value={selectedClip.rotation ?? 0}
-                on:input={(e) => updateClipProperty(selectedClip.id, 'rotation', parseFloat(e.target.value) || 0)}
-                step="1"
-                min="-360"
-                max="360"
-                class="property-input" 
-              />
+              <label>Position</label>
+              <div class="property-row">
+                <div class="property-field">
+                  <span class="field-label">X</span>
+                  <input 
+                    type="number" 
+                    bind:value={positionX} 
+                    on:change={updatePosition}
+                    min="0" 
+                    max="100" 
+                    step="1"
+                  />
+                  <span class="field-unit">%</span>
+                </div>
+                <div class="property-field">
+                  <span class="field-label">Y</span>
+                  <input 
+                    type="number" 
+                    bind:value={positionY} 
+                    on:change={updatePosition}
+                    min="0" 
+                    max="100" 
+                    step="1"
+                  />
+                  <span class="field-unit">%</span>
+                </div>
+              </div>
             </div>
-
+            
+            <div class="property-group">
+              <label>Scale</label>
+              <div class="property-row">
+                <div class="property-field">
+                  <span class="field-label">W</span>
+                  <input 
+                    type="number" 
+                    bind:value={scaleX} 
+                    on:change={updateScale}
+                    min="1" 
+                    max="200" 
+                    step="1"
+                  />
+                  <span class="field-unit">%</span>
+                </div>
+                <div class="property-field">
+                  <span class="field-label">H</span>
+                  <input 
+                    type="number" 
+                    bind:value={scaleY} 
+                    on:change={updateScale}
+                    min="1" 
+                    max="200" 
+                    step="1"
+                  />
+                  <span class="field-unit">%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="property-group">
+              <label>Rotation</label>
+              <div class="property-row">
+                <div class="property-field full-width">
+                  <input 
+                    type="range" 
+                    bind:value={rotation} 
+                    on:change={() => updateClipProperty('rotation', rotation)}
+                    min="-180" 
+                    max="180" 
+                    step="1"
+                  />
+                  <div class="range-value">{rotation}°</div>
+                </div>
+              </div>
+            </div>
+            
             <div class="property-group">
               <label>Opacity</label>
-              <div class="slider-container">
-                <input 
-                  type="range" 
-                  value={selectedClip.opacity ?? 1}
-                  on:input={(e) => updateClipProperty(selectedClip.id, 'opacity', parseFloat(e.target.value))}
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  class="property-slider" 
-                />
-                <span class="slider-value">{Math.round((selectedClip.opacity ?? 1) * 100)}%</span>
+              <div class="property-row">
+                <div class="property-field full-width">
+                  <input 
+                    type="range" 
+                    bind:value={opacity} 
+                    on:change={() => updateClipProperty('opacity', opacity)}
+                    min="0" 
+                    max="1" 
+                    step="0.01"
+                  />
+                  <div class="range-value">{Math.round(opacity * 100)}%</div>
+                </div>
               </div>
             </div>
           </div>
-
-          <!-- Text Properties (for text layers) -->
+          
+          <!-- Text-specific Properties -->
           {#if selectedClip.type === 'text'}
             <div class="property-section">
-              <h4>Text</h4>
+              <h4>Text Properties</h4>
               
               <div class="property-group">
-                <label>Text Content</label>
-                <textarea 
-                  value={selectedClip.content ?? ''}
-                  on:input={(e) => updateClipProperty(selectedClip.id, 'content', e.target.value)}
-                  class="property-input text-content"
-                  rows="3"
-                ></textarea>
-              </div>
-
-              <div class="property-row">
-                <div class="property-group">
-                  <label>Font Size (% of canvas)</label>
-                  <input 
-                    type="number" 
-                    value={selectedClip.fontSize ?? 2.5}
-                    on:input={(e) => updateClipProperty(selectedClip.id, 'fontSize', parseFloat(e.target.value) || 2.5)}
-                    step="0.1"
-                    min="0.5"
-                    max="20"
-                    class="property-input" 
-                  />
-                </div>
-                <div class="property-group">
-                  <label>Line Height</label>
-                  <input 
-                    type="number" 
-                    value={selectedClip.lineHeight ?? 1.2}
-                    on:input={(e) => updateClipProperty(selectedClip.id, 'lineHeight', parseFloat(e.target.value) || 1.2)}
-                    step="0.1"
-                    min="0.5"
-                    max="3"
-                    class="property-input" 
-                  />
-                </div>
-              </div>
-
-              <div class="property-group">
-                <label>Font Family</label>
+                <label>Font</label>
                 <select 
-                  value={selectedClip.fontFamily ?? 'Arial, sans-serif'}
-                  on:change={(e) => updateClipProperty(selectedClip.id, 'fontFamily', e.target.value)}
-                  class="property-select"
+                  bind:value={fontFamily} 
+                  on:change={() => updateClipProperty('fontFamily', fontFamily)}
                 >
-                  {#each fontFamilies as font}
-                    <option value={font}>{font.split(',')[0]}</option>
+                  {#each fontFamilies as family}
+                    <option value={family}>{family.split(',')[0]}</option>
                   {/each}
                 </select>
               </div>
-
-              <div class="property-row">
-                <div class="property-group">
-                  <label>Font Weight</label>
-                  <select 
-                    value={selectedClip.fontWeight ?? 'normal'}
-                    on:change={(e) => updateClipProperty(selectedClip.id, 'fontWeight', e.target.value)}
-                    class="property-select"
-                  >
-                    {#each fontWeights as weight}
-                      <option value={weight.value}>{weight.label}</option>
-                    {/each}
-                  </select>
-                </div>
-                <div class="property-group">
-                  <label>Font Style</label>
-                  <select 
-                    value={selectedClip.fontStyle ?? 'normal'}
-                    on:change={(e) => updateClipProperty(selectedClip.id, 'fontStyle', e.target.value)}
-                    class="property-select"
-                  >
-                    <option value="normal">Normal</option>
-                    <option value="italic">Italic</option>
-                    <option value="oblique">Oblique</option>
-                  </select>
+              
+              <div class="property-group">
+                <label>Font Size</label>
+                <div class="property-row">
+                  <div class="property-field full-width">
+                    <input 
+                      type="range" 
+                      bind:value={fontSize} 
+                      on:change={() => updateClipProperty('fontSize', fontSize)}
+                      min="0.5" 
+                      max="10" 
+                      step="0.1"
+                    />
+                    <div class="range-value">{fontSize}%</div>
+                  </div>
                 </div>
               </div>
-
+              
               <div class="property-group">
-                <label>Text Alignment</label>
+                <label>Font Weight</label>
+                <select 
+                  bind:value={fontWeight} 
+                  on:change={() => updateClipProperty('fontWeight', fontWeight)}
+                >
+                  {#each fontWeights as weight}
+                    <option value={weight}>{weight}</option>
+                  {/each}
+                </select>
+              </div>
+              
+              <div class="property-group">
+                <label>Text Align</label>
                 <div class="button-group">
-                  {#each textAlignOptions as align}
-                    <button
-                      class="align-btn"
-                      class:active={(selectedClip.textAlign ?? 'center') === align.value}
-                      on:click={() => updateClipProperty(selectedClip.id, 'textAlign', align.value)}
-                      title={align.label}
+                  {#each textAligns as align}
+                    <button 
+                      class:active={textAlign === align}
+                      on:click={() => {
+                        textAlign = align;
+                        updateClipProperty('textAlign', align);
+                      }}
                     >
-                      {align.icon}
+                      {#if align === 'left'}
+                        <span>Left</span>
+                      {:else if align === 'center'}
+                        <span>Center</span>
+                      {:else if align === 'right'}
+                        <span>Right</span>
+                      {:else if align === 'justify'}
+                        <span>Justify</span>
+                      {/if}
                     </button>
                   {/each}
                 </div>
               </div>
-
+              
               <div class="property-group">
                 <label>Text Color</label>
-                <div class="color-input-container">
-                  <input 
-                    type="color" 
-                    value={selectedClip.textColor ?? '#FFFFFF'}
-                    on:input={(e) => updateClipProperty(selectedClip.id, 'textColor', e.target.value)}
-                    class="color-input" 
-                  />
-                  <input 
-                    type="text" 
-                    value={selectedClip.textColor ?? '#FFFFFF'}
-                    on:input={(e) => updateClipProperty(selectedClip.id, 'textColor', e.target.value)}
-                    class="property-input color-text" 
-                  />
+                <div class="property-row">
+                  <div class="property-field color-field">
+                    <input 
+                      type="color" 
+                      bind:value={textColor} 
+                      on:change={() => updateClipProperty('textColor', textColor)}
+                    />
+                    <input 
+                      type="text" 
+                      bind:value={textColor} 
+                      on:change={() => updateClipProperty('textColor', textColor)}
+                    />
+                  </div>
                 </div>
               </div>
-
-              <div class="property-group">
-                <label>Letter Spacing</label>
-                <input 
-                  type="number" 
-                  value={selectedClip.letterSpacing ?? 0}
-                  on:input={(e) => updateClipProperty(selectedClip.id, 'letterSpacing', parseFloat(e.target.value) || 0)}
-                  step="0.1"
-                  min="-5"
-                  max="10"
-                  class="property-input" 
-                />
-              </div>
-
-              <div class="property-group">
-                <label>Text Shadow</label>
-                <input 
-                  type="text" 
-                  value={selectedClip.textShadow ?? 'none'}
-                  on:input={(e) => updateClipProperty(selectedClip.id, 'textShadow', e.target.value)}
-                  placeholder="e.g., 2px 2px 4px rgba(0,0,0,0.5)"
-                  class="property-input" 
-                />
-              </div>
-            </div>
-          {/if}
-
-          <!-- Media Properties (for video/audio/image layers) -->
-          {#if selectedClip.type === 'video' || selectedClip.type === 'audio' || selectedClip.type === 'image'}
-            <div class="property-section">
-              <h4>Media</h4>
               
-              {#if selectedClip.type === 'video' || selectedClip.type === 'audio'}
-                <div class="property-group">
-                  <label>Volume</label>
-                  <div class="slider-container">
+              <div class="property-group">
+                <label>Line Height</label>
+                <div class="property-row">
+                  <div class="property-field full-width">
                     <input 
                       type="range" 
-                      value={selectedClip.volume ?? 1}
-                      on:input={(e) => updateClipProperty(selectedClip.id, 'volume', parseFloat(e.target.value))}
-                      min="0"
-                      max="2"
-                      step="0.01"
-                      class="property-slider" 
-                    />
-                    <span class="slider-value">{Math.round((selectedClip.volume ?? 1) * 100)}%</span>
-                  </div>
-                </div>
-
-                <div class="property-group">
-                  <label>Playback Rate</label>
-                  <input 
-                    type="number" 
-                    value={selectedClip.playbackRate ?? 1}
-                    on:input={(e) => updateClipProperty(selectedClip.id, 'playbackRate', parseFloat(e.target.value) || 1)}
-                    step="0.1"
-                    min="0.1"
-                    max="4"
-                    class="property-input" 
-                  />
-                </div>
-              {/if}
-
-              {#if selectedClip.type === 'video' || selectedClip.type === 'image'}
-                <div class="property-group">
-                  <label>Brightness</label>
-                  <div class="slider-container">
-                    <input 
-                      type="range" 
-                      value={selectedClip.brightness ?? 1}
-                      on:input={(e) => updateClipProperty(selectedClip.id, 'brightness', parseFloat(e.target.value))}
-                      min="0"
-                      max="2"
-                      step="0.01"
-                      class="property-slider" 
-                    />
-                    <span class="slider-value">{Math.round((selectedClip.brightness ?? 1) * 100)}%</span>
-                  </div>
-                </div>
-
-                <div class="property-group">
-                  <label>Contrast</label>
-                  <div class="slider-container">
-                    <input 
-                      type="range" 
-                      value={selectedClip.contrast ?? 1}
-                      on:input={(e) => updateClipProperty(selectedClip.id, 'contrast', parseFloat(e.target.value))}
-                      min="0"
-                      max="2"
-                      step="0.01"
-                      class="property-slider" 
-                    />
-                    <span class="slider-value">{Math.round((selectedClip.contrast ?? 1) * 100)}%</span>
-                  </div>
-                </div>
-
-                <div class="property-group">
-                  <label>Saturation</label>
-                  <div class="slider-container">
-                    <input 
-                      type="range" 
-                      value={selectedClip.saturation ?? 1}
-                      on:input={(e) => updateClipProperty(selectedClip.id, 'saturation', parseFloat(e.target.value))}
-                      min="0"
-                      max="2"
-                      step="0.01"
-                      class="property-slider" 
-                    />
-                    <span class="slider-value">{Math.round((selectedClip.saturation ?? 1) * 100)}%</span>
-                  </div>
-                </div>
-
-                <div class="property-group">
-                  <label>Blur</label>
-                  <div class="slider-container">
-                    <input 
-                      type="range" 
-                      value={selectedClip.blur ?? 0}
-                      on:input={(e) => updateClipProperty(selectedClip.id, 'blur', parseFloat(e.target.value))}
-                      min="0"
-                      max="20"
+                      bind:value={lineHeight} 
+                      on:change={() => updateClipProperty('lineHeight', lineHeight)}
+                      min="0.8" 
+                      max="2" 
                       step="0.1"
-                      class="property-slider" 
                     />
-                    <span class="slider-value">{(selectedClip.blur ?? 0).toFixed(1)}px</span>
+                    <div class="range-value">{lineHeight}</div>
                   </div>
                 </div>
-              {/if}
+              </div>
             </div>
           {/if}
-
-          <!-- Blending Properties (for video, image and text layers) -->
-          {#if supportsBlending()}
+          
+          <!-- Media-specific Properties -->
+          {#if selectedClip.type === 'video' || selectedClip.type === 'audio'}
             <div class="property-section">
-              <h4>Blending</h4>
+              <h4>Media Properties</h4>
               
               <div class="property-group">
-                <label>Mix Blend Mode</label>
+                <label>Volume</label>
+                <div class="property-row">
+                  <div class="property-field full-width">
+                    <input 
+                      type="range" 
+                      bind:value={volume} 
+                      on:change={() => updateClipProperty('volume', volume)}
+                      min="0" 
+                      max="1" 
+                      step="0.01"
+                    />
+                    <div class="range-value">{Math.round(volume * 100)}%</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="property-group">
+                <label>Playback Speed</label>
+                <div class="property-row">
+                  <div class="property-field full-width">
+                    <input 
+                      type="range" 
+                      bind:value={playbackRate} 
+                      on:change={() => updateClipProperty('playbackRate', playbackRate)}
+                      min="0.5" 
+                      max="2" 
+                      step="0.1"
+                    />
+                    <div class="range-value">{playbackRate}x</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {/if}
+          
+          <!-- Timing Properties -->
+          <div class="property-section">
+            <h4>Timing</h4>
+            
+            <div class="property-group">
+              <label>Timeline Start</label>
+              <div class="property-row">
+                <div class="property-field full-width">
+                  <input 
+                    type="range" 
+                    bind:value={timelineStart} 
+                    on:change={() => updateClipProperty('timelineStart', timelineStart)}
+                    min="0" 
+                    max={totalDuration - 1} 
+                    step="0.1"
+                  />
+                  <div class="range-value">{timelineStart.toFixed(1)}s</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="property-group">
+              <label>Timeline End</label>
+              <div class="property-row">
+                <div class="property-field full-width">
+                  <input 
+                    type="range" 
+                    bind:value={timelineEnd} 
+                    on:change={() => updateClipProperty('timelineEnd', timelineEnd)}
+                    min={timelineStart + 0.1} 
+                    max={totalDuration} 
+                    step="0.1"
+                  />
+                  <div class="range-value">{timelineEnd.toFixed(1)}s</div>
+                </div>
+              </div>
+            </div>
+            
+            {#if selectedClip.type === 'video' || selectedClip.type === 'audio'}
+              <div class="property-group">
+                <label>Content Start Time</label>
+                <div class="property-row">
+                  <div class="property-field full-width">
+                    <input 
+                      type="range" 
+                      bind:value={contentStartTime} 
+                      on:change={() => updateClipProperty('contentStartTime', contentStartTime)}
+                      min="0" 
+                      max={contentEndTime - 0.1} 
+                      step="0.1"
+                    />
+                    <div class="range-value">{contentStartTime.toFixed(1)}s</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="property-group">
+                <label>Content End Time</label>
+                <div class="property-row">
+                  <div class="property-field full-width">
+                    <input 
+                      type="range" 
+                      bind:value={contentEndTime} 
+                      on:change={() => updateClipProperty('contentEndTime', contentEndTime)}
+                      min={contentStartTime + 0.1} 
+                      max={clipDuration} 
+                      step="0.1"
+                    />
+                    <div class="range-value">{contentEndTime.toFixed(1)}s</div>
+                  </div>
+                </div>
+              </div>
+            {/if}
+          </div>
+        {:else}
+          <div class="no-selection">
+            <p>Select a layer to edit its properties</p>
+          </div>
+        {/if}
+      </div>
+    {:else if activeTab === 'effects'}
+      <div class="effects-content">
+        {#if selectedClip}
+          <div class="section-title">
+            <h3>{selectedClip.name}</h3>
+            <span class="clip-type">{selectedClip.type}</span>
+          </div>
+          
+          {#if selectedClip.type === 'video' || selectedClip.type === 'image'}
+            <div class="property-section">
+              <h4>Visual Effects</h4>
+              
+              <div class="property-group">
+                <label>Brightness</label>
+                <div class="property-row">
+                  <div class="property-field full-width">
+                    <input 
+                      type="range" 
+                      bind:value={brightness} 
+                      on:change={() => updateClipProperty('brightness', brightness)}
+                      min="0" 
+                      max="2" 
+                      step="0.05"
+                    />
+                    <div class="range-value">{Math.round(brightness * 100)}%</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="property-group">
+                <label>Contrast</label>
+                <div class="property-row">
+                  <div class="property-field full-width">
+                    <input 
+                      type="range" 
+                      bind:value={contrast} 
+                      on:change={() => updateClipProperty('contrast', contrast)}
+                      min="0" 
+                      max="2" 
+                      step="0.05"
+                    />
+                    <div class="range-value">{Math.round(contrast * 100)}%</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="property-group">
+                <label>Saturation</label>
+                <div class="property-row">
+                  <div class="property-field full-width">
+                    <input 
+                      type="range" 
+                      bind:value={saturation} 
+                      on:change={() => updateClipProperty('saturation', saturation)}
+                      min="0" 
+                      max="2" 
+                      step="0.05"
+                    />
+                    <div class="range-value">{Math.round(saturation * 100)}%</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="property-group">
+                <label>Blur</label>
+                <div class="property-row">
+                  <div class="property-field full-width">
+                    <input 
+                      type="range" 
+                      bind:value={blur} 
+                      on:change={() => updateClipProperty('blur', blur)}
+                      min="0" 
+                      max="10" 
+                      step="0.5"
+                    />
+                    <div class="range-value">{blur}px</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="property-group">
+                <label>Blend Mode</label>
                 <select 
-                  value={selectedClip.mixBlendMode ?? 'normal'}
-                  on:change={(e) => updateClipProperty(selectedClip.id, 'mixBlendMode', e.target.value)}
-                  class="property-select"
+                  bind:value={mixBlendMode} 
+                  on:change={() => updateClipProperty('mixBlendMode', mixBlendMode)}
                 >
-                  {#each mixBlendModeOptions as blendMode}
-                    <option value={blendMode.value}>{blendMode.label}</option>
+                  {#each blendModes as mode}
+                    <option value={mode}>{mode}</option>
                   {/each}
                 </select>
               </div>
             </div>
+          {:else}
+            <div class="no-effects">
+              <p>No effects available for this layer type</p>
+            </div>
           {/if}
-
-          <!-- Animation Properties -->
+        {:else}
+          <div class="no-selection">
+            <p>Select a layer to edit its effects</p>
+          </div>
+        {/if}
+      </div>
+    {:else if activeTab === 'animation'}
+      <div class="animation-content">
+        {#if selectedClip}
+          <div class="section-title">
+            <h3>{selectedClip.name}</h3>
+            <span class="clip-type">{selectedClip.type}</span>
+          </div>
+          
           <div class="property-section">
             <h4>Animation</h4>
             
             <div class="property-group">
               <label>Animation Type</label>
               <select 
-                value={selectedClip.animation ?? 'none'}
-                on:change={(e) => updateClipProperty(selectedClip.id, 'animation', e.target.value)}
-                class="property-select"
+                bind:value={animation} 
+                on:change={() => updateClipProperty('animation', animation)}
               >
-                {#each animationOptions as animation}
-                  <option value={animation.value}>{animation.label}</option>
+                {#each animations as anim}
+                  <option value={anim.value}>{anim.label}</option>
                 {/each}
               </select>
             </div>
-
-            {#if (selectedClip.animation ?? 'none') !== 'none'}
-              <div class="property-row">
-                <div class="property-group">
-                  <label>Duration (s)</label>
-                  <input 
-                    type="number" 
-                    value={selectedClip.animationDuration ?? 1}
-                    on:input={(e) => updateClipProperty(selectedClip.id, 'animationDuration', parseFloat(e.target.value) || 1)}
-                    step="0.1"
-                    min="0.1"
-                    max="10"
-                    class="property-input" 
-                  />
+            
+            {#if animation !== 'none'}
+              <div class="property-group">
+                <label>Duration</label>
+                <div class="property-row">
+                  <div class="property-field full-width">
+                    <input 
+                      type="range" 
+                      bind:value={animationDuration} 
+                      on:change={() => updateClipProperty('animationDuration', animationDuration)}
+                      min="0.1" 
+                      max="5" 
+                      step="0.1"
+                    />
+                    <div class="range-value">{animationDuration.toFixed(1)}s</div>
+                  </div>
                 </div>
-                <div class="property-group">
-                  <label>Delay (s)</label>
-                  <input 
-                    type="number" 
-                    value={selectedClip.animationDelay ?? 0}
-                    on:input={(e) => updateClipProperty(selectedClip.id, 'animationDelay', parseFloat(e.target.value) || 0)}
-                    step="0.1"
-                    min="0"
-                    max="10"
-                    class="property-input" 
-                  />
+              </div>
+              
+              <div class="property-group">
+                <label>Delay</label>
+                <div class="property-row">
+                  <div class="property-field full-width">
+                    <input 
+                      type="range" 
+                      bind:value={animationDelay} 
+                      on:change={() => updateClipProperty('animationDelay', animationDelay)}
+                      min="0" 
+                      max="5" 
+                      step="0.1"
+                    />
+                    <div class="range-value">{animationDelay.toFixed(1)}s</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="animation-preview">
+                <div class="preview-label">Preview</div>
+                <div class="preview-container">
+                  <div 
+                    class="preview-element"
+                    class:preview-fade-in={animation === 'fadeIn'}
+                    class:preview-slide-left={animation === 'slideInLeft'}
+                    class:preview-slide-right={animation === 'slideInRight'}
+                    class:preview-slide-up={animation === 'slideInUp'}
+                    class:preview-slide-down={animation === 'slideInDown'}
+                    class:preview-zoom-in={animation === 'zoomIn'}
+                    style="animation-duration: {animationDuration}s; animation-delay: {animationDelay}s;"
+                  >
+                    {selectedClip.type === 'text' ? 'Text' : 'Layer'}
+                  </div>
                 </div>
               </div>
             {/if}
           </div>
-
         {:else}
-          <div class="property-section">
-            <h4>Canvas</h4>
-            <div class="property-group">
-              <label>Background</label>
-              <input type="text" value="#000000" class="property-input" />
+          <div class="no-selection">
+            <p>Select a layer to edit its animation</p>
+          </div>
+        {/if}
+      </div>
+    {:else if activeTab === 'export'}
+      <div class="export-content">
+        <div class="section-title">
+          <h3>Export & Publish</h3>
+        </div>
+        
+        <div class="property-section">
+          <h4>Export Video</h4>
+          <p class="section-description">Export your piece as a video to share or publish it.</p>
+          
+          <div class="export-actions">
+            <button 
+              class="export-button"
+              on:click={exportVideo}
+              disabled={isExporting}
+            >
+              {#if isExporting}
+                <svg class="spinner" viewBox="0 0 24 24" width="16" height="16">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="60" stroke-dashoffset="60" stroke-linecap="round">
+                    <animate attributeName="stroke-dashoffset" dur="2s" values="60;0" repeatCount="indefinite"/>
+                  </circle>
+                </svg>
+                Exporting...
+              {:else}
+                Export Video
+              {/if}
+            </button>
+          </div>
+          
+          {#if exportError}
+            <div class="export-error">
+              {exportError}
             </div>
+          {/if}
+          
+          {#if exportVideoUrl}
+            <div class="export-success">
+              <p>Video exported successfully!</p>
+              <a href={exportVideoUrl} target="_blank" rel="noopener noreferrer" class="view-video-link">
+                View Exported Video
+              </a>
+            </div>
+          {/if}
+        </div>
+        
+        {#if exportVideoUrl}
+          <div class="property-section">
+            <h4>Publish Piece</h4>
+            <p class="section-description">Make your piece available to the public.</p>
+            
             <div class="property-group">
-              <label>Aspect Ratio</label>
-              <span class="property-value">16:9</span>
+              <label>Project Status</label>
+              <select bind:value={newProjectStatus}>
+                {#each projectStatusOptions as option}
+                  <option value={option.value}>{option.label}</option>
+                {/each}
+              </select>
+            </div>
+            
+            <div class="publish-actions">
+              <button 
+                class="publish-button"
+                on:click={publishPiece}
+              >
+                Publish Piece
+              </button>
             </div>
           </div>
         {/if}
         
-        <!-- Version Control -->
         <div class="property-section">
-          <h4>Version Control</h4>
-          <div class="property-group">
-            <button class="version-button" on:click={createNamedVersion}>
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                <polyline points="7 3 7 8 15 8"></polyline>
-              </svg>
+          <h4>Save Version</h4>
+          <p class="section-description">Create a named version of your current work.</p>
+          
+          <div class="version-actions">
+            <button 
+              class="version-button"
+              on:click={createNamedVersion}
+            >
               Save Named Version
             </button>
-            <p class="version-help">Create a named snapshot of your current work that you can return to later.</p>
           </div>
-        </div>
-      </div>
-
-    {:else if activeTab === 'history'}
-      <!-- History Tab Content -->
-      <div class="history-header">
-        <h3>Version History</h3>
-      </div>
-      <div class="history-content">
-        <p class="history-info">
-          View and restore previous versions of your project. Each time you save, a snapshot is automatically created.
-        </p>
-        
-        <div class="history-list">
-          <div class="history-item">
-            <div class="history-item-header">
-              <div class="history-item-info">
-                <span class="history-item-name">Current Version</span>
-                <span class="history-item-date">Just now</span>
-              </div>
-              <div class="history-item-badge current">Current</div>
-            </div>
-          </div>
-          
-          <div class="history-item">
-            <div class="history-item-header">
-              <div class="history-item-info">
-                <span class="history-item-name">Final Draft</span>
-                <span class="history-item-date">2 hours ago</span>
-              </div>
-              <button class="history-restore-btn">Restore</button>
-            </div>
-          </div>
-          
-          <div class="history-item">
-            <div class="history-item-header">
-              <div class="history-item-info">
-                <span class="history-item-name">Auto Save</span>
-                <span class="history-item-date">Yesterday, 3:45 PM</span>
-              </div>
-              <button class="history-restore-btn">Restore</button>
-            </div>
-          </div>
-          
-          <div class="history-item">
-            <div class="history-item-header">
-              <div class="history-item-info">
-                <span class="history-item-name">First Draft</span>
-                <span class="history-item-date">June 22, 2025</span>
-              </div>
-              <button class="history-restore-btn">Restore</button>
-            </div>
-          </div>
-        </div>
-        
-        <div class="history-note">
-          <p>Note: Restoring a previous version will replace your current work. Make sure to save a version first if you want to keep your current changes.</p>
-        </div>
-      </div>
-
-    {:else if activeTab === 'export'}
-      <!-- Export Tab Content -->
-      <div class="export-header">
-        <h3>Publish Settings</h3>
-      </div>
-      
-      <div class="export-content">
-        <!-- Output Format -->
-        <div class="export-section">
-          <h4>Output Format</h4>
-          
-          <div class="property-group">
-            <label>File Format</label>
-            <select 
-              bind:value={exportSettings.format}
-              class="property-select"
-            >
-              {#each exportFormats as format}
-                <option value={format.value}>{format.label}</option>
-              {/each}
-            </select>
-            <div class="format-description">
-              {exportFormats.find(f => f.value === exportSettings.format)?.description}
-            </div>
-          </div>
-
-          <div class="property-group">
-            <label>Filename</label>
-            <div class="filename-container">
-              <input 
-                type="text" 
-                bind:value={exportSettings.filename}
-                class="property-input filename-input" 
-                placeholder="my-video"
-              />
-              <span class="file-extension">.{exportSettings.format}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Video Quality -->
-        <div class="export-section">
-          <h4>Video Quality</h4>
-          
-          <div class="property-group">
-            <label>Quality Preset</label>
-            <select 
-              bind:value={exportSettings.quality}
-              class="property-select"
-            >
-              {#each qualityPresets as preset}
-                <option value={preset.value}>{preset.label}</option>
-              {/each}
-            </select>
-            <div class="format-description">
-              {qualityPresets.find(p => p.value === exportSettings.quality)?.description}
-            </div>
-          </div>
-
-          <div class="property-group">
-            <label>Resolution</label>
-            <select 
-              bind:value={exportSettings.resolution}
-              class="property-select"
-            >
-              {#each resolutionOptions as resolution}
-                <option value={resolution.value}>{resolution.label}</option>
-              {/each}
-            </select>
-            <div class="format-description">
-              {resolutionOptions.find(r => r.value === exportSettings.resolution)?.description}
-            </div>
-          </div>
-
-          <div class="property-row">
-            <div class="property-group">
-              <label>Frame Rate</label>
-              <select 
-                bind:value={exportSettings.framerate}
-                class="property-select"
-              >
-                {#each framerateOptions as fps}
-                  <option value={fps.value}>{fps.label}</option>
-                {/each}
-              </select>
-            </div>
-            <div class="property-group">
-              <label>Bitrate</label>
-              <select 
-                bind:value={exportSettings.bitrate}
-                class="property-select"
-              >
-                {#each bitrateOptions as bitrate}
-                  <option value={bitrate.value}>{bitrate.label}</option>
-                {/each}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Audio Settings -->
-        <div class="export-section">
-          <h4>Audio Settings</h4>
-          
-          <div class="property-group">
-            <label class="checkbox-label">
-              <input 
-                type="checkbox" 
-                bind:checked={exportSettings.includeAudio}
-                class="checkbox-input"
-              />
-              <span class="checkbox-custom"></span>
-              Include Audio
-            </label>
-          </div>
-
-          {#if exportSettings.includeAudio}
-            <div class="property-group">
-              <label>Audio Quality</label>
-              <select 
-                bind:value={exportSettings.audioQuality}
-                class="property-select"
-              >
-                {#each audioQualityOptions as quality}
-                  <option value={quality.value}>{quality.label}</option>
-                {/each}
-              </select>
-              <div class="format-description">
-                {audioQualityOptions.find(q => q.value === exportSettings.audioQuality)?.description}
-              </div>
-            </div>
-          {/if}
-        </div>
-
-        <!-- Export Summary -->
-        <div class="export-section">
-          <h4>Export Summary</h4>
-          
-          <div class="export-summary">
-            <div class="summary-row">
-              <span class="summary-label">Duration:</span>
-              <span class="summary-value">{totalDuration.toFixed(1)}s</span>
-            </div>
-            <div class="summary-row">
-              <span class="summary-label">Format:</span>
-              <span class="summary-value">{exportSettings.format.toUpperCase()}</span>
-            </div>
-            <div class="summary-row">
-              <span class="summary-label">Resolution:</span>
-              <span class="summary-value">{exportSettings.resolution}</span>
-            </div>
-            <div class="summary-row">
-              <span class="summary-label">Frame Rate:</span>
-              <span class="summary-value">{exportSettings.framerate} fps</span>
-            </div>
-            <div class="summary-row">
-              <span class="summary-label">Estimated Size:</span>
-              <span class="summary-value">{getEstimatedFileSize()}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Export Actions -->
-        <div class="export-actions">
-          <button class="export-btn primary" on:click={handleExport}>
-            <span class="export-icon">🎬</span>
-            Publish Piece
-          </button>
-          <button class="export-btn secondary" on:click={resetExportSettings}>
-            Reset Settings
-          </button>
         </div>
       </div>
     {/if}
   </div>
+  
+  {#if isCreatingNamedVersion}
+    <div class="version-dialog">
+      <div class="dialog-header">
+        <h3>Save Version</h3>
+        <button class="close-button" on:click={cancelNamedVersion}>×</button>
+      </div>
+      <div class="dialog-content">
+        <p>Enter a name for this version to help you identify it later.</p>
+        <input 
+          type="text" 
+          bind:value={versionName} 
+          placeholder="Version name (e.g., First Draft, Final Cut)"
+          class="version-input"
+        />
+      </div>
+      <div class="dialog-actions">
+        <button class="cancel-button" on:click={cancelNamedVersion}>Cancel</button>
+        <button 
+          class="save-button" 
+          on:click={confirmNamedVersion}
+          disabled={!versionName.trim()}
+        >
+          Save Version
+        </button>
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style>
-  /* Right Sidebar */
-  .right-sidebar {
-    width: 100%;
-    background: var(--color-neutral-100);
+  .properties-panel {
+    height: 100%;
+    background: #FBFBFB;
     border-left: 1px solid #d0d0d0;
     display: flex;
     flex-direction: column;
-    height: 100%;
+    overflow: hidden;
+    position: relative;
   }
-
-  /* Tab Navigation */
-  .tab-nav {
-    display: flex;
+  
+  .panel-header {
+    padding: 0;
     border-bottom: 1px solid #d0d0d0;
     flex-shrink: 0;
   }
-
-  .tab-btn {
+  
+  .tab-buttons {
+    display: flex;
+    width: 100%;
+  }
+  
+  .tab-buttons button {
     flex: 1;
-    padding: 0.75rem;
+    padding: 0.75rem 0.5rem;
     background: none;
     border: none;
-    cursor: pointer;
-    font-size: 0.9rem;
-    color: #666;
     border-bottom: 2px solid transparent;
-    transition: all 0.2s ease;
-    border-radius: 0px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: #666;
+    transition: all 0.2s;
+    border-radius: 0;
   }
-
-  button.tab-btn:focus {
-    outline: none;
+  
+  .tab-buttons button:hover {
+    background-color: #f0f0f0;
   }
-
-  .tab-btn:hover {
-    background: #f8f8f8;
-    color: #333;
-  }
-
-  .tab-btn.active {
+  
+  .tab-buttons button.active {
     color: var(--color-primary-600);
-    border-bottom-color: var(--color-primary-500);
-    background-color: white;
+    border-bottom-color: var(--color-primary-600);
+    background-color: #f5f5f5;
   }
-
-  /* Tab Content */
-  .tab-content {
+  
+  .panel-content {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    background: #FBFBFB;
-  }
-
-  .properties-header, .export-header, .history-header {
+    overflow-y: auto;
     padding: 1rem;
-    border-bottom: 1px solid #d0d0d0;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
   }
-
-  .properties-header h3, .export-header h3, .history-header h3 {
+  
+  .section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  .section-title h3 {
     margin: 0;
     font-size: 1rem;
     font-weight: 500;
+    color: #333;
   }
-
-  .reset-btn {
-    background: none;
-    border: none;
-    font-size: 1rem;
-    cursor: pointer;
-    padding: 0.25rem;
-    border-radius: 4px;
-    transition: background 0.2s;
-  }
-
-  .reset-btn:hover {
+  
+  .clip-type {
+    font-size: 0.75rem;
+    color: #666;
     background: #f0f0f0;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
   }
-
-  .properties-content, .export-content, .history-content {
-    flex: 1;
-    padding: 1rem;
-    overflow-y: auto;
+  
+  .property-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
   }
-
-  .property-section, .export-section {
-    margin-bottom: 0px;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #f0f0f0;
-  }
-
-  .property-section:last-of-type, .export-section:last-of-type {
+  
+  .property-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
     border-bottom: none;
   }
-
-  .property-section h4, .export-section h4 {
-    margin: 0 0 1rem 0;
+  
+  .property-section h4 {
+    margin: 0 0 0.75rem 0;
     font-size: 0.9rem;
     font-weight: 500;
     color: #333;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
   }
-
+  
+  .section-description {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 1rem;
+  }
+  
   .property-group {
     margin-bottom: 1rem;
   }
-
-  .property-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
-
+  
   .property-group label {
     display: block;
     font-size: 0.8rem;
     color: #666;
     margin-bottom: 0.25rem;
-    font-weight: 500;
   }
-
-  .property-input {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #d0d0d0;
-    background: white;
-    color: var(--color-neutral-900);
-    border-radius: 4px;
-    font-size: 0.9rem;
-    transition: border-color 0.2s;
-  }
-
-  .property-input:focus {
-    outline: none;
-    border-color: #007AFF;
-  }
-
-  .property-select {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #d0d0d0;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    background: white;
-    color: var(--color-neutral-900);
-    cursor: pointer;
-  }
-
-  .property-select:focus {
-    outline: none;
-    border-color: #007AFF;
-  }
-
-  .text-content {
-    resize: vertical;
-    min-height: 60px;
-    font-family: inherit;
-  }
-
-  .property-value {
-    display: block;
-    padding: 0.5rem;
-    background: #f8f8f8;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    color: #666;
-  }
-
-  .slider-container {
+  
+  .property-row {
     display: flex;
-    align-items: center;
     gap: 0.5rem;
   }
-
-  .property-slider {
+  
+  .property-field {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
     flex: 1;
-    height: 4px;
-    background: #e0e0e0;
-    border-radius: 2px;
-    outline: none;
-    cursor: pointer;
-    accent-color: black;
-    box-shadow: none;
   }
-
-  .property-slider::-webkit-slider-thumb {
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    background: #007AFF;
-    border-radius: 50%;
-    cursor: pointer;
+  
+  .property-field.full-width {
+    flex-direction: column;
+    align-items: stretch;
   }
-
-  .property-slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    background: #007AFF;
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
-  }
-
-  .slider-value {
-    font-size: 0.8rem;
+  
+  .field-label {
+    font-size: 0.75rem;
     color: #666;
-    min-width: 40px;
-    text-align: right;
+    width: 12px;
+    text-align: center;
   }
-
+  
+  .field-unit {
+    font-size: 0.75rem;
+    color: #666;
+  }
+  
+  .property-field input[type="number"] {
+    width: 50px;
+    padding: 0.25rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    font-size: 0.8rem;
+  }
+  
+  .property-field input[type="range"] {
+    width: 100%;
+    margin: 0;
+  }
+  
+  .range-value {
+    font-size: 0.75rem;
+    color: #666;
+    text-align: center;
+    margin-top: 0.25rem;
+  }
+  
+  .property-group select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    background: white;
+  }
+  
   .button-group {
     display: flex;
     gap: 0.25rem;
   }
-
-  .align-btn {
+  
+  .button-group button {
     flex: 1;
     padding: 0.5rem;
-    border: 1px solid #d0d0d0;
     background: white;
+    border: 1px solid #d0d0d0;
     border-radius: 4px;
+    font-size: 0.8rem;
     cursor: pointer;
-    font-size: 0.9rem;
     transition: all 0.2s;
   }
-
-  .align-btn:hover {
-    background: #f0f0f0;
-  }
-
-  .align-btn.active {
-    background: #007AFF;
+  
+  .button-group button.active {
+    background: var(--color-primary-600);
     color: white;
-    border-color: #007AFF;
+    border-color: var(--color-primary-600);
   }
-
-  .color-input-container {
+  
+  .color-field {
     display: flex;
-    gap: 0.5rem;
     align-items: center;
+    gap: 0.5rem;
   }
-
-  .color-input {
-    width: 40px;
-    height: 40px;
+  
+  .color-field input[type="color"] {
+    width: 30px;
+    height: 30px;
+    padding: 0;
     border: 1px solid #d0d0d0;
     border-radius: 4px;
-    cursor: pointer;
-    padding: 0;
   }
-
-  .color-text {
+  
+  .color-field input[type="text"] {
     flex: 1;
-    font-family: monospace;
-    text-transform: uppercase;
-  }
-
-  /* Media Source Styles */
-  .current-media-info {
-    padding: 0.5rem;
-    background: #f8f8f8;
-    border: 1px solid #e0e0e0;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d0d0d0;
     border-radius: 4px;
-    margin-bottom: 0.5rem;
-  }
-
-  .media-name {
     font-size: 0.8rem;
-    color: #666;
-    word-break: break-all;
   }
-
-  .file-input {
-    display: none;
-  }
-
-  .media-upload-btn {
+  
+  .no-selection,
+  .no-effects {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    padding: 0.75rem;
-    border: 2px dashed #d0d0d0;
-    border-radius: 6px;
-    background: #fafafa;
-    cursor: pointer;
-    transition: all 0.2s;
+    height: 200px;
+    color: #999;
     font-size: 0.9rem;
-    color: #666;
-  }
-
-  .media-upload-btn:hover {
-    border-color: #007AFF;
-    background: #f8f9ff;
-    color: #007AFF;
-  }
-
-  .upload-icon {
-    font-size: 1.1rem;
-  }
-
-  .upload-text {
-    font-weight: 500;
+    text-align: center;
+    padding: 0 1rem;
   }
   
-  /* Version Control Styles */
+  /* Animation Preview */
+  .animation-preview {
+    margin-top: 1rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .preview-label {
+    padding: 0.5rem;
+    background: #f0f0f0;
+    font-size: 0.8rem;
+    color: #666;
+    border-bottom: 1px solid #d0d0d0;
+  }
+  
+  .preview-container {
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    position: relative;
+  }
+  
+  .preview-element {
+    padding: 0.5rem 1rem;
+    background: var(--color-primary-600);
+    color: white;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    animation-fill-mode: both;
+    animation-iteration-count: infinite;
+  }
+  
+  .preview-fade-in {
+    animation-name: previewFadeIn;
+  }
+  
+  .preview-slide-left {
+    animation-name: previewSlideLeft;
+  }
+  
+  .preview-slide-right {
+    animation-name: previewSlideRight;
+  }
+  
+  .preview-slide-up {
+    animation-name: previewSlideUp;
+  }
+  
+  .preview-slide-down {
+    animation-name: previewSlideDown;
+  }
+  
+  .preview-zoom-in {
+    animation-name: previewZoomIn;
+  }
+  
+  @keyframes previewFadeIn {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+  }
+  
+  @keyframes previewSlideLeft {
+    0%, 100% { transform: translateX(-100%); opacity: 0; }
+    50% { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes previewSlideRight {
+    0%, 100% { transform: translateX(100%); opacity: 0; }
+    50% { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes previewSlideUp {
+    0%, 100% { transform: translateY(100%); opacity: 0; }
+    50% { transform: translateY(0); opacity: 1; }
+  }
+  
+  @keyframes previewSlideDown {
+    0%, 100% { transform: translateY(-100%); opacity: 0; }
+    50% { transform: translateY(0); opacity: 1; }
+  }
+  
+  @keyframes previewZoomIn {
+    0%, 100% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1); opacity: 1; }
+  }
+  
+  /* Export tab */
+  .export-actions,
+  .publish-actions,
+  .version-actions {
+    margin-top: 1rem;
+  }
+  
+  .export-button,
+  .publish-button,
   .version-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1rem;
+    transition: all 0.2s;
+  }
+  
+  .export-button {
     background: var(--color-primary-600);
     color: white;
     border: none;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    width: 100%;
-    justify-content: center;
   }
   
-  .version-button:hover {
+  .export-button:hover:not(:disabled) {
     background: var(--color-primary-700);
   }
   
-  .version-help {
-    font-size: 0.8rem;
-    color: #666;
-    margin-top: 0.5rem;
-    text-align: center;
+  .export-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
   }
   
-  /* History Tab Styles */
-  .history-info {
-    margin-bottom: 1rem;
-    padding: 0.75rem;
-    background: #f0f8ff;
-    border: 1px solid #d0e8ff;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    color: #0066cc;
-  }
-  
-  .history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
-  
-  .history-item {
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  
-  .history-item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem;
-    background: #f8f8f8;
-  }
-  
-  .history-item-info {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .history-item-name {
-    font-weight: 500;
-    font-size: 0.9rem;
-  }
-  
-  .history-item-date {
-    font-size: 0.8rem;
-    color: #666;
-  }
-  
-  .history-item-badge {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    background: #e0e0e0;
-    color: #666;
-  }
-  
-  .history-item-badge.current {
-    background: #d1f7c4;
-    color: #2e7d32;
-  }
-  
-  .history-restore-btn {
-    font-size: 0.8rem;
-    padding: 0.25rem 0.5rem;
-    background: #007AFF;
+  .publish-button {
+    background: var(--color-success-600);
     color: white;
     border: none;
-    border-radius: 4px;
-    cursor: pointer;
   }
   
-  .history-restore-btn:hover {
-    background: #0056CC;
+  .publish-button:hover {
+    background: var(--color-success-700);
   }
   
-  .history-note {
+  .version-button {
+    background: #f0f0f0;
+    color: #333;
+    border: 1px solid #d0d0d0;
+  }
+  
+  .version-button:hover {
+    background: #e0e0e0;
+  }
+  
+  .export-error {
     margin-top: 1rem;
-    padding: 0.75rem;
-    background: #fff8e1;
-    border: 1px solid #ffe082;
+    padding: 0.5rem;
+    background: var(--color-error-50);
+    color: var(--color-error-600);
+    border: 1px solid var(--color-error-200);
     border-radius: 4px;
     font-size: 0.8rem;
-    color: #ff8f00;
   }
-
-  /* Export Specific Styles */
-  .format-description {
-    font-size: 0.7rem;
-    color: #888;
-    margin-top: 0.25rem;
-    font-style: italic;
-  }
-
-  .filename-container {
-    display: flex;
-    align-items: center;
-    border: 1px solid #d0d0d0;
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .filename-input {
-    border: none;
-    border-radius: 0;
-    flex: 1;
-  }
-
-  .filename-input:focus {
-    border: none;
-  }
-
-  .file-extension {
+  
+  .export-success {
+    margin-top: 1rem;
     padding: 0.5rem;
-    background: #f8f8f8;
-    border-left: 1px solid #e0e0e0;
-    font-size: 0.9rem;
-    color: #666;
-    font-family: monospace;
+    background: var(--color-success-50);
+    color: var(--color-success-600);
+    border: 1px solid var(--color-success-200);
+    border-radius: 4px;
+    font-size: 0.8rem;
   }
-
-  .checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    font-size: 0.9rem;
-    margin-bottom: 0 !important;
+  
+  .view-video-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    color: var(--color-primary-600);
+    text-decoration: none;
   }
-
-  .checkbox-input {
-    display: none;
+  
+  .view-video-link:hover {
+    text-decoration: underline;
   }
-
-  .checkbox-custom {
-    width: 18px;
-    height: 18px;
-    border: 2px solid #d0d0d0;
-    border-radius: 3px;
-    position: relative;
-    transition: all 0.2s;
+  
+  .spinner {
+    animation: spin 1s linear infinite;
   }
-
-  .checkbox-input:checked + .checkbox-custom {
-    background: #007AFF;
-    border-color: #007AFF;
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
-
-  .checkbox-input:checked + .checkbox-custom::after {
-    content: '✓';
+  
+  /* Version Dialog */
+  .version-dialog {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: white;
-    font-size: 0.8rem;
-    font-weight: bold;
+    width: 90%;
+    max-width: 300px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
   }
-
-  .export-summary {
-    background: #f8f9ff;
-    border: 1px solid #e0e8ff;
-    border-radius: 6px;
-    padding: 1rem;
-  }
-
-  .summary-row {
+  
+  .dialog-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
+    padding: 1rem;
+    border-bottom: 1px solid #e0e0e0;
   }
-
-  .summary-row:last-child {
-    margin-bottom: 0;
+  
+  .dialog-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
   }
-
-  .summary-label {
-    font-size: 0.8rem;
+  
+  .close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
     color: #666;
-    font-weight: 500;
-  }
-
-  .summary-value {
-    font-size: 0.8rem;
-    color: #333;
-    font-weight: 500;
-    font-family: monospace;
-  }
-
-  .export-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid #f0f0f0;
-  }
-
-  .export-btn {
+    padding: 0;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    border: none;
-    border-radius: 100px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
+    border-radius: 50%;
+    transition: background 0.2s;
   }
-
-  .export-btn.primary {
-    background: black;
-    color: white;
-  }
-
-  .export-btn.primary:hover {
-    background: var(--color-primary-600);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 122, 255, 0.3);
-  }
-
-  .export-btn.secondary {
+  
+  .close-button:hover {
     background: #f0f0f0;
+  }
+  
+  .dialog-content {
+    padding: 1rem;
+  }
+  
+  .dialog-content p {
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
     color: #666;
+  }
+  
+  .version-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+  
+  .dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 0 1rem 1rem;
+  }
+  
+  .cancel-button,
+  .save-button {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  
+  .cancel-button {
+    background: #f0f0f0;
+    color: #333;
     border: 1px solid #d0d0d0;
   }
-
-  .export-btn.secondary:hover {
+  
+  .cancel-button:hover {
     background: #e0e0e0;
-    color: #333;
   }
-
-  .export-icon {
-    font-size: 1.1rem;
+  
+  .save-button {
+    background: var(--color-primary-600);
+    color: white;
+    border: none;
+  }
+  
+  .save-button:hover:not(:disabled) {
+    background: var(--color-primary-700);
+  }
+  
+  .save-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
   }
 </style>

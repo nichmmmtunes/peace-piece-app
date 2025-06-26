@@ -5,6 +5,7 @@
   import { user } from '../stores/authStore';
   import { fade, fly } from 'svelte/transition';
   import PieceEditor from './PieceEditor/PieceEditor.svelte';
+  import VersionHistory from './PieceEditor/VersionHistory.svelte';
   import type { VideoClip } from './PieceEditor/types';
   
   export let params = { id: '' };
@@ -394,6 +395,17 @@
     }
   }
 
+  function handleRestoreVersion(event: CustomEvent<any>) {
+    const restoredEditorData = event.detail;
+    if (restoredEditorData) {
+      editorData = restoredEditorData;
+      saveMessage = 'Restored to previous version';
+      
+      // Save the restored version
+      saveEditorData(restoredEditorData);
+    }
+  }
+
   function getInitials(fullName: string | null): string {
     if (!fullName) {
       return ""; // Handle cases where the name might be null or empty
@@ -460,11 +472,13 @@
         </div>
         
         <div class="header-right">
-          {#if saveMessage}
-            <div class="save-message" class:error={saveMessage.includes('Error')} transition:fade>
-              {saveMessage}
-            </div>
-          {/if}
+          <VersionHistory 
+            pieceId={params.id}
+            isSaving={saving}
+            saveMessage={saveMessage}
+            currentEditorData={editorData}
+            on:restoreVersion={handleRestoreVersion}
+          />
           
           <div class="editor-status">
             <div class="saved-indicator saved"></div>
