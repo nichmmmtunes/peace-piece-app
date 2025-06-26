@@ -1,5 +1,3 @@
-<script lang="ts">
-
 import { onMount, createEventDispatcher } from 'svelte';
 import LayersPanel from './LayersPanel.svelte';
 import CanvasArea from './CanvasArea.svelte';
@@ -367,7 +365,9 @@ function updateClipTiming(event) {
         updatedClip.contentStartTime = Math.max(0, Math.min(contentStartTime, updatedClip.contentEndTime - 0.1));
       }
       if (contentEndTime !== undefined) {
-        updatedClip.contentEndTime = Math.min(updatedClip.duration, Math.max(contentEndTime, updatedClip.contentStartTime + 0.1));
+        // IMPORTANT CHANGE: Remove the constraint that limits contentEndTime to the clip's duration
+        // This allows clips to be extended beyond their original duration
+        updatedClip.contentEndTime = Math.max(updatedClip.contentStartTime + 0.1, contentEndTime);
       }
       
       // If content timing changed, adjust timeline duration to match
