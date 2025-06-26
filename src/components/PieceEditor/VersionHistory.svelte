@@ -136,7 +136,7 @@
   }
 
   .save-status {
-    visibility: hidden;
+    display: none;
   }
   
   .save-status-indicator {
