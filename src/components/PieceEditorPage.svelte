@@ -481,7 +481,6 @@
           />
           
           <div class="editor-status">
-            <div class="saved-indicator saved"></div>
             <div class="editor-badges">
               <span class="status-badge organizer">
                 <span class="badge-name">{organizer ? organizer.name : 'Unknown Organizer'}</span>
@@ -716,26 +715,6 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-  }
-
-  .editor-status .saved-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: var(--color-success-600);
-    transition: background-color 0.2s;
-  }
-
-  .editor-status .saved-indicator.saved {
-    background-color: var(--color-success-600);
-  }
-
-  .editor-status .saved-indicator.saving {
-    background-color: var(--color-warning-600);
-  }
-
-  .editor-status .saved-indicator.error {
-    background-color: var(--color-error-600);
   }
 
   .editor-badges {
