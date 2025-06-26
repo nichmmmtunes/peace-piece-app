@@ -227,7 +227,7 @@
 
   .support-option h4 {
     margin-bottom: var(--space-2);
-    color: var(--color-primary-700);
+    color: var(--text-color);
     font-weight: 500;
   }
 
