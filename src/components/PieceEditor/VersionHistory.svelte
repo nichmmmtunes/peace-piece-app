@@ -142,7 +142,7 @@
   .save-status-indicator {
     width: 8px;
     height: 8px;
-    border-radius: 50%;c
+    border-radius: 50%;
     transition: background-color 0.3s ease;
   }
   
