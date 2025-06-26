@@ -504,7 +504,7 @@
 
   .editor-header {
     padding: 0px var(--space-4);
-    background: white;
+    background: #FBFBFB;
     border-bottom: 1px solid var(--color-neutral-300);
     display: flex;
     justify-content: space-between;

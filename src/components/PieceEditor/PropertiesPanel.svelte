@@ -890,9 +890,6 @@
       <!-- Export Tab Content -->
       <div class="export-header">
         <h3>Publish Settings</h3>
-        <button class="reset-btn" on:click={resetExportSettings} title="Reset to defaults">
-          🔄
-        </button>
       </div>
       
       <div class="export-content">
@@ -1118,7 +1115,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: white;
+    background: #FBFBFB;
   }
 
   .properties-header, .export-header {
@@ -1255,7 +1252,7 @@
     border-radius: 2px;
     outline: none;
     cursor: pointer;
-    accent-color: var(--color-neutral-600);
+    accent-color: black;
     box-shadow: none;
   }
 
