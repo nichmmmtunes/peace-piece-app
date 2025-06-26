@@ -1402,7 +1402,7 @@
   .artist-goal-fill {
     height: 100%;
     background-color: var(--color-warning-300);
-    border-radius: 4px;
+    border-radius: 2px;
     transition: width 0.3s ease;
     min-width: 1%;
     z-index: 0;
