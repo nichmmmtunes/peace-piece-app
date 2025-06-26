@@ -188,6 +188,7 @@
     font-weight: 500;
     color: var(--text-color);
     transition: background-color 0.2s;
+    border-radius: unset;
   }
 
   .item-header:hover {
