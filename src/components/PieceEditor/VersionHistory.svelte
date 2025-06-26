@@ -142,7 +142,7 @@
   .save-status-indicator {
     width: 8px;
     height: 8px;
-    border-radius: 50%;
+    border-radius: 50%;c
     transition: background-color 0.3s ease;
   }
   
@@ -154,6 +154,7 @@
     font-size: 12px;
     min-width: 180px;
     cursor: pointer;
+    color: #000;
   }
   
   .version-select:disabled {
