@@ -532,7 +532,7 @@
   .timeline-content {
     flex: 1;
     position: relative;
-    overflow: auto;
+    overflow-x: auto;
     display: flex;
     flex-direction: column;
     background: #FBFBFB;
