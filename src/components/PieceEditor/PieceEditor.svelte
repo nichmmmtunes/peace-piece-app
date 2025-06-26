@@ -1,4 +1,3 @@
-<script lang="ts">
 import { onMount, createEventDispatcher } from 'svelte';
 import LayersPanel from './LayersPanel.svelte';
 import CanvasArea from './CanvasArea.svelte';
@@ -67,6 +66,19 @@ onMount(() => {
     document.removeEventListener('mouseup', handleGlobalMouseUp);
   };
 });
+
+// Dynamically calculate totalDuration based on the clips
+$: {
+  if (clips.length > 0) {
+    // Find the maximum timelineEnd value among all clips
+    const maxTimelineEnd = Math.max(...clips.map(clip => clip.timelineEnd || 0));
+    // Add some padding (e.g., 10 seconds) and ensure it's at least 60 seconds
+    totalDuration = Math.max(maxTimelineEnd + 10, 60);
+  } else {
+    // Default to 60 seconds if there are no clips
+    totalDuration = 60;
+  }
+}
 
 // Save editor data
 function saveEditorData() {
