@@ -125,7 +125,6 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-right: 16px;
   }
   
   .version-container {
