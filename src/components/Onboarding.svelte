@@ -191,10 +191,6 @@
     border-radius: unset;
   }
 
-  .item-header:hover {
-    background-color: var(--color-neutral-50);
-  }
-
   .expand-icon {
     font-size: 22px;
     color: var(--text-muted);
