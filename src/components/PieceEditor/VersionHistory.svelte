@@ -143,6 +143,7 @@
     height: 8px;
     border-radius: 50%;
     transition: background-color 0.3s ease;
+    flex-shrink: 0;
   }
   
   .version-select {
