@@ -535,7 +535,7 @@
     display: flex;
     flex-direction: column;
     background: #FBFBFB;
-    padding: 0 25px;
+    padding: 0 10px;
   }
 
   /* Sticky Time Ruler */
