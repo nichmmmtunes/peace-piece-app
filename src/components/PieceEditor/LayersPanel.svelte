@@ -166,11 +166,37 @@
       url = URL.createObjectURL(newLayerFile);
       
       if (newLayerType === 'video' || newLayerType === 'music') {
-        const media = document.createElement(newLayerType === 'video' ? 'video' : 'audio');
-        media.onloadedmetadata = () => {
-          duration = media.duration;
-        };
-        media.src = url;
+        try {
+          // Wait for media to load and get its duration
+          duration = await new Promise((resolve, reject) => {
+            const media = document.createElement(newLayerType === 'video' ? 'video' : 'audio');
+            
+            media.onloadedmetadata = () => {
+              resolve(media.duration);
+            };
+            
+            media.onerror = () => {
+              // If there's an error loading the media, use default duration
+              resolve(10);
+            };
+            
+            // Set a timeout in case the media never loads
+            const timeout = setTimeout(() => {
+              resolve(10);
+            }, 5000);
+            
+            media.onloadedmetadata = () => {
+              clearTimeout(timeout);
+              resolve(media.duration);
+            };
+            
+            media.src = url;
+          });
+        } catch (error) {
+          console.error('Error loading media duration:', error);
+          // Fallback to default duration
+          duration = 10;
+        }
       }
     }
 
