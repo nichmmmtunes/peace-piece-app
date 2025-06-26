@@ -703,7 +703,14 @@
 
   .clip-icon {
     font-size: 0.7rem;
-    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+  }
+
+  .clip-icon svg {
+    width: 100%;
+    height: 100%;
   }
 
   .clip-name {
