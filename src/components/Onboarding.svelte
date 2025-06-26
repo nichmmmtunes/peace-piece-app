@@ -203,7 +203,7 @@
 
   .item-description {
     color: var(--text-muted);
-    margin-bottom: var(--space-2);
+    margin-bottom: var(--space-1);
     line-height: 1.5;
   }
 
