@@ -77,8 +77,7 @@
         const { data: contributedPieces } = await supabase
           .from('piece_details')
           .select(`
-            *,
-            piece_artists!inner(role)
+            *
           `)
           .eq('piece_artists.artist_id', artistData.id)
           .order('created_at', { ascending: false });
