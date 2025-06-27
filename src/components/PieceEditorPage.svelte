@@ -669,7 +669,7 @@
   }
 
   .back-link:hover {
-    color: var(--color-primary-600);
+    color: var(--color-neutral-700);
   }
 
   .header-left h1 {
