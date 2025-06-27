@@ -27,23 +27,8 @@ export async function signUp(email: string, password: string) {
       return { error: authError };
     }
 
-    // Create profile using service role client to bypass RLS
-    if (authData.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([
-          {
-            id: authData.user.id,
-            onboarding_completed: false,
-          },
-        ]);
-
-      if (profileError) {
-        // If profile creation fails, sign out the user to maintain data consistency
-        await supabase.auth.signOut();
-        return { error: profileError };
-      }
-    }
+    // No need to create profile manually anymore
+    // The database trigger will handle profile creation
 
     return { error: null };
   } catch (error) {
