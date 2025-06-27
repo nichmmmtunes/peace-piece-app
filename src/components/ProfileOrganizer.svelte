@@ -409,7 +409,7 @@
 
   .profile-stats {
     background: transparent;
-    border-radius: var(--radius-lg);
+    border-radius: 0px;
     padding: var(--space-6) 0 0;
     border-top: solid 1px var(--border-color);
   }
