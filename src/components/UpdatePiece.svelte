@@ -333,7 +333,7 @@
       <!-- Header -->
       <div class="update-header" in:fade>
         <div class="breadcrumb">
-          <a href="/piece/{params.id}" use:link>← Back to Piece</a>
+          <a href="/piece/{params.id}" use:link>← Back</a>
         </div>
         <h1>Update {title}</h1>
         <p>Make changes to your creative work</p>
