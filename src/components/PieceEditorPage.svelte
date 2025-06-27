@@ -659,7 +659,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    color: var(--color-neutral-900);
+    color: black;
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s;
