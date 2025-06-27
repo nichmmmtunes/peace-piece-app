@@ -226,7 +226,7 @@
       <!-- Header -->
       <div class="apply-header" in:fade>
         <div class="breadcrumb">
-          <a href="/piece/{params.id}" use:link>← Back to Piece</a>
+          <a href="/piece/{params.id}" use:link>← Back</a>
         </div>
         <h1>Apply to "{piece.title}"</h1>
         <p>Share your interest and qualifications to collaborate on this piece</p>
