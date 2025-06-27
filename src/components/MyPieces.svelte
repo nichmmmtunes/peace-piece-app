@@ -600,6 +600,7 @@
   .piece-badge.supporter {
     background-color: var(--color-success-100);
     color: var(--color-success-700);
+    width: fit-content;
   }
 
   .piece-title {
