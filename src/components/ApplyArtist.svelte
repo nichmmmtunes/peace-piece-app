@@ -201,7 +201,7 @@
           </a>
         {:else}
           <a href="/piece/{params.id}" use:link class="primary action-button">
-            Back to Piece
+            Back
           </a>
         {/if}
       </div>
