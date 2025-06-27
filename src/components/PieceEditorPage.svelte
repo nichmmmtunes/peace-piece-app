@@ -454,7 +454,7 @@
       <div class="unauthorized-card">
         <h2>Access Denied</h2>
         <p>You don't have permission to edit this piece. Only the organizer and contributors can edit this piece.</p>
-        <a href="/piece/{params.id}" use:link class="back-button">Back to Piece</a>
+        <a href="/piece/{params.id}" use:link class="back-button">Back</a>
       </div>
     </div>
   {:else if piece}
