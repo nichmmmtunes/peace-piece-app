@@ -38,25 +38,35 @@
       }
 
       // Load pieces where user is a contributor (artist)
-      // First get the user's profile
-      const { data: profileData } = await supabase
-        .from('profiles')
+      // First get the user's artist profile
+      const { data: artistData, error: artistError } = await supabase
+        .from('artists')
         .select('id')
-        .eq('id', $user.id)
-        .single();
+        .eq('user_id', $user.id)
+        .maybeSingle();
 
-      if (profileData) {
-        // Check if user is in piece_artists table
-        const { data: contributedData } = await supabase
+      if (artistError) {
+        console.error('Error fetching artist profile:', artistError);
+      }
+
+      if (artistData) {
+        // Use the artist's ID to query piece_details
+        const { data: contributedData, error: contributedError } = await supabase
           .from('piece_details')
           .select(`
             *,
             piece_artists!inner(role)
           `)
-          .eq('piece_artists.artist_id', profileData.id)
+          .eq('piece_artists.artist_id', artistData.id)
           .order('created_at', { ascending: false });
 
+        if (contributedError) {
+          console.error('Error fetching contributed pieces:', contributedError);
+        }
         contributedPieces = contributedData || [];
+      } else {
+        // If no artist profile, set contributedPieces to empty
+        contributedPieces = [];
       }
 
       // Load pieces the user has supported (donated to)
