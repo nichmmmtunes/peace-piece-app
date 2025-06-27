@@ -594,6 +594,7 @@
   .piece-badge.contributor {
     background-color: var(--color-accent-100);
     color: var(--color-accent-700);
+    width: fit-content;
   }
 
   .piece-badge.supporter {
