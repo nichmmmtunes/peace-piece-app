@@ -466,7 +466,7 @@
               <path d="M19 12H5"></path>
               <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-            Back to Piece
+            Back
           </a>
           <h1>{piece.title} <span class="inter">- Editor</span></h1>
         </div>
