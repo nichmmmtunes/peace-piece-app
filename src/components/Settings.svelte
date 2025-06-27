@@ -6,6 +6,8 @@
   
   let username = '';
   let website = '';
+  let location = '';
+  let bio = '';
   let avatarUrl: string | null = null;
   let loading = false;
   let message = '';
@@ -22,7 +24,7 @@
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('username, website, avatar_url')
+        .select('username, website, avatar_url, location, bio')
         .eq('id', $user?.id)
         .maybeSingle();
         
@@ -31,6 +33,8 @@
       if (data) {
         username = data.username || '';
         website = data.website || '';
+        location = data.location || '';
+        bio = data.bio || '';
         avatarUrl = data.avatar_url;
       }
       
@@ -82,6 +86,8 @@
           id: $user?.id,
           username,
           website,
+          location,
+          bio,
           avatar_url: avatarUrl,
           updated_at: new Date().toISOString(),
         });
@@ -271,6 +277,18 @@
           </div>
           
           <div class="form-group">
+            <label for="location">Location</label>
+            <input
+              type="text"
+              id="location"
+              bind:value={location}
+              disabled={loading}
+              placeholder="City, Country"
+            />
+            <p class="field-description">Where are you based? (optional)</p>
+          </div>
+          
+          <div class="form-group">
             <label for="website">Website</label>
             <input
               type="url"
@@ -281,6 +299,19 @@
             />
             <p class="field-description">Share your personal website or portfolio</p>
           </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="bio">Bio <span class="char-count">{bio.length}/250</span></label>
+          <textarea
+            id="bio"
+            bind:value={bio}
+            maxlength="250"
+            rows="4"
+            disabled={loading}
+            placeholder="Tell us a bit about yourself..."
+          ></textarea>
+          <p class="field-description">A short bio to introduce yourself to the community</p>
         </div>
         
         <div class="form-actions">
@@ -585,8 +616,8 @@
   }
 
   .form-grid {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: var(--space-4);
   }
 
@@ -594,14 +625,25 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    margin-bottom: var(--space-4);
   }
 
   .form-group label {
     font-weight: 500;
     color: var(--text-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
-  .form-group input {
+  .char-count {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: normal;
+  }
+
+  .form-group input,
+  .form-group textarea {
     transition: border-color 0.2s, box-shadow 0.2s;
   }
 
@@ -764,6 +806,10 @@
     .avatar-section {
       flex-direction: column;
       text-align: center;
+    }
+
+    .form-grid {
+      grid-template-columns: 1fr;
     }
 
     .setting-item,

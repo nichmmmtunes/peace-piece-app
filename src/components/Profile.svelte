@@ -27,7 +27,7 @@
       // Load profile by username
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, followers_count')
         .eq('username', params.username)
         .single();
 
@@ -35,6 +35,7 @@
       
       profile = profileData;
       isOwnProfile = $user?.id === profile.id;
+      followersCount = profile.followers_count || 0;
 
       // Check if user has an artist profile
       const { data: artistData, error: artistError } = await supabase
@@ -69,17 +70,19 @@
       pieces = piecesData || [];
 
       // Load contributions (pieces where user is a contributor)
-      const { data: contributionsData } = await supabase
-        .from('piece_details')
-        .select(`
-          *,
-          piece_artists!inner(role)
-        `)
-        .eq('piece_artists.artist_id', profile.id)
-        .order('created_at', { ascending: false })
-        .limit(6);
+      if (artistProfile) {
+        const { data: contributionsData } = await supabase
+          .from('piece_details')
+          .select(`
+            *,
+            piece_artists!inner(role)
+          `)
+          .eq('piece_artists.artist_id', artistProfile.id)
+          .order('created_at', { ascending: false })
+          .limit(6);
 
-      contributions = contributionsData || [];
+        contributions = contributionsData || [];
+      }
 
       // Load activity history (simplified for now)
       activities = [
@@ -225,13 +228,19 @@
           <div class="profile-details">
             <h1 class="profile-name">{profile.username || 'Anonymous User'}</h1>
             <div class="profile-meta">
-              <span class="location">Location</span>
+              {#if profile.location}
+                <span class="location">{profile.location}</span>
+              {/if}
               {#if profile.website}
                 <a href={profile.website} target="_blank" rel="noopener noreferrer" class="website-link">
                   Website
                 </a>
               {/if}
+              <span class="followers-count">{followersCount} {followersCount === 1 ? 'follower' : 'followers'}</span>
             </div>
+            {#if profile.bio}
+              <p class="profile-bio">{profile.bio}</p>
+            {/if}
           </div>
         </div>
 
@@ -272,25 +281,6 @@
           {/if}
         </div>
       </header>
-
-      <!-- Bio Section -->
-      {#if profile.bio || (artistProfile && artistProfile.bio)}
-        <section class="bio-section" in:fly={{ y: 20, duration: 300, delay: 100 }}>
-          {#if profile.bio}
-            <div class="bio-block">
-              <h3>About</h3>
-              <p class="bio-text">{profile.bio}</p>
-            </div>
-          {/if}
-          
-          {#if artistProfile && artistProfile.bio}
-            <div class="bio-block">
-              <h2>Artist Bio</h2>
-              <p class="bio-text">{artistProfile.bio}</p>
-            </div>
-          {/if}
-        </section>
-      {/if}
 
       <!-- Portfolio Section -->
       <section class="portfolio-section" in:fly={{ y: 20, duration: 300, delay: 300 }}>
@@ -520,12 +510,12 @@
 
   .profile-meta {
     display: flex;
-    gap: var(--space-1);
+    gap: var(--space-4);
     color: var(--text-muted);
     font-size: 0.875rem;
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
     flex-wrap: wrap;
+    margin-bottom: var(--space-2);
   }
 
   .website-link {
@@ -535,6 +525,13 @@
 
   .website-link:hover {
     text-decoration: underline;
+  }
+  
+  .profile-bio {
+    color: var(--text-color);
+    margin: var(--space-2) 0 0;
+    line-height: 1.5;
+    font-size: 0.95rem;
   }
   
   .artist-badge {
@@ -645,116 +642,6 @@
   .add-to-list-btn:hover,
   .invite-btn:hover {
     background-color: var(--color-neutral-100);
-  }
-
-  .bio-section {
-    background: transparent;
-    border: none;
-    border-radius: var(--radius-lg);
-    padding: 0px;
-  }
-  
-  .bio-block {
-    margin-bottom: var(--space-4);
-  }
-
-  .bio-block h2 {
-    font-size: 1.7rem;
-    font-family: var(--font-instrument-serif);
-  }
-  
-  .bio-block:last-child {
-    margin-bottom: 0;
-  }
-  
-  .bio-block h3 {
-    font-size: 1.125rem;
-    font-weight: 500;
-    margin: 0 0 var(--space-2) 0;
-    color: var(--text-color);
-  }
-
-  .bio-text {
-    color: var(--text-color);
-    line-height: 1.6;
-    margin: 0;
-  }
-
-  .profile-stats {
-    background: transparent;
-    border-radius: var(--radius-lg);
-    padding: var(--space-6) 0 0;
-    border-top: solid 1px var(--border-color);
-  }
-
-  .stats-grid {
-    display: grid;
-    gap: var(--space-6);
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .stat-item {
-    width: fit-content;
-  }
-
-  .stat-item h3 {
-    font-size: 1rem;
-    font-weight: 500;
-    margin: 0 0 var(--space-3) 0;
-    color: var(--text-color);
-  }
-
-  .stat-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-  }
-
-  .tag {
-    font-size: 0.75rem;
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-    user-select: none;
-  }
-
-  .tag.artist {
-    background-color: var(--color-primary-100);
-    color: var(--color-primary-700);
-  }
-
-  .tag.supporter {
-    background-color: var(--color-accent-100);
-    color: var(--color-accent-700);
-  }
-
-  .tag.cause {
-    background-color: var(--color-warning-100);
-    color: var(--color-warning-700);
-  }
-
-  .tag.medium {
-    background-color: var(--color-success-100);
-    color: var(--color-success-700);
-  }
-
-  .tag.skill {
-    background-color: var(--color-neutral-100);
-    color: var(--color-neutral-700);
-  }
-
-  :global(.light-mode) .tag.skill {
-    background: var(--bg-color)
-  }
-
-  .tag.social-cause {
-    background-color: var(--color-primary-100);
-    color: var(--color-primary-700);
-  }
-
-  .tag.artistic-medium {
-    background-color: var(--color-accent-100);
-    color: var(--color-accent-700);
   }
 
   .portfolio-section,
@@ -1042,6 +929,24 @@
     line-height: 1.4;
   }
 
+  .tag {
+    font-size: 0.75rem;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    user-select: none;
+  }
+
+  .tag.social-cause {
+    background-color: var(--color-primary-100);
+    color: var(--color-primary-700);
+  }
+
+  .tag.artistic-medium {
+    background-color: var(--color-accent-100);
+    color: var(--color-accent-700);
+  }
+
   @media (max-width: 768px) {
     .profile-container {
       padding: var(--space-4);
@@ -1059,10 +964,6 @@
 
     .profile-actions > * {
       flex: 1;
-    }
-
-    .stats-grid {
-      grid-template-columns: 1fr;
     }
 
     .portfolio-grid,
