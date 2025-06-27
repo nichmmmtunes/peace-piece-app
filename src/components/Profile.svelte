@@ -292,57 +292,6 @@
         </section>
       {/if}
 
-      <!-- Profile Stats -->
-      <section class="profile-stats" in:fly={{ y: 20, duration: 300, delay: 200 }}>
-        <div class="stats-grid">
-          {#if artistProfile && artistProfile.artistic_mediums && artistProfile.artistic_mediums.length > 0}
-            <div class="stat-item">
-              <h3>Artistic Mediums</h3>
-              <div class="stat-tags">
-                {#each artistProfile.artistic_mediums as medium}
-                  <span class="tag medium">{medium}</span>
-                {/each}
-              </div>
-            </div>
-          {/if}
-          
-          <div class="stat-item">
-            <h3>Role</h3>
-            <div class="stat-tags">
-              <span class="tag artist">Artist</span>
-              <span class="tag supporter">Supporter</span>
-            </div>
-          </div>
-
-          <div class="stat-item">
-            <h3>Causes</h3>
-            <div class="stat-tags">
-              <span class="tag cause">Poverty</span>
-              <span class="tag cause">Mental Health</span>
-            </div>
-          </div>
-
-          {#if !artistProfile || !artistProfile.artistic_mediums || artistProfile.artistic_mediums.length === 0}
-            <div class="stat-item">
-              <h3>Mediums</h3>
-              <div class="stat-tags">
-                <span class="tag medium">Visual Art</span>
-                <span class="tag medium">Poetry</span>
-              </div>
-            </div>
-          {/if}
-
-          <div class="stat-item">
-            <h3>Skills</h3>
-            <div class="stat-tags">
-              <span class="tag skill">Painting</span>
-              <span class="tag skill">Drawing</span>
-              <span class="tag skill">Writing</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <!-- Portfolio Section -->
       <section class="portfolio-section" in:fly={{ y: 20, duration: 300, delay: 300 }}>
         <h2>Portfolio</h2>
