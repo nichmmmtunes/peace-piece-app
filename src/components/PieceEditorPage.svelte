@@ -446,7 +446,7 @@
       <div class="error-card">
         <h2>Error Loading Piece</h2>
         <p>{error}</p>
-        <a href="/piece/{params.id}" use:link class="back-button">Back to Piece</a>
+        <a href="/piece/{params.id}" use:link class="back-button">Back</a>
       </div>
     </div>
   {:else if !canEdit}
