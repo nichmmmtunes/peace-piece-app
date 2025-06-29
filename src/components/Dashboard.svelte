@@ -1189,8 +1189,8 @@
 
   .unread-indicator {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 21px;
+    right: 16px;
     width: 8px;
     height: 8px;
     background-color: var(--color-primary-600);
