@@ -545,9 +545,7 @@
   }
 
   .featured-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    display: flex;
     gap: var(--space-4);
     padding: var(--space-6) 0px;
   }
