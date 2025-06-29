@@ -775,8 +775,7 @@
     width: 42px;
   }
 
-  .featured-card.large .card-placeholder,
-  .featured-card.medium .card-placeholder {
+  .featured-card.large .card-placeholder {
     height: 60%;
   }
 
