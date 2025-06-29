@@ -857,11 +857,12 @@
     }
 
     .featured-card.large {
-      grid-row: 1 / 3;
+      width: 100%;
     }
 
-    .featured-card.medium {
-      grid-row: 1 / 2;
+    .featured-card.medium,
+    .featured-card.small {
+      width: 50%;
     }
   }
 
