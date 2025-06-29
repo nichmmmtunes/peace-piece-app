@@ -717,9 +717,9 @@
     overflow: hidden;
   }
 
-  .featured-card.large .card-image,
+  .featured-card.small .card-image,
   .featured-card.medium .card-image {
-    height: 60%;
+    height: 50%;
   }
 
   .card-image img {
@@ -765,6 +765,11 @@
     align-items: center;
     justify-content: center;
     color: var(--text-muted);
+  }
+
+  .featured-card.small .card-placeholder,
+  .featured-card.medium .card-placeholder {
+    height: 50%;
   }
 
   :global(.dark-mode) .card-placeholder {
