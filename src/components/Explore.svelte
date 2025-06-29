@@ -379,7 +379,7 @@
         <h2 class="section-title">Artists</h2>
         <div class="artists-grid">
           {#each artists as artist, index (artist.id)}
-          {#if artist.user_id !== $user?.id}
+          {#if artist.user_id !== $user?.id && artist.artist_username}
             <div class="artist-card" in:fly={{ y: 20, duration: 300, delay: index * 50 }}>
               <a href="/artist/{artist.artist_username}" use:link class="card-link">
                 {#if artist.avatar_url}
