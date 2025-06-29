@@ -525,6 +525,7 @@
     align-items: flex-start;
     gap: var(--space-3);
     margin-bottom: var(--space-2);
+    margin-top: var(--space-2);
   }
 
   .notification-icon {
