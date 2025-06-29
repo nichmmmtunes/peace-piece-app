@@ -168,7 +168,7 @@
     </div>
   {:else}
     <!-- Organized Pieces Section -->
-    <section class="pieces-section" in:fly={{ y: 20, duration: 300, delay: 100 }}>
+    <section class="pieces-section pieces-organized" in:fly={{ y: 20, duration: 300, delay: 100 }}>
       <div class="section-header">
         <h2>Pieces You Organize</h2>
         <a href="/create-peace" use:link class="create-button">
