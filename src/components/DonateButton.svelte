@@ -131,7 +131,7 @@
     margin-top: var(--space-2);
   }
 
-  .donate-button .button {
+  .donate-button button {
     display: flex;
     align-items: center;
     justify-content: center;
