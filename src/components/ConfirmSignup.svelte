@@ -42,7 +42,7 @@
     align-items: center;
     justify-content: center;
     padding: var(--space-6);
-    background: linear-gradient(135deg, var(--color-primary-50), var(--color-accent-50));
+    background: var(--bg-color);
   }
 
   .confirm-content {
