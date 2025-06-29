@@ -769,7 +769,7 @@
 
   .featured-card.small:hover
   .featured-card.medium:hover {
-    flex-basis: 20%;
+    width: 20%;
   }
 
   .featured-card.small .card-placeholder,
