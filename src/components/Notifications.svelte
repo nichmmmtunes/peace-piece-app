@@ -548,7 +548,7 @@
     font-size: 1rem;
     font-weight: 500;
     margin: 0;
-    line-height: 1.3;
+    line-height: 1;
   }
 
   .notification-time {
