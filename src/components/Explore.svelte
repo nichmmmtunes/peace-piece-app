@@ -856,7 +856,7 @@
       flex-direction: column;
     }
 
-    .featured-card.large {
+    .featured-card.large:first-child {
       width: 100%;
     }
 
