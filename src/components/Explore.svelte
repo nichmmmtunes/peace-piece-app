@@ -550,7 +550,7 @@
     padding: var(--space-6) 0px;
   }
 
-  .featured-grid .featured-card:nth-child(n+4) {
+  .featured-grid .featured-card:nth-child(n+6) {
     display: none;
   }
 
