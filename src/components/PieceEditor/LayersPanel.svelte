@@ -885,8 +885,7 @@
 
   .layer-type-btn.selected {
     border-color: #007AFF;
-    background: #007AFF;
-    color: white;
+    background: var(--color-neutral-100);
   }
 
   .layer-type-icon {
