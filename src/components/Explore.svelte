@@ -140,6 +140,20 @@
     return text.substring(0, maxLength) + '...';
   }
 
+  // Function to get initials from a name
+  function getInitials(name: string | null): string {
+    if (!name) return "?";
+    
+    const nameParts = name.split(" ");
+    if (nameParts.length > 1) {
+      // Get first letter of first and last name
+      return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+    } else {
+      // If only one name, get first letter
+      return name[0].toUpperCase();
+    }
+  }
+
   onMount(() => {
     loadPieces();
     loadSupporters();
@@ -344,7 +358,13 @@
           {#if supporter.id !== $user?.id}
             <div class="supporter-card" in:fly={{ y: 20, duration: 300, delay: index * 50 }}>
               <a href="/profile/{supporter.username}" use:link class="card-link">
-                <img src={supporter.avatar_url || '/default-avatar.png'} alt={supporter.username} />
+                {#if supporter.avatar_url}
+                  <img src={supporter.avatar_url} alt={supporter.username} />
+                {:else}
+                  <div class="avatar-placeholder-initials">
+                    {getInitials(supporter.username)}
+                  </div>
+                {/if}
                 <p>{supporter.username}</p>
               </a>
             </div>
@@ -362,7 +382,13 @@
           {#if artist.user_id !== $user?.id}
             <div class="artist-card" in:fly={{ y: 20, duration: 300, delay: index * 50 }}>
               <a href="/artist/{artist.artist_username}" use:link class="card-link">
-                <img src={artist.avatar_url || '/default-avatar.png'} alt={artist.artist_username} />
+                {#if artist.avatar_url}
+                  <img src={artist.avatar_url} alt={artist.artist_username} />
+                {:else}
+                  <div class="avatar-placeholder-initials">
+                    {getInitials(artist.name)}
+                  </div>
+                {/if}
                 <p>{artist.name}</p>
               </a>
             </div>
@@ -380,7 +406,13 @@
           {#if organizer.user_id !== $user?.id}
             <div class="organizer-card" in:fly={{ y: 20, duration: 300, delay: index * 50 }}>
               <a href="/organizer/{organizer.organizer_username}" use:link class="card-link">
-                <img src={organizer.avatar_url || '/default-avatar.png'} alt={organizer.organizer_username} />
+                {#if organizer.avatar_url}
+                  <img src={organizer.avatar_url} alt={organizer.organizer_username} />
+                {:else}
+                  <div class="avatar-placeholder-initials">
+                    {getInitials(organizer.name)}
+                  </div>
+                {/if}
                 <p>{organizer.name}</p>
               </a>
             </div>
@@ -628,6 +660,18 @@
     height: 100%;
     object-fit: cover;
     user-select: none;
+  }
+
+  .avatar-placeholder-initials {
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-neutral-400);
+    color: var(--color-neutral-800);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 600;
   }
 
   .supporter-card .card-link:after,

@@ -168,6 +168,20 @@
       minute: '2-digit'
     });
   }
+
+  // Function to get initials from a name
+  function getInitials(name: string | null): string {
+    if (!name) return "?";
+    
+    const nameParts = name.split(" ");
+    if (nameParts.length > 1) {
+      // Get first letter of first and last name
+      return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+    } else {
+      // If only one name, get first letter
+      return name[0].toUpperCase();
+    }
+  }
   
   onMount(() => {
     if (params.id) {
@@ -220,8 +234,8 @@
               {#if applicantProfile.avatar_url}
                 <img src={applicantProfile.avatar_url} alt={applicantProfile.username} />
               {:else}
-                <div class="avatar-placeholder">
-                  {applicantProfile.username?.[0]?.toUpperCase() || 'A'}
+                <div class="avatar-placeholder-initials">
+                  {getInitials(applicantProfile.username)}
                 </div>
               {/if}
             </div>
@@ -519,16 +533,16 @@
     object-fit: cover;
   }
 
-  .avatar-placeholder {
+  .avatar-placeholder-initials {
     width: 100%;
     height: 100%;
+    background-color: var(--color-neutral-400);
+    color: var(--color-neutral-800);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2rem;
-    font-weight: 500;
-    color: var(--color-neutral-500);
-    background-color: var(--color-neutral-200);
+    font-weight: 600;
   }
 
   .applicant-details {

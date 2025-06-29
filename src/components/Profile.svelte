@@ -185,6 +185,20 @@
     return icons[type] || icons['joined'];
   }
 
+  // Function to get initials from a name
+  function getInitials(fullName: string | null): string {
+    if (!fullName) return "?";
+    
+    const nameParts = fullName.split(" ");
+    if (nameParts.length > 1) {
+      // Get first letter of first and last name
+      return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+    } else {
+      // If only one name, get first letter
+      return fullName[0].toUpperCase();
+    }
+  }
+
   onMount(() => {
     if (params.username) {
       loadProfile();
@@ -219,8 +233,8 @@
             {#if profile.avatar_url}
               <img src={profile.avatar_url} alt={profile.username} class="avatar-image" />
             {:else}
-              <div class="avatar-placeholder">
-                {profile.username?.[0]?.toUpperCase() || '?'}
+              <div class="avatar-placeholder-initials">
+                {getInitials(profile.username)}
               </div>
             {/if}
           </div>
@@ -485,16 +499,16 @@
     object-fit: cover;
   }
 
-  .avatar-placeholder {
+  .avatar-placeholder-initials {
     width: 100%;
     height: 100%;
-    background-color: var(--color-neutral-200);
+    background-color: var(--color-neutral-400);
+    color: var(--color-neutral-800);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 500;
-    color: var(--color-neutral-600);
     font-size: 2rem;
+    font-weight: 600;
   }
 
   .profile-details {

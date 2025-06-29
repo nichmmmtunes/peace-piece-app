@@ -116,6 +116,20 @@
   function closeDonationModal() {
     showDonationModal = false;
   }
+
+  // Function to get initials from a name
+  function getInitials(name: string | null): string {
+    if (!name) return "?";
+    
+    const nameParts = name.split(" ");
+    if (nameParts.length > 1) {
+      // Get first letter of first and last name
+      return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+    } else {
+      // If only one name, get first letter
+      return name[0].toUpperCase();
+    }
+  }
   
   onMount(() => {
     if (params.id) {
@@ -303,8 +317,8 @@
                 {#if piece.organizer_avatar_url}
                   <img src={piece.organizer_avatar_url} alt={piece.organizer_name} />
                 {:else}
-                  <div class="avatar-placeholder">
-                    {piece.organizer_name?.[0]?.toUpperCase() || 'O'}
+                  <div class="avatar-placeholder-initials">
+                    {getInitials(piece.organizer_name)}
                   </div>
                 {/if}
               </div>
@@ -328,8 +342,8 @@
                       {#if contributor.avatar_url}
                         <img src={contributor.avatar_url} alt={contributor.name} />
                       {:else}
-                        <div class="avatar-placeholder">
-                          {contributor.name?.[0]?.toUpperCase() || 'C'}
+                        <div class="avatar-placeholder-initials">
+                          {getInitials(contributor.name)}
                         </div>
                       {/if}
                     </div>
@@ -801,7 +815,18 @@
     object-fit: cover;
   }
 
-  .avatar-placeholder,
+  .avatar-placeholder-initials {
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-neutral-400);
+    color: var(--color-neutral-800);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
   .logo-placeholder {
     width: 100%;
     height: 100%;
