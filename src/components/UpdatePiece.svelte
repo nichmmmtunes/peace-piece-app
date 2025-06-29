@@ -1172,7 +1172,7 @@
 
   :global(.dark-mode) .update-piece .add-button {
     background: var(--color-primary-700);
-    color: var(--text-muted);
+    color: var(--text-color);
     border-color: var(--bg-color)
   }
   
