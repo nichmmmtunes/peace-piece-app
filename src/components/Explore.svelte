@@ -565,7 +565,7 @@
   }
 
   .featured-card.small {
-    flex-basis: 10%;
+    flex-basis: 15%;
     border-radius: var(--radius-md);
   }
 
