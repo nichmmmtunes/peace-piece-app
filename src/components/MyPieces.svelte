@@ -50,20 +50,30 @@
       }
 
       if (artistData) {
-        // Use the artist's ID to query piece_details
-        const { data: contributedData, error: contributedError } = await supabase
-          .from('piece_details')
-          .select(`
-            *,
-            piece_artists!inner(role)
-          `)
-          .eq('piece_artists.artist_id', artistData.id)
-          .order('created_at', { ascending: false });
+        // First, get all piece IDs where this artist is a contributor
+        const { data: pieceArtistData, error: pieceArtistError } = await supabase
+          .from('piece_artists')
+          .select('piece_id, role')
+          .eq('artist_id', artistData.id);
 
-        if (contributedError) {
-          console.error('Error fetching contributed pieces:', contributedError);
+        if (pieceArtistError) {
+          console.error('Error fetching piece_artists:', pieceArtistError);
+        } else if (pieceArtistData && pieceArtistData.length > 0) {
+          const pieceIds = pieceArtistData.map(pa => pa.piece_id);
+          
+          // Then get the piece details for those pieces
+          const { data: contributedData, error: contributedError } = await supabase
+            .from('piece_details')
+            .select('*')
+            .in('id', pieceIds)
+            .order('created_at', { ascending: false });
+
+          if (contributedError) {
+            console.error('Error fetching contributed pieces:', contributedError);
+          } else {
+            contributedPieces = contributedData || [];
+          }
         }
-        contributedPieces = contributedData || [];
       } else {
         // If no artist profile, set contributedPieces to empty
         contributedPieces = [];

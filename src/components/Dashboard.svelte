@@ -74,22 +74,35 @@
         .maybeSingle();
 
       if (artistData) {
-        const { data: contributedPieces } = await supabase
-          .from('piece_details')
-          .select(`
-            *
-          `)
-          .eq('piece_artists.artist_id', artistData.id)
-          .order('created_at', { ascending: false });
+        // First, get all piece IDs where this artist is a contributor
+        const { data: pieceArtistData, error: pieceArtistError } = await supabase
+          .from('piece_artists')
+          .select('piece_id')
+          .eq('artist_id', artistData.id);
 
-        if (contributedPieces) {
-          // Add to active projects, avoiding duplicates
-          const existingIds = new Set(activeProjects.map(p => p.id));
-          contributedPieces.forEach(piece => {
-            if (!existingIds.has(piece.id)) {
-              activeProjects.push(piece);
-            }
-          });
+        if (pieceArtistError) {
+          console.error('Error fetching piece_artists:', pieceArtistError);
+        } else if (pieceArtistData && pieceArtistData.length > 0) {
+          const pieceIds = pieceArtistData.map(pa => pa.piece_id);
+          
+          // Then get the piece details for those pieces
+          const { data: contributedPieces, error: contributedError } = await supabase
+            .from('piece_details')
+            .select('*')
+            .in('id', pieceIds)
+            .order('created_at', { ascending: false });
+
+          if (contributedError) {
+            console.error('Error fetching contributed pieces:', contributedError);
+          } else if (contributedPieces) {
+            // Add to active projects, avoiding duplicates
+            const existingIds = new Set(activeProjects.map(p => p.id));
+            contributedPieces.forEach(piece => {
+              if (!existingIds.has(piece.id)) {
+                activeProjects.push(piece);
+              }
+            });
+          }
         }
       }
 
