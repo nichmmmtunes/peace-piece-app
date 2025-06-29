@@ -1103,8 +1103,8 @@
 
   .shortcuts-help {
     position: fixed;
-    bottom: var(--space-4);
-    right: var(--space-4);
+    top: 5rem;
+    left: var(--space-4);
     background: rgba(0, 0, 0, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: var(--radius-lg);
@@ -1122,8 +1122,7 @@
 
   .shortcuts-list {
     display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
+    gap: var(--space-2);
   }
 
   .shortcut {
