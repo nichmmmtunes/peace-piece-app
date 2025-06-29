@@ -137,6 +137,7 @@
     justify-content: center;
     gap: var(--space-2);
     width: 100%;
+    min-height: 43px;
   }
   
 </style>
