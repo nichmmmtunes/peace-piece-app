@@ -592,6 +592,30 @@
         
         <!-- Right Column -->
         <div class="content-right">
+          <div class="piece-introduction">
+            <h1>{piece.title}</h1>
+  
+            <!-- Description -->
+            {#if piece.piece_description}
+              <div class="description-section" in:fly={{ y: 20, duration: 300, delay: 50 }}>
+                <div class="description-content">
+                  {piece.piece_description}
+                </div>
+              </div>
+            {/if}
+  
+            <!-- Cause Tags -->
+            {#if piece.cause_tags && piece.cause_tags.length > 0}
+              <div class="tags-section" in:fly={{ y: 20, duration: 300, delay: 150 }}>
+                <div class="tags-list">
+                  {#each piece.cause_tags as tag}
+                    <span class="tag cause-tag">{tag}</span>
+                  {/each}
+                </div>
+              </div>
+            {/if}
+          </div>
+          
           <!-- Funding Progress -->
           <div class="funding-progress" in:fly={{ y: 20, duration: 300, delay: 200 }}>
             {#if piece.funding_goal && piece.funding_goal > 0}
