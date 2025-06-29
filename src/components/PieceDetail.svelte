@@ -1744,6 +1744,7 @@
     .piece-detail .piece-content {
       display: flex;
       flex-direction: column;
+      gap: 2rem;
     }
 
     .piece-detail .content-left {
