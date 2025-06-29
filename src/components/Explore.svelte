@@ -838,8 +838,7 @@
 
   @media (max-width: 1200px) {
     .featured-grid {
-      grid-template-columns: 2fr 1fr 1fr;
-      grid-template-rows: 1fr;
+      flex-direction: column;
     }
 
     .featured-card.large {
