@@ -777,7 +777,7 @@
 
   .featured-card.large .card-placeholder,
   .featured-card.medium .card-placeholder {
-    height: 70%;
+    height: 60%;
   }
 
   .card-content {
