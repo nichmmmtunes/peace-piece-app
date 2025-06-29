@@ -158,7 +158,7 @@
     { path: '/terms', label: 'Terms of Use', icon: 'document' },
     { path: '/privacy', label: 'Privacy Policy', icon: 'shield' },
     { path: '/community', label: 'Community Policies', icon: 'users' },
-    { path: '/payment-policy', label: 'Payment Policy', icon: 'users' },
+    { path: '/payment-policy', label: 'Payment Policy', icon: 'dollars' },
   ];
 
   function getIcon(iconName: string) {
