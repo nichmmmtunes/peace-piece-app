@@ -573,7 +573,7 @@
     background: var(--card-bg);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s, flex-basis .2s;
     border: none;
   }
 
