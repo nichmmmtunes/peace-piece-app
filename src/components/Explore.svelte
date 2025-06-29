@@ -665,8 +665,8 @@
   .avatar-placeholder-initials {
     width: 100%;
     height: 100%;
-    background-color: var(--color-neutral-400);
-    color: var(--color-neutral-800);
+    color: white;
+    background-color: var(--color-primary-400);
     display: flex;
     align-items: center;
     justify-content: center;
