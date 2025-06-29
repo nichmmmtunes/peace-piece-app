@@ -136,6 +136,7 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
+    width: 100%;
   }
   
 </style>
