@@ -862,7 +862,7 @@
 
     .featured-card.medium,
     .featured-card.small {
-      width: 42%;
+      width: calc(50% - var(--space-4));
     }
   }
 
