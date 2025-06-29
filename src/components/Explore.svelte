@@ -403,7 +403,7 @@
         <h2 class="section-title">Organizers</h2>
         <div class="organizers-grid">
           {#each organizers as organizer, index (organizer.id)}
-          {#if organizer.user_id !== $user?.id}
+          {#if organizer.user_id !== $user?.id && organizer.organizer_username}
             <div class="organizer-card" in:fly={{ y: 20, duration: 300, delay: index * 50 }}>
               <a href="/organizer/{organizer.organizer_username}" use:link class="card-link">
                 {#if organizer.avatar_url}
