@@ -441,7 +441,7 @@
     justify-content: space-between;
     align-items: center;
     gap: var(--space-4);
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
   }
 
   .artist-profile-header h2,
