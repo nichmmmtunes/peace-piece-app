@@ -1741,9 +1741,18 @@
   }
 
   @media (max-width: 1024px) {
-    .piece-content {
-      grid-template-columns: 1fr;
-      gap: 20px;
+    .piece-detail .piece-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .piece-detail .content-left {
+      order: 2;
+    }
+
+    .piece-detail .content-right {
+      order: 1;
+      padding-top: 10px;
     }
   }
 
@@ -1760,15 +1769,6 @@
 
     .piece-header h1 {
       font-size: 2rem;
-    }
-
-    .piece-detail .content-left {
-      order: 2;
-    }
-
-    .piece-detail .content-right {
-      order: 1;
-      padding-top: 10px;
     }
 
     .piece-meta {
