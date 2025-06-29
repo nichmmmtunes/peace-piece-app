@@ -1145,6 +1145,10 @@
     flex-shrink: 0;
   }
 
+  .dashboard-container .activity-icon {
+    margin-top: -.5rem;
+  }
+
   .activity-details {
     flex: 1;
   }
