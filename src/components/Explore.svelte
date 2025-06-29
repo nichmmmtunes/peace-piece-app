@@ -767,6 +767,11 @@
     color: var(--text-muted);
   }
 
+  .featured-card.small:hover
+  .featured-card.medium:hover {
+    flex-basis: 20%;
+  }
+
   .featured-card.small .card-placeholder,
   .featured-card.medium .card-placeholder {
     height: 50%;
