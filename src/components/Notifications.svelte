@@ -539,6 +539,7 @@
     font-weight: bold;
     font-size: 0.875rem;
     flex-shrink: 0;
+    color: var(--text-muted) !important;
   }
 
   .notification-meta {
