@@ -894,12 +894,9 @@
       grid-row: auto;
     }
 
-    .category-grid {
-      grid-template-columns: 1fr;
-    }
-
     .project-card {
       height: 280px;
+      width: 100%;
     }
   }
 </style>
