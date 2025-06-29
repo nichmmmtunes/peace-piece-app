@@ -497,7 +497,7 @@
             {#if selectedClip.layer > 0 && selectedClip.type !== 'text'}
               <div class="property-row">
                 <div class="property-group">
-                  <label>Width (% of canvas)</label>
+                  <label>Width (%)</label>
                   <input 
                     type="number" 
                     value={selectedClip.scale?.x ?? 20}
@@ -509,7 +509,7 @@
                   />
                 </div>
                 <div class="property-group">
-                  <label>Height (% of canvas)</label>
+                  <label>Height (%)</label>
                   <input 
                     type="number" 
                     value={selectedClip.scale?.y ?? 20}
