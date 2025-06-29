@@ -853,7 +853,7 @@
 
   @media (max-width: 1200px) {
     .featured-grid {
-      flex-direction: column;
+      flex-wrap: wrap;
     }
 
     .featured-card.large:first-child {
