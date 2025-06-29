@@ -445,6 +445,11 @@
     margin-bottom: var(--space-10);
   }
 
+  .pieces-section:not(:first-child) {
+    padding-top: var(--space-4);
+    border-top: solid 1px var(--border-color);
+  }
+
   .section-header {
     display: flex;
     justify-content: space-between;
