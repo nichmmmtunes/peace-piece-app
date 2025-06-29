@@ -831,6 +831,11 @@
     font-weight: 500;
   }
 
+  .featured-card.small .tag,
+  .featured-card.medium .tag {
+    font-size: .6rem;
+  }
+
   .tag.social-cause {
     background-color: var(--color-primary-100);
     color: var(--color-primary-700);
