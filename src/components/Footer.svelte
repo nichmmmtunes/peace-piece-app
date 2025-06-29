@@ -1,9 +1,16 @@
 <script lang="ts">
+  import { link } from 'svelte-spa-router';
   // Footer component for legal statement
 </script>
 
 <footer class="footer">
   <div class="footer-content">
+    <div class="footer-links">
+      <a href="/#/terms" use:link>Terms of Use</a>
+      <a href="/#/privacy" use:link>Privacy Policy</a>
+      <a href="/#/payment-policy" use:link>Payment Policy</a>
+      <a href="/#/community" use:link>Community Guidelines</a>
+    </div>
     <p class="copyright">
       Copyright &copy; 2025 Peace Piece. All&nbsp;Rights&nbsp;Reserved.
     </p>
@@ -30,6 +37,26 @@
     text-align: center;
   }
 
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .footer-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover {
+    color: var(--text-color);
+    text-decoration: underline;
+  }
+
   .copyright {
     color: var(--text-muted);
     font-size: 0.875rem;
@@ -44,6 +71,14 @@
 
     .footer-content {
       padding: 0 var(--space-3);
+    }
+
+    .footer-links {
+      gap: var(--space-3);
+    }
+
+    .footer-links a {
+      font-size: 0.8rem;
     }
 
     .copyright {

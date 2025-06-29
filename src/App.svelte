@@ -23,6 +23,7 @@
   import Terms from './components/Terms.svelte';
   import Privacy from './components/Privacy.svelte';
   import Community from './components/Community.svelte';
+  import PaymentPolicy from './components/PaymentPolicy.svelte';
   import Footer from './components/Footer.svelte';
   import ForgotPassword from './components/ForgotPassword.svelte';
   import ResetPassword from './components/ResetPassword.svelte';
@@ -204,6 +205,7 @@
     '/help': Help,
     '/terms': Terms,
     '/privacy': Privacy,
+    '/payment-policy': PaymentPolicy,
     '/community': Community,
     '/forgot-password': ForgotPassword,
     '/reset-password(.*)': ResetPassword,
@@ -294,7 +296,7 @@
   // DEBUG: Log the final rendering decision
   $: {
     const cleanPath = getCleanPath($location);
-    const shouldShowAuth = !$user && cleanPath !== '/auth' && !isRouteInList($location, topBarOnlyRoutes) && cleanPath !== '/explore' && !cleanPath.startsWith('/piece/') && !cleanPath.startsWith('/view/') && !cleanPath.startsWith('/help') && !cleanPath.startsWith('/terms') && !cleanPath.startsWith('/privacy') && !cleanPath.startsWith('/community') && !cleanPath.startsWith('/profile/');
+    const shouldShowAuth = !$user && cleanPath !== '/auth' && !isRouteInList($location, topBarOnlyRoutes) && cleanPath !== '/explore' && !cleanPath.startsWith('/piece/') && !cleanPath.startsWith('/view/') && !cleanPath.startsWith('/help') && !cleanPath.startsWith('/terms') && !cleanPath.startsWith('/privacy') && !cleanPath.startsWith('/payment-policy') && !cleanPath.startsWith('/community') && !cleanPath.startsWith('/profile/');
     
     console.log('🔍 DEBUG: Final rendering decision:');
     console.log('  - showSidebar:', showSidebar);
@@ -359,7 +361,7 @@
       <div class="content-area">
         {#if $authLoading}
           <div class="loading">Loading...</div>
-        {:else if !$user && getCleanPath($location) !== '/auth' && !isRouteInList($location, topBarOnlyRoutes) && getCleanPath($location) !== '/explore' && !getCleanPath($location).startsWith('/piece/') && !getCleanPath($location).startsWith('/view/') && !getCleanPath($location).startsWith('/help') && !getCleanPath($location).startsWith('/terms') && !getCleanPath($location).startsWith('/privacy') && !getCleanPath($location).startsWith('/community') && !getCleanPath($location).startsWith('/profile/')}
+        {:else if !$user && getCleanPath($location) !== '/auth' && !isRouteInList($location, topBarOnlyRoutes) && getCleanPath($location) !== '/explore' && !getCleanPath($location).startsWith('/piece/') && !getCleanPath($location).startsWith('/view/') && !getCleanPath($location).startsWith('/help') && !getCleanPath($location).startsWith('/terms') && !getCleanPath($location).startsWith('/privacy') && !getCleanPath($location).startsWith('/payment-policy') && !getCleanPath($location).startsWith('/community') && !getCleanPath($location).startsWith('/profile/')}
           <Auth />
         {:else if checkingOnboarding}
           <div class="loading">Loading...</div>
