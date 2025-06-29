@@ -1262,8 +1262,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-neutral-200);
-    color: var(--color-neutral-600);
+    color: white;
+    background-color: var(--color-primary-400);
     font-size: 22px;
     font-weight: 500;
   }
