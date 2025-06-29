@@ -555,17 +555,17 @@
   }
 
   .featured-card.large {
-    flex-basis: 45%;
+    width: 45%;
     border-radius: var(--radius-creative);
   }
 
   .featured-card.medium {
-    flex-basis: 15%;
+    width: 15%;
     border-radius: 40px;
   }
 
   .featured-card.small {
-    flex-basis: 15%;
+    width: 15%;
     border-radius: 40px;
   }
 
@@ -573,7 +573,7 @@
     background: var(--card-bg);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s, flex-basis .2s;
+    transition: transform 0.2s, box-shadow 0.2s, width .2s;
     border: none;
   }
 
@@ -582,6 +582,7 @@
   }
 
   .featured-card:hover {
+    transform: translateY(-2px);
     box-shadow: 0 8px 16px var(--shadow-color);
   }
 
