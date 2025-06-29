@@ -1491,7 +1491,7 @@
   }
 
   :global(.dark-mode) .update-piece .remove-button {
-    background: var(--color-accent-700)
+    background: var(--color-accent-800)
   }
 
   .empty-contributors {
