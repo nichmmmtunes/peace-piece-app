@@ -409,7 +409,7 @@
     gap: var(--space-2);
     background: none;
     border: 1px solid var(--color-primary-600);
-    color: var(--color-primary-600);
+    color: var(--text-muted);
     padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-md);
     cursor: pointer;
