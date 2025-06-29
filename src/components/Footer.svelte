@@ -21,7 +21,7 @@
   .footer {
     background: var(--bg-color);
     border-top: 1px solid var(--border-color);
-    padding: 28.8px 0;
+    padding: 12.2px 0;
     margin-top: auto;
   }
 
