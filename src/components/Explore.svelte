@@ -555,16 +555,17 @@
   }
 
   .featured-card.large {
-    grid-row: 1 / 3;
+    flex-basis: 45%;
     border-radius: var(--radius-creative);
   }
 
   .featured-card.medium {
-    grid-row: 1 / 3;
+    flex-basis: 15%;
     border-radius: var(--radius-creative);
   }
 
   .featured-card.small {
+    flex-basis: 10%;
     border-radius: var(--radius-md);
   }
 
