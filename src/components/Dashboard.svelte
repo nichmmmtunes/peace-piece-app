@@ -1154,6 +1154,7 @@
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: var(--space-2);
+    padding-right: 20px;
   }
 
   .activity-title {
