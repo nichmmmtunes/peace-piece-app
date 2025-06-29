@@ -75,6 +75,7 @@
 
     .footer-links {
       gap: var(--space-3);
+      flex-direction: column;
     }
 
     .footer-links a {
