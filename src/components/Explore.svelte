@@ -561,12 +561,12 @@
 
   .featured-card.medium {
     flex-basis: 15%;
-    border-radius: var(--radius-creative);
+    border-radius: 40px;
   }
 
   .featured-card.small {
     flex-basis: 15%;
-    border-radius: var(--radius-md);
+    border-radius: 40px;
   }
 
   .featured-card {
