@@ -644,7 +644,7 @@
             <div class="funding-actions">
               <button 
                 class="donate-button neumorphic" 
-                on:click={handleDonate}
+                on:click={() => showDonationModal = true}
                 disabled={checkoutLoading}
               >
                 {#if checkoutLoading}
@@ -735,6 +735,16 @@
     </div>
   {/if}
 </div>
+
+<!-- Donation Modal -->
+{#if showDonationModal}
+  <DonationModal 
+    pieceId={piece.id} 
+    pieceName={piece.title} 
+    on:close={() => showDonationModal = false} 
+  />
+{/if}
+
 
 <style>
 
