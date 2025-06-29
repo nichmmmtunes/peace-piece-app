@@ -712,7 +712,7 @@
     font-size: 0.7rem;
     width: 20px;
     height: 20px;
-    margin-right: 6px;
+    margin-right: 8px;
   }
 
   .clip-icon svg {
