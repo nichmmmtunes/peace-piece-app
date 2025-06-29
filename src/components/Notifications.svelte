@@ -512,7 +512,6 @@
   }
 
   .notification-item.unread {
-    background: color-mix(in srgb, var(--color-primary-50) 50%, var(--card-bg));
     border-left: 4px solid var(--color-primary-600);
   }
 
