@@ -666,7 +666,7 @@
     width: 100%;
     height: 100%;
     color: white;
-    background-color: var(--color-primary-400);
+    background-color: var(--color-primary-500);
     display: flex;
     align-items: center;
     justify-content: center;
