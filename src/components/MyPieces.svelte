@@ -247,7 +247,7 @@
     </section>
 
     <!-- Contributed Pieces Section -->
-    <section class="pieces-section" in:fly={{ y: 20, duration: 300, delay: 200 }}>
+    <section class="pieces-section pieces-contributing" in:fly={{ y: 20, duration: 300, delay: 200 }}>
       <div class="section-header">
         <h2>Pieces You Contribute To</h2>
         <a href="/explore" use:link class="browse-button">
@@ -310,7 +310,7 @@
     </section>
 
     <!-- Supported Pieces Section -->
-    <section class="pieces-section" in:fly={{ y: 20, duration: 300, delay: 300 }}>
+    <section class="pieces-section pieces-supported" in:fly={{ y: 20, duration: 300, delay: 300 }}>
       <div class="section-header">
         <h2>Pieces You've Supported</h2>
         <a href="/explore" use:link class="browse-button">
