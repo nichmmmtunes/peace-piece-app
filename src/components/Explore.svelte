@@ -862,7 +862,7 @@
 
     .featured-card.medium,
     .featured-card.small {
-      width: 43%;
+      width: 42%;
     }
   }
 
