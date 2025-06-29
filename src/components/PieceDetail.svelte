@@ -1762,11 +1762,11 @@
       font-size: 2rem;
     }
 
-    .content-left {
+    .piece-detail .content-left {
       order: 2;
     }
 
-    .content-right {
+    .piece-detail .content-right {
       order: 1;
       padding-top: 10px;
     }
