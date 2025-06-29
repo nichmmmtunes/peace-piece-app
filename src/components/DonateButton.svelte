@@ -45,12 +45,20 @@
       const successUrl = `${origin}/#/piece/${pieceId}?donation=success`;
       const cancelUrl = `${origin}/#/piece/${pieceId}?donation=canceled`;
 
-      // Call the Stripe checkout edge function
+      // Get the session and extract the access token
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      
+      if (!accessToken) {
+        throw new Error('Failed to authenticate user');
+      }
+
+      // Call the Stripe checkout edge function with the proper access token
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.auth.getSession().then(res => res.data.session?.access_token)}`
+          'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify({
           price_id: products.donation.priceId,
