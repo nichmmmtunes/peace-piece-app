@@ -81,7 +81,7 @@
   }
 
   .email-tips {
-    background-color: var(--color-neutral-50);
+    background-color: var(--bg-color);
     border-radius: var(--radius-md);
     padding: var(--space-4);
     border: 1px solid var(--border-color);
