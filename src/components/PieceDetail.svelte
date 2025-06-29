@@ -1101,6 +1101,10 @@
     gap: var(--space-6);
   }
 
+  .content-right  .piece-introduction {
+    display: none;
+  }
+
   .content-left > * {
     position: relative;
     z-index: 1;
@@ -1778,6 +1782,14 @@
     .piece-detail .content-right {
       order: 1;
       padding-top: 10px;
+    }
+
+    .content-right  .piece-introduction {
+      display: block;
+    }
+
+    .content-left  .piece-introduction {
+      display: none;
     }
   }
 
