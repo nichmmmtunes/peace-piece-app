@@ -6,10 +6,10 @@
 <footer class="footer">
   <div class="footer-content">
     <div class="footer-links">
-      <a href="/#/terms" use:link>Terms of Use</a>
-      <a href="/#/privacy" use:link>Privacy Policy</a>
-      <a href="/#/payment-policy" use:link>Payment Policy</a>
-      <a href="/#/community" use:link>Community Guidelines</a>
+      <a href="/terms" use:link>Terms of Use</a>
+      <a href="/privacy" use:link>Privacy Policy</a>
+      <a href="/payment-policy" use:link>Payment Policy</a>
+      <a href="/community" use:link>Community Guidelines</a>
     </div>
     <p class="copyright">
       Copyright &copy; 2025 Peace Piece. All&nbsp;Rights&nbsp;Reserved.
