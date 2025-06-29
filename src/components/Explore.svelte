@@ -586,6 +586,11 @@
     box-shadow: 0 8px 16px var(--shadow-color);
   }
 
+  .featured-card.small:hover
+  .featured-card.medium:hover {
+    width: 20%;
+  }
+
   .category-section {
     margin-bottom: var(--space-10);
   }
@@ -765,11 +770,6 @@
     align-items: center;
     justify-content: center;
     color: var(--text-muted);
-  }
-
-  .featured-card.small:hover
-  .featured-card.medium:hover {
-    width: 20%;
   }
 
   .featured-card.small .card-placeholder,
