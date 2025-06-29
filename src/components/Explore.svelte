@@ -890,13 +890,14 @@
     }
 
     .featured-card.large,
-    .featured-card.medium {
+    .featured-card.medium,
+    .featured-card.small {
       grid-row: auto;
+      width: 100%;
     }
 
     .project-card {
       height: 280px;
-      width: 100%;
     }
   }
 </style>
