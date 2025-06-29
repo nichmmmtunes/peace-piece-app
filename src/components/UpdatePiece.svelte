@@ -1173,6 +1173,7 @@
   :global(.dark-mode) .update-piece .add-button {
     background: var(--color-primary-700);
     color: var(--text-muted);
+    border-color: var(--bg-color)
   }
   
   /* Tags Styling */
