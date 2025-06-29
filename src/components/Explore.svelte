@@ -833,7 +833,7 @@
 
   .featured-card.small .tag,
   .featured-card.medium .tag {
-    font-size: .6rem;
+    font-size: .7rem;
   }
 
   .tag.social-cause {
