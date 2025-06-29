@@ -1490,6 +1490,10 @@
     background-color: var(--color-error-100);
   }
 
+  :global(.dark-mode) .update-piece .remove-button {
+    background: var(--color-accent-700)
+  }
+
   .empty-contributors {
     text-align: center;
     padding: var(--space-6);
