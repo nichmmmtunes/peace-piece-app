@@ -794,6 +794,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    user-select: none;
   }
 
   .project-status {
