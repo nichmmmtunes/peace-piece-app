@@ -458,8 +458,8 @@
     justify-content: center;
     font-size: 2.5rem;
     font-weight: 500;
-    color: var(--color-neutral-500);
-    background-color: var(--color-neutral-200);
+    color: white;
+    background-color: var(--color-primary-400);
   }
 
   .avatar-overlay {
