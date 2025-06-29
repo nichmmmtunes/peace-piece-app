@@ -643,8 +643,8 @@
   .layer-icon {
     font-size: 0.9rem;
     flex-shrink: 0;
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
   }
 
   .layer-icon svg {
