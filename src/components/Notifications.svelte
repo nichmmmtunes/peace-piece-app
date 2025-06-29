@@ -547,7 +547,7 @@
   .notification-title {
     font-size: 1rem;
     font-weight: 500;
-    margin: 0 0 var(--space-1) 0;
+    margin: 0;
     line-height: 1.3;
   }
 
