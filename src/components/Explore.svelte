@@ -719,7 +719,7 @@
 
   .featured-card.large .card-image,
   .featured-card.medium .card-image {
-    height: 70%;
+    height: 60%;
   }
 
   .card-image img {
