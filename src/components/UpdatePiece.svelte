@@ -1169,6 +1169,11 @@
   .add-button:hover {
     background-color: var(--color-primary-200);
   }
+
+  :global(.dark-mode) .update-piece .add-button {
+    background: var(--color-primary-700);
+    color: var(--text-muted);
+  }
   
   /* Tags Styling */
   .tag-input-container {
