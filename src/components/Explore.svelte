@@ -554,7 +554,7 @@
     display: none;
   }
 
-  .featured-card.large {
+  .featured-card.large:first-child {
     width: 45%;
     border-radius: var(--radius-creative);
   }
