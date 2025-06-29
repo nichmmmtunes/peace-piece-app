@@ -860,6 +860,10 @@
       width: 100%;
     }
 
+    .featured-card.large:first-child .card-image {
+      height: 270px;
+    }
+
     .featured-card.medium,
     .featured-card.small {
       width: calc(50% - var(--space-2));
