@@ -5,7 +5,7 @@
 <div class="payment-policy-container">
   <div class="payment-policy-header" in:fade>
     <h1>Payment Policy</h1>
-    <p>Last updated: January 2025</p>
+    <p>Last updated: June 2025</p>
   </div>
 
   <div class="payment-policy-content">
