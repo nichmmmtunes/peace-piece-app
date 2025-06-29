@@ -5,6 +5,8 @@
   import { user } from '../stores/authStore';
   import { fade, fly } from 'svelte/transition';
   import { products } from '../stripe-config';
+  import DonateButton from './DonateButton.svelte'; // Import DonateButton
+  import DonationModal from './DonationModal.svelte'; // Import DonationModal
   
   export let params = { id: '' };
   
@@ -18,6 +20,7 @@
   let checkoutLoading = false;
   let checkoutError: string | null = null;
   let organizer: any = null;
+  let showDonationModal = false;
   
   async function loadPiece() {
     try {
