@@ -46,7 +46,7 @@
         .from('organizers')
         .select('*')
         .eq('id', piece.organizer_id)
-        .maybeSingle();
+        .single();
 
       if (orgError) throw orgError;
 
