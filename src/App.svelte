@@ -35,6 +35,7 @@
   import ArtistProfileSettings from './components/ArtistProfileSettings.svelte';
   import OrganizerProfileSettings from './components/OrganizerProfileSettings.svelte';
   import ApplyArtist from './components/ApplyArtist.svelte';
+  import ManagePiece from './components/ManagePiece.svelte';
   import ReviewApplication from './components/ReviewApplication.svelte';
   import BoltBadge from './components/BoltBadge.svelte'
 
@@ -45,6 +46,9 @@
   let sidebarCollapsed = false;
   let isMobile = false;
   let mobileSidebarOpen = false;
+  let checkingManagementAuth = false;
+  let isAuthorizedToManage = false;
+  let pieceToManage: any = null;
 
   onMount(() => {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -127,7 +131,7 @@
       document.documentElement.style.setProperty('--text-color', 'var(--color-primary-900)');
       document.documentElement.style.setProperty('--text-muted', 'var(--color-neutral-500)');
       document.documentElement.style.setProperty('--card-bg', 'var(--color-neutral-light-gradient)');
-      document.documentElement.style.setProperty('--border-color', 'var(--color-neutral-300)');
+      document.documentElement.style.setProperty('--border-color', 'var(--color-neutral-200)');
       document.documentElement.style.setProperty('--shadow-color', 'rgba(0, 0, 0, 0.05)');
       document.documentElement.style.setProperty('--logo-gradient-stop1', '#131322');
       document.documentElement.style.setProperty('--logo-gradient-stop2', '#131322');
@@ -215,11 +219,12 @@
     '/create-peace': CreatePiece,
     '/pieces': MyPieces,
     '/apply/:id': ApplyArtist,
+    '/manage/:id': ManagePiece,
     '/review-application/:id': ReviewApplication,
   };
 
   // List of routes that require authentication
-  const protectedRoutes = ['/', '/settings', '/settings/artist-profile', '/settings/organizer-profile', '/dashboard', '/onboarding', '/update/:id', '/edit/:id', '/notifications', '/create-peace', '/pieces', '/apply/:id', '/review-application/:id'];
+  const protectedRoutes = ['/', '/settings', '/settings/artist-profile', '/settings/organizer-profile', '/dashboard', '/onboarding', '/update/:id', '/edit/:id', '/notifications', '/create-peace', '/pieces', '/apply/:id', '/manage/:id', '/review-application/:id'];
 
   // List of routes that should only show top bar (no sidebar) regardless of auth status
   const topBarOnlyRoutes = ['/auth', '/signup', '/confirm-signup', '/signup-confirmed', '/onboarding', '/forgot-password', '/reset-password'];
@@ -238,32 +243,66 @@
     return routeList.includes(cleanPath);
   }
 
+  // Function to extract ID from path
+  function extractIdFromPath(path: string, routePattern: string): string | null {
+    const regex = new RegExp(routePattern.replace(':id', '([^/]+)'));
+    const match = path.match(regex);
+    return match ? match[1] : null;
+  }
+
   // Check onboarding status when user changes
   $: if ($user && !initialCheckDone) {
     checkOnboardingStatus();
   }
 
+  let currentPathId: string | null = null;
+
   // Handle route protection and onboarding flow
-  $: {
+  $: if ($location) {
     if (!$authLoading) {
       const currentPath = $location;
       const cleanPath = getCleanPath(currentPath);
       
-      // DEBUG: Log the current location and route checks
-      // console.log('🔍 DEBUG: Current location:', currentPath);
-      // console.log('🔍 DEBUG: Clean path:', cleanPath);
-      // console.log('🔍 DEBUG: topBarOnlyRoutes:', topBarOnlyRoutes);
-      // console.log('🔍 DEBUG: isRouteInList(currentPath, topBarOnlyRoutes):', isRouteInList(currentPath, topBarOnlyRoutes));
-      // console.log('🔍 DEBUG: $user:', $user ? 'authenticated' : 'not authenticated');
-      // console.log('🔍 DEBUG: protectedRoutes.includes(cleanPath):', protectedRoutes.includes(cleanPath));
-      
-      if (!$user && protectedRoutes.includes(cleanPath)) {
-        console.log('🔍 DEBUG: Redirecting to auth - user not authenticated for protected route');
-        // Redirect to auth if trying to access protected route while not authenticated
+      // Reset authorization state for management route
+      isAuthorizedToManage = false;
+      pieceToManage = null;
+      currentPathId = null;
+      checkingManagementAuth = false;
+
+      // Check for management route specifically
+      if (cleanPath.startsWith('/manage/')) {
+        currentPathId = extractIdFromPath(cleanPath, '/manage/:id');
+        if (currentPathId) {
+          checkingManagementAuth = true;
+          if (!$user) {
+            push('/auth'); // Redirect to auth if not logged in
+          } else {
+            // Fetch piece details to verify organizer
+            supabase
+              .from('piece_details')
+              .select('id, title, organizer_user_id')
+              .eq('id', currentPathId)
+              .single()
+              .then(({ data, error: pieceError }) => {
+                if (pieceError || !data || data.organizer_user_id !== $user.id) {
+                  console.warn('Unauthorized access attempt to manage piece:', currentPathId);
+                  push('/dashboard'); // Redirect if not organizer or piece not found
+                } else {
+                  isAuthorizedToManage = true;
+                  pieceToManage = data;
+                }
+              })
+              .catch(err => {
+                console.error('Error checking management authorization:', err);
+                push('/dashboard'); // Redirect on error
+              })
+              .finally(() => checkingManagementAuth = false);
+          }
+        }
+      } else if (!$user && protectedRoutes.includes(cleanPath)) {
         push('/auth');
       } else if ($user && !checkingOnboarding && initialCheckDone) {
         if (cleanPath === '/auth') {
-          console.log('🔍 DEBUG: User authenticated, redirecting from auth page');
           // After login, check onboarding status
           if (!onboardingCompleted) {
             push('/onboarding');
@@ -293,17 +332,19 @@
     return new RegExp(`^${routePattern}$`).test(getCleanPath($location));
   });
 
-  // DEBUG: Log the final rendering decision
-  $: {
-    const cleanPath = getCleanPath($location);
-    const shouldShowAuth = !$user && cleanPath !== '/auth' && !isRouteInList($location, topBarOnlyRoutes) && cleanPath !== '/explore' && !cleanPath.startsWith('/piece/') && !cleanPath.startsWith('/view/') && !cleanPath.startsWith('/help') && !cleanPath.startsWith('/terms') && !cleanPath.startsWith('/privacy') && !cleanPath.startsWith('/payment-policy') && !cleanPath.startsWith('/community') && !cleanPath.startsWith('/profile/');
-    
-    console.log('🔍 DEBUG: Final rendering decision:');
-    console.log('  - showSidebar:', showSidebar);
-    console.log('  - showTopBar:', showTopBar);
-    console.log('  - Will show Auth component:', shouldShowAuth);
-    console.log('  - Will show Router:', !shouldShowAuth);
-  }
+  // Determine if Auth component should be shown
+  $: shouldShowAuthComponent = !$user && 
+                               getCleanPath($location) !== '/auth' && 
+                               !isRouteInList($location, topBarOnlyRoutes) && 
+                               getCleanPath($location) !== '/explore' && 
+                               !getCleanPath($location).startsWith('/piece/') && 
+                               !getCleanPath($location).startsWith('/view/') && 
+                               !getCleanPath($location).startsWith('/help') && 
+                               !getCleanPath($location).startsWith('/terms') && 
+                               !getCleanPath($location).startsWith('/privacy') && 
+                               !getCleanPath($location).startsWith('/payment-policy') && 
+                               !getCleanPath($location).startsWith('/community') && 
+                               !getCleanPath($location).startsWith('/profile/');
 
   $: if ($location) {
     window.scrollTo(0, 0);
@@ -363,12 +404,22 @@
       {/if}
       
       <div class="content-area">
-        {#if $authLoading}
+        {#if $authLoading || checkingManagementAuth}
           <div class="loading">Loading...</div>
-        {:else if !$user && getCleanPath($location) !== '/auth' && !isRouteInList($location, topBarOnlyRoutes) && getCleanPath($location) !== '/explore' && !getCleanPath($location).startsWith('/piece/') && !getCleanPath($location).startsWith('/view/') && !getCleanPath($location).startsWith('/help') && !getCleanPath($location).startsWith('/terms') && !getCleanPath($location).startsWith('/privacy') && !getCleanPath($location).startsWith('/payment-policy') && !getCleanPath($location).startsWith('/community') && !getCleanPath($location).startsWith('/profile/')}
+        {:else if shouldShowAuthComponent}
           <Auth />
         {:else if checkingOnboarding}
           <div class="loading">Loading...</div>
+        {:else if getCleanPath($location).startsWith('/manage/') && !isAuthorizedToManage}
+          <div class="error-container">
+            <div class="error-card">
+              <h2>Access Denied</h2>
+              <p>You don't have permission to manage this piece.</p>
+              <a href="/dashboard" use:link class="primary">Back to Dashboard</a>
+            </div>
+          </div>
+        {:else if getCleanPath($location).startsWith('/manage/') && isAuthorizedToManage}
+          <ManagePiece params={{ id: currentPathId }} />
         {:else}
           <Router {routes} />
         {/if}
@@ -499,6 +550,28 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+  }
+
+  .error-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    padding: var(--space-6);
+  }
+
+  .error-card {
+    background: var(--card-bg);
+    border: 1px solid var(--color-error-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-8);
+    text-align: center;
+    max-width: 500px;
+  }
+
+  .error-card h2 {
+    color: var(--color-error-600);
+    margin-bottom: var(--space-4);
   }
 
   /* Mobile responsiveness */
