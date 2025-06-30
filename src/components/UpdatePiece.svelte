@@ -383,7 +383,7 @@
                 >
                   <option value="">Select an organizer</option>
                   {#each organizers as organizer}
-                    {#if organizer.user_id === $user.id}
+                    {#if organizer.user_id == $user.id}
                     <option value={organizer.id}>{organizer.name}</option>
                     {/if}
                   {/each}
