@@ -446,8 +446,8 @@
               <div class="organizer-info" in:fly={{ y: 20, duration: 300, delay: 200 }}>
                 <span>Organized by</span>
                 <span class="organizer-name">{organizer.name}</span>
-                {#if organizer && organizer.bio}
-                <p class="organizer-bio">{ organizer.bio }</p>
+                {#if organizer && organizer.organizer_description}
+                <p class="organizer-bio">{ organizer.organizer_description }</p>
                 {/if}
               </div>
             </div>
