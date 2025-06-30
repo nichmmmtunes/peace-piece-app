@@ -1021,11 +1021,13 @@
   }
 
   .text-content {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
     border: none;
     border-radius: var(--radius-md);
     padding: var(--space-6);
     backdrop-filter: blur(10px);
+    width: fit-content;
+    margin: 0 auto;
   }
 
   .text-content h3 {
