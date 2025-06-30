@@ -1539,6 +1539,13 @@
     color: var(--text-color);
   }
 
+  .sponsors-section h3 {
+    font-size: 1.125rem;
+    font-weight: 500;
+    margin: 0 0 var(--space-4) 0;
+    color: var(--text-color);
+  }
+
   .contributors-section p.contributor-bio {
     font-size: 0.875rem;
   }
