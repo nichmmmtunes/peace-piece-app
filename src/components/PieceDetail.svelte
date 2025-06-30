@@ -980,7 +980,8 @@
     text-decoration: none;
   }
 
-  .organizer-desc {
+  .organizer-desc,
+  .sponsor-desc {
     margin-bottom: 0px;
     font-size: .8rem;
   }
