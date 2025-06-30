@@ -666,16 +666,12 @@
     width: 100%;
     height: 100%;
     color: white;
-    background: linear-gradient(45deg, var(--color-neutral-200), var(--color-primary-00));
+    background: linear-gradient(45deg, #262626, var(--color-neutral-900));
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2rem;
     font-weight: 600;
-  }
-
-  :global(.dark-mode) .avatar-placeholder-initials {
-    background: linear-gradient(45deg, #262626, var(--color-neutral-900));
   }
 
   .supporter-card .card-link:after,
