@@ -55,6 +55,12 @@
   let checkingUpdateAuth = false;
   let isAuthorizedToUpdate = false;
   let pieceToUpdate: any = null;
+  
+  // New variables for edit route authorization
+  let checkingEditAuth = false;
+  let isAuthorizedToEdit = false;
+  let pieceToEdit: any = null;
+  let userArtistId: string | null = null;
 
   onMount(() => {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -272,9 +278,12 @@
       pieceToManage = null;
       isAuthorizedToUpdate = false;
       pieceToUpdate = null;
+      isAuthorizedToEdit = false;
+      pieceToEdit = null;
       currentPathId = null;
       checkingManagementAuth = false;
       checkingUpdateAuth = false;
+      checkingEditAuth = false;
 
       // Check for management route specifically
       if (cleanPath.startsWith('/manage/')) {
@@ -335,6 +344,75 @@
                 push('/dashboard'); // Redirect on error
               })
               .finally(() => checkingUpdateAuth = false);
+          }
+        }
+      }
+      // Check for edit route specifically
+      else if (cleanPath.startsWith('/edit/')) {
+        currentPathId = extractIdFromPath(cleanPath, '/edit/:id');
+        if (currentPathId) {
+          checkingEditAuth = true;
+          if (!$user) {
+            push('/auth'); // Redirect to auth if not logged in
+          } else {
+            // First, fetch piece details to check if user is the organizer
+            supabase
+              .from('piece_details')
+              .select('id, title, organizer_user_id, contributors')
+              .eq('id', currentPathId)
+              .single()
+              .then(async ({ data, error: pieceError }) => {
+                if (pieceError || !data) {
+                  console.warn('Error fetching piece or piece not found:', currentPathId);
+                  push('/dashboard');
+                  return;
+                }
+                
+                // Check if user is the organizer
+                if (data.organizer_user_id === $user.id) {
+                  isAuthorizedToEdit = true;
+                  pieceToEdit = data;
+                  return;
+                }
+                
+                // If not organizer, check if user is a contributor
+                try {
+                  // Get the user's artist ID
+                  const { data: artistData, error: artistError } = await supabase
+                    .from('artists')
+                    .select('id')
+                    .eq('user_id', $user.id)
+                    .maybeSingle();
+                    
+                  if (artistError) throw artistError;
+                  
+                  if (artistData) {
+                    userArtistId = artistData.id;
+                    
+                    // Check if the user's artist ID is in the contributors array
+                    const contributors = data.contributors || [];
+                    const isContributor = contributors.some((contributor: any) => contributor.id === userArtistId);
+                    
+                    if (isContributor) {
+                      isAuthorizedToEdit = true;
+                      pieceToEdit = data;
+                      return;
+                    }
+                  }
+                  
+                  // If we get here, user is neither organizer nor contributor
+                  console.warn('Unauthorized access attempt to edit piece:', currentPathId);
+                  push('/dashboard');
+                } catch (err) {
+                  console.error('Error checking contributor status:', err);
+                  push('/dashboard');
+                }
+              })
+              .catch(err => {
+                console.error('Error checking edit authorization:', err);
+                push('/dashboard');
+              })
+              .finally(() => checkingEditAuth = false);
           }
         }
       }
@@ -443,7 +521,7 @@
       {/if}
       
       <div class="content-area">
-        {#if $authLoading || checkingManagementAuth || checkingUpdateAuth}
+        {#if $authLoading || checkingManagementAuth || checkingUpdateAuth || checkingEditAuth}
           <div class="loading">Loading...</div>
         {:else if shouldShowAuthComponent}
           <Auth />
@@ -469,6 +547,16 @@
           </div>
         {:else if getCleanPath($location).startsWith('/update/') && isAuthorizedToUpdate}
           <UpdatePiece params={{ id: currentPathId }} />
+        {:else if getCleanPath($location).startsWith('/edit/') && !isAuthorizedToEdit}
+          <div class="error-container">
+            <div class="error-card">
+              <h2>Access Denied</h2>
+              <p>You don't have permission to edit this piece. Only organizers and contributors can access the editor.</p>
+              <a href="/dashboard" use:link class="primary">Back to Dashboard</a>
+            </div>
+          </div>
+        {:else if getCleanPath($location).startsWith('/edit/') && isAuthorizedToEdit}
+          <PieceEditorPage params={{ id: currentPathId }} />
         {:else}
           <Router {routes} />
         {/if}
