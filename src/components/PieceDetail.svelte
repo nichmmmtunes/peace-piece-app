@@ -952,6 +952,21 @@
     color: var(--text-muted);
   }
 
+  .organizer-avatar {
+    width: 35px;
+    height: 45px;
+    overflow: hidden;
+    border-radius: 100px;
+    border: solid 2px var(--color-neutral-800);
+    filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, .1));
+  }
+
+  .organizer-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
   .organizer-info {
     display: flex;
     gap: .5rem;
