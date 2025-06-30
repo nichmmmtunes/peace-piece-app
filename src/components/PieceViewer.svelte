@@ -1042,6 +1042,10 @@
     color: rgba(255, 255, 255, 0.9);
   }
 
+  .poem-text {
+    text-align: center;
+  }
+
   .mission-text :global(p),
   .poem-text :global(p) {
     margin-bottom: 1rem;
