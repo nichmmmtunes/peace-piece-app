@@ -486,7 +486,7 @@
   }
 
   :global(.dark-mode) .browse-button:hover {
-    background-color: var(--color-neutral-800);
+    background-color: var(--color-neutral-900);
   }
 
   .pieces-grid {
