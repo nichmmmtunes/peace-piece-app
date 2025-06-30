@@ -464,7 +464,7 @@
     width: 100%;
     padding: var(--space-3) var(--space-4);
     padding-right: var(--space-10);
-    border: 1px solid var(--border-color);
+    border: none;
     border-radius: var(--radius-md);
     background: var(--card-bg);
     font-size: 0.875rem;
