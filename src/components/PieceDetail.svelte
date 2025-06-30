@@ -952,6 +952,7 @@
     align-items: center;
     gap: var(--space-4);
     color: var(--text-muted);
+    flex-basis: 100%;
   }
 
   .organizer-avatar {
