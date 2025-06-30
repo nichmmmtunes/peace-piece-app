@@ -224,6 +224,10 @@
     color: var(--text-muted);
   }
 
+  .payment-policy-section a:hover {
+    text-decoration: underline;
+  }
+
   .contact-info {
     background: transparent;
     border-radius: var(--radius-md);
