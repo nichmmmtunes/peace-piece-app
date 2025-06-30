@@ -477,7 +477,7 @@
 
   // Reactive statement that updates the 'scrolled' variable
   // whenever 'scrollY' changes.
-  $: scrolled = scrollY > 100; // Add the class after scrolling 100px
+  $: scrolled = scrollY > 65; // Add the class after scrolling 100px
 
 </script>
 
