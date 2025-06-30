@@ -659,7 +659,7 @@
           <div class="text-content">
             <h3>Piece Poem</h3>
             <div class="poem-text">
-              {@html piece.piece_poem}
+              <pre>{piece.piece_poem}</pre>
             </div>
           </div>
         </div>
