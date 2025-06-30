@@ -1118,7 +1118,7 @@
   }
 
   .field-help code {
-    background-color: var(--color-neutral-200);
+    background-color: var(--bg-color);
     padding: 2px 4px;
     border-radius: 3px;
     font-family: monospace;
