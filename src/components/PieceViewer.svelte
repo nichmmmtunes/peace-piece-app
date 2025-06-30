@@ -18,6 +18,7 @@
   let imageContainer: HTMLElement;
   let mainImage: HTMLImageElement;
   let videoElement: HTMLVideoElement;
+  let audioElement: HTMLAudioElement;
   
   // Image scaling and pan state
   let scale = 1;
@@ -389,7 +390,7 @@
             videoElement.pause();
           }
         }
-        if (audio) {
+        if (audioElement) {
           // If no video, check for audio
           const audio = viewerElement.querySelector('audio') as HTMLAudioElement;
           if (audio.paused) {
@@ -645,7 +646,9 @@
               <h3>Audio Experience</h3>
               <p>Listen to the piece while viewing</p>
             </div>
-            <audio controls src={piece.audio_url} class="audio-element">
+            <audio 
+              bind:this={audioElement}
+              controls src={piece.audio_url} class="audio-element">
               Your browser does not support the audio element.
             </audio>
           </div>
