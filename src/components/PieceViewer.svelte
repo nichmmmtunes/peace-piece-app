@@ -982,9 +982,9 @@
 
   .audio-player {
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: none;
     border-radius: var(--radius-lg);
-    padding: var(--space-4);
+    padding: var(--space-2);
     backdrop-filter: blur(10px);
   }
 
