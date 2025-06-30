@@ -677,8 +677,8 @@
   
 
   :global(.light-mode) .avatar-placeholder-initials {
-    background: var(--color-neutral-400);
-    color: var(--bg-color);
+    background: var(--color-neutral-300);
+    color: var(--text-color);
   }
 
   .supporter-card .card-link:after,
