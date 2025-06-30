@@ -1617,7 +1617,7 @@
   }
 
   .sponsor-amount {
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     color: var(--color-success-600);
     font-weight: 500;
   }
