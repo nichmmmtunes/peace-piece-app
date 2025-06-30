@@ -104,7 +104,6 @@
           <div class="profile-details">
             <h1 class="profile-name">{profile.name || 'Anonymous User'}</h1>
             <div class="profile-meta">
-              <span class="location">Location</span>
               {#if profile.website}
                 <a href={profile.website} target="_blank" rel="noopener noreferrer" class="website-link">
                   Website
