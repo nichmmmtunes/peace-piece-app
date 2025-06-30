@@ -751,6 +751,10 @@
     margin-bottom: var(--space-6);
   }
 
+  :global(.light-mode) .status-bar {
+    background: var(--bg-color);
+  }
+
   .status-badge {
     padding: var(--space-2) var(--space-4);
     border-radius: var(--radius-md);
