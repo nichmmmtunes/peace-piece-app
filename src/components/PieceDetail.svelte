@@ -1554,6 +1554,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
+    flex-basis: 100%;
   }
 
   .contributor-card,
