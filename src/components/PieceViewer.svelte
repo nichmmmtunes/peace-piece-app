@@ -611,6 +611,7 @@
             bind:this={videoElement}
             src={piece.video_url} 
             controls 
+            loop="true"
             class="main-video"
             poster={piece.image_url}
           >
