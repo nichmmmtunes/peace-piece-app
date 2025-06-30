@@ -346,7 +346,6 @@
           <a href="/piece/{piece.id}" use:link>← Back to Piece Details</a>
         </div>
         <h1>Manage "{piece.title}"</h1>
-        <p>Overview of applications, donations, and actions for your Peace Piece.</p>
       </div>
 
       <!-- Status and Quick Stats -->
