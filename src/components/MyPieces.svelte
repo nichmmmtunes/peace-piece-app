@@ -669,7 +669,7 @@
   }
 
   .action-button.edit {
-    color: var(--color-primary-00);
+    color: var(--color-text-color);
     border-right: 1px solid var(--border-color);
   }
 
