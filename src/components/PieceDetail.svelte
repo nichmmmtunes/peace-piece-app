@@ -980,6 +980,10 @@
     text-decoration: none;
   }
 
+  .organizer-desc {
+    margin-bottom: 0px;
+  }
+
   .organizer-name:hover {
     text-decoration: underline;
   }
