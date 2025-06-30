@@ -819,6 +819,7 @@
     cursor: pointer;
     transition: all 0.2s;
     text-align: left;
+    border: none;
   }
 
   .status-button.active {
