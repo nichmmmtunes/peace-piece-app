@@ -140,7 +140,7 @@
   async function loadOrganizers() {
     const { data } = await supabase
       .from('organizers')
-      .select('id, name');
+      .select('id, name, user_id');
     
     if (data) {
       organizers = data;
