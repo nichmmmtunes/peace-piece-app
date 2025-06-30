@@ -492,12 +492,12 @@
                             Media
                           </a>
                         {/if}
-                          <a href="/piece/{project.id}" use:link class="action-button">
+                          <a href="/manage/{project.id}" use:link class="action-button">
                             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
                               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                               <circle cx="12" cy="12" r="3"></circle>
                             </svg>
-                            View
+                            Manage
                           </a>
                       </div>
                     </div>
