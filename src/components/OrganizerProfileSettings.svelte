@@ -51,8 +51,8 @@
       loading = true;
       message = '';
       
-      if (!organizerName.trim()) {
-        throw new Error('Organizer name is required');
+      if (!organizerName.trim() || !organizerUsername.trim()) {
+        throw new Error('Organizer name & username are required');
       }
       
       if (organizerExists && organizerId) {
@@ -61,6 +61,7 @@
           .from('organizers')
           .update({
             name: organizerName.trim(),
+            organizer_username: organizerUsername.trim(),
             description: organizerDescription.trim(),
             avatar_url: avatarUrl,
             updated_at: new Date().toISOString(),
@@ -76,6 +77,7 @@
           .from('organizers')
           .insert({
             name: organizerName.trim(),
+            organizer_username: organizerUsername.trim(),
             description: organizerDescription.trim(),
             avatar_url: avatarUrl,
             user_id: $user?.id,
@@ -171,6 +173,7 @@
             organizerExists = false;
             organizerId = null;
             organizerName = '';
+            organizerUsername = '';
             organizerDescription = '';
             avatarUrl = null;
             
@@ -248,6 +251,19 @@
             required
             disabled={loading}
             placeholder="Enter your organization name"
+          />
+          <p class="field-description">This is the name that will be displayed as the organizer of your Peace Pieces</p>
+        </div>
+
+        <div class="form-group">
+          <label for="organizerName">Organizer Username *</label>
+          <input
+            type="text"
+            id="organizerUsername"
+            bind:value={organizerUsername}
+            required
+            disabled={loading}
+            placeholder="Enter your organization username"
           />
           <p class="field-description">This is the name that will be displayed as the organizer of your Peace Pieces</p>
         </div>
