@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { push, link } from 'svelte-spa-router';
   import { supabase } from '../lib/supabase';
+  import { user } from '../stores/authStore';
   import { fade, fly } from 'svelte/transition';
   import RichTextEditor from './RichTextEditor.svelte';
 
@@ -382,7 +383,9 @@
                 >
                   <option value="">Select an organizer</option>
                   {#each organizers as organizer}
+                    {#if organizer.user_id === $user.id}
                     <option value={organizer.id}>{organizer.name}</option>
+                    {/if}
                   {/each}
                 </select>
               </div>
