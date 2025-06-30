@@ -674,8 +674,6 @@
     font-weight: 600;
   }
 
-  
-
   :global(.light-mode) .avatar-placeholder-initials {
     background: var(--color-neutral-300);
     color: var(--text-muted);
