@@ -639,7 +639,7 @@
       {/if}
 
       <!-- Audio Player (if not a video, or if audio is a separate track) -->
-      {#if piece.audio_url && !piece.video_url}
+      {#if piece.audio_url}
         <div class="audio-container" in:fly={{ y: 20, duration: 300, delay: 100 }}>
           <div class="audio-player">
             <div class="audio-info">
