@@ -657,7 +657,6 @@
       {#if piece.piece_poem}
         <div class="text-container" in:fly={{ y: 20, duration: 300, delay: 200 }}>
           <div class="text-content">
-            <h3>Piece Poem</h3>
             <div class="poem-text">
               <pre>{piece.piece_poem}</pre>
             </div>
