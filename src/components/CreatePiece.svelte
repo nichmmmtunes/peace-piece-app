@@ -1145,6 +1145,7 @@
     background-color: var(--bg-color);
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
+    width: fit-content;
   }
 
   .image-preview {
