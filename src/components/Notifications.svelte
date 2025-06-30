@@ -515,6 +515,10 @@
     border-left: 4px solid var(--color-primary-600);
   }
 
+  :global(.light-mode) .notification-item.unread {
+    background: var(--bg-color);
+  }
+
   .notification-content {
     flex: 1;
   }
