@@ -982,6 +982,7 @@
 
   .organizer-desc {
     margin-bottom: 0px;
+    font-size: .8rem;
   }
 
   .organizer-name:hover {
