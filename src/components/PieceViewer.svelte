@@ -644,12 +644,12 @@
       {/if}
 
       <!-- Text Content -->
-      {#if piece.mission}
+      {#if piece.piece_poem}
         <div class="text-container" in:fly={{ y: 20, duration: 300, delay: 200 }}>
           <div class="text-content">
-            <h3>Project Mission</h3>
-            <div class="mission-text">
-              {@html piece.mission}
+            <h3>Piece Poem</h3>
+            <div class="poem-text">
+              {piece.piece_poem}
             </div>
           </div>
         </div>
@@ -1022,13 +1022,15 @@
     color: white;
   }
 
-  .mission-text {
+  .mission-text,
+  .poem-text {
     font-size: 1.125rem;
     line-height: 1.8;
     color: rgba(255, 255, 255, 0.9);
   }
 
-  .mission-text :global(p) {
+  .mission-text :global(p),
+  .poem-text :global(p) {
     margin-bottom: 1rem;
   }
 
