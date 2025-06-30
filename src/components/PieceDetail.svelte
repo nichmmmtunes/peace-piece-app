@@ -445,13 +445,7 @@
               {/if}
               <div class="organizer-info" in:fly={{ y: 20, duration: 300, delay: 200 }}>
                 <span>Organized by</span>
-                {#if organizer.organizer_username }
-                <a href="/profile/{organizer.organizer_username}" use:link class="organizer-name">
-                  {organizer.name}
-                </a>
-                {:else}
-                  <span class="organizer-name">{organizer.name}</span>
-                {/if}
+                <span class="organizer-name">{organizer.name}</span>
                 {#if organizer && organizer.bio}
                 <p class="organizer-bio">{ organizer.bio }</p>
                 {/if}
