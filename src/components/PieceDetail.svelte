@@ -1549,12 +1549,15 @@
     font-size: 0.875rem;
   }
 
+  .sponsors-section {
+    flex-basis: 100%;
+  }
+
   .contributors-list,
   .sponsors-list {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
-    flex-basis: 100%;
   }
 
   .contributor-card,
