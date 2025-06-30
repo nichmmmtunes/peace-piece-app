@@ -802,6 +802,10 @@
     gap: var(--space-6);
   }
 
+  :global(.light-mode) .manage-grid section {
+    background: var(--bg-color);
+  }
+
   .card {
     background: var(--card-bg);
     border-radius: var(--radius-lg);
