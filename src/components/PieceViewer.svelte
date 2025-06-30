@@ -818,7 +818,7 @@
   }
 
   .viewer-title {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     font-weight: 700;
     margin: 0 0 var(--space-1) 0;
     color: white;
