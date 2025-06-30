@@ -878,10 +878,10 @@
     align-items: center;
     gap: var(--space-2);
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: none;
     color: white;
     padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius-md);
+    border-radius: 50px;
     text-decoration: none;
     font-weight: 500;
     transition: all 0.2s;
