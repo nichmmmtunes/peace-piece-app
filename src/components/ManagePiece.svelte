@@ -1212,6 +1212,10 @@
     transition: background-color 0.2s;
   }
 
+  :global(.light-mode) .billing-button {
+    background: var(--card-bg);
+  }
+
   .empty-state {
     text-align: center;
     padding: var(--space-6);
