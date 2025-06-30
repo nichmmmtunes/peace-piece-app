@@ -388,15 +388,13 @@
           } else {
             videoElement.pause();
           }
-        } else {
+        } else if (audio) {
           // If no video, check for audio
           const audio = viewerElement.querySelector('audio') as HTMLAudioElement;
-          if (audio) {
-            if (audio.paused) {
-              audio.play();
-            } else {
-              audio.pause();
-            }
+          if (audio.paused) {
+            audio.play();
+          } else {
+            audio.pause();
           }
         }
         break;
