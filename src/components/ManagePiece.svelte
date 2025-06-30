@@ -858,14 +858,10 @@
     background-color: var(--bg-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: 50px;
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s;
-  }
-
-  .billing-button:hover {
-    background-color: var(--color-neutral-100);
   }
 
   .empty-state {
