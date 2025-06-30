@@ -8,8 +8,8 @@
 <style>
     .bolt-badge {
         position: fixed;
-        bottom: clamp(15px, 6vw, 30px);
-        right: clamp(12px, 6vw, 25px);
+        bottom: clamp(15px, 6vw, 20px);
+        right: clamp(12px, 6vw, 18px);
         width: max(6vw, 60px);
         height: max(6vw, 60px);
         z-index: 2000;
