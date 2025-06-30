@@ -674,6 +674,11 @@
     font-weight: 600;
   }
 
+  :global(.light-mode) .avatar-placeholder-initials {
+    background: white;
+    color: var(--text-muted)
+  }
+
   .supporter-card .card-link:after,
   .artist-card .card-link:after,
   .organizer-card .card-link:after {
