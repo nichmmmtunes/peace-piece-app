@@ -821,10 +821,6 @@
     text-align: left;
   }
 
-  .status-button:hover:not(:disabled) {
-    background-color: var(--color-neutral-100);
-  }
-
   .status-button.active {
     background-color: var(--color-primary-100);
     color: var(--color-primary-700);
