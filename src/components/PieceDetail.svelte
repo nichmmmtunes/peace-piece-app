@@ -449,7 +449,7 @@
                   <span class="organizer-name">{organizer.name}</span>
                 </div>
                 {#if organizer && organizer.description}
-                <p class="organizer-bio">{ organizer.description }</p>
+                <p class="organizer-desc">{ organizer.description }</p>
                 {/if}
               </div>
             </div>
