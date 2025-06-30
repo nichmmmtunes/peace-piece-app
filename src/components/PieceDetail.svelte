@@ -470,7 +470,7 @@
                       </div>
                       <div class="sponsor-info">
                         <h4 class="sponsor-name">Peace Piece</h4>
-                        <span class="sponsor-amount">500</span>
+                        <span class="sponsor-amount">Contributing $500</span>
                         <p class="sponsor-description">Proudly sponsoring peace since 2025.</p>
                       </div>
                     </div>
@@ -1566,6 +1566,12 @@
     height: 45px;
     border-radius: 100px;
     overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .sponsor-logo {
+    width: 35px;
+    height: 35px;
     flex-shrink: 0;
   }
 
