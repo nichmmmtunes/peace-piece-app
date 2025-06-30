@@ -510,6 +510,11 @@
     font-weight: 600;
   }
 
+  :global(.light-mode) .avatar-placeholder-initials {
+    background: var(--color-neutral-400);
+    color: var(--bg-color);
+  }
+
   .profile-details {
     flex: 1;
   }
