@@ -444,8 +444,10 @@
                 </div>
               {/if}
               <div class="organizer-info" in:fly={{ y: 20, duration: 300, delay: 200 }}>
-                <span>Organized by</span>
-                <span class="organizer-name">{organizer.name}</span>
+                <div class="organizer-info-header">
+                  <span>Organized by</span>
+                  <span class="organizer-name">{organizer.name}</span>
+                </div>
                 {#if organizer && organizer.description}
                 <p class="organizer-bio">{ organizer.description }</p>
                 {/if}
@@ -967,7 +969,7 @@
     object-fit: cover;
   }
 
-  .organizer-info {
+  .organizer-info-header {
     display: flex;
     gap: .3rem;
   }
