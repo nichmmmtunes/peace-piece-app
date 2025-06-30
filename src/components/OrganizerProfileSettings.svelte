@@ -263,7 +263,7 @@
             bind:value={organizerUsername}
             required
             disabled={loading}
-            placeholder="Enter your organization username"
+            placeholder="Your organization username"
           />
           <p class="field-description">This is how your organizer profile URL will display.</p>
         </div>
