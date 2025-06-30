@@ -1131,7 +1131,7 @@
   }
 
   .shortcuts-help.scrolled {
-    top: 1.5rem !important;
+    top: 1.65rem !important;
   }
 
   .shortcuts-content h4 {
