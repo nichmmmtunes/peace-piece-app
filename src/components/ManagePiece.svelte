@@ -1170,7 +1170,8 @@
   }
 
   :global(.light-mode) .status-button.active {
-    background: var(--color-neutral-300);
+    background: var(--color-neutral-200);
+    color: #000;
   }
 
 
