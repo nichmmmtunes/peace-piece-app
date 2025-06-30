@@ -1146,6 +1146,7 @@
   .current-audio {
     width: 100%;
     margin-bottom: var(--space-2);
+    min-width: 280px;
   }
 
   .current-video {
