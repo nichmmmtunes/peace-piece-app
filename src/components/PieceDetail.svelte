@@ -42,6 +42,16 @@
         isOrganizer = true;
       }
 
+      const { orgData, error: orgError } = await supabase
+        .from('organizers')
+        .select('*')
+        .eq('id', piece.organizer_id)
+        .maybeSingle();
+
+      if (orgError) throw orgError;
+
+      organizer = orgData;
+
       // Check if current user is a contributor
       if ($user && piece.contributors) {
         const isUserContributor = piece.contributors.some(
