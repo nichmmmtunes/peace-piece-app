@@ -683,7 +683,7 @@
 
     <!-- Keyboard Shortcuts Help -->
     {#if !fullscreenMode}
-      <div class="shortcuts-help">
+      <div class="shortcuts-help" class:scrolled={scrolled}>
         <div class="shortcuts-content">
           <h4>Controls</h4>
           <div class="shortcuts-list">
