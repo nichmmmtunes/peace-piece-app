@@ -357,7 +357,7 @@
         
         <div class="quick-stats">
           <div class="stat-item">
-            <span class="stat-value">{formatAmount(piece.amount_raised || 0)}</span>
+            <span class="stat-value">{piece.amount_raised || 0}</span>
             <span class="stat-label">Raised</span>
           </div>
           <div class="stat-item">
