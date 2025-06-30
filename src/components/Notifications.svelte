@@ -511,6 +511,10 @@
     position: relative;
   }
 
+  :global(.light-mode) .notification-item {
+    background: var(--bg-color);
+  }
+
   .notification-item.unread {
     border-left: 4px solid var(--color-primary-600);
   }
