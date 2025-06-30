@@ -6,6 +6,7 @@
   import { fade, fly } from 'svelte/transition';
   
   let artistName = '';
+  let artistUsername = '';
   let artistBio = '';
   let avatarUrl: string | null = null;
   let loading = false;
@@ -45,6 +46,7 @@
         artistExists = true;
         artistId = data.id;
         artistName = data.name || '';
+        artistUsername = data.artist_username || '';
         artistBio = data.bio || '';
         avatarUrl = data.avatar_url;
         selectedMediums = data.artistic_mediums || [];
@@ -64,8 +66,8 @@
       loading = true;
       message = '';
       
-      if (!artistName.trim()) {
-        throw new Error('Artist name is required');
+      if (!artistName.trim() || !artistUsername.trim()) {
+        throw new Error('Artist name & username are required');
       }
       
       if (artistExists && artistId) {
@@ -74,6 +76,7 @@
           .from('artists')
           .update({
             name: artistName.trim(),
+            artist_username: artistUsername.trim(),
             bio: artistBio.trim(),
             avatar_url: avatarUrl,
             artistic_mediums: selectedMediums,
@@ -90,6 +93,7 @@
           .from('artists')
           .insert({
             name: artistName.trim(),
+            artist_username: artistUsername.trim(),
             bio: artistBio.trim(),
             avatar_url: avatarUrl,
             artistic_mediums: selectedMediums,
@@ -173,6 +177,7 @@
             artistExists = false;
             artistId = null;
             artistName = '';
+            artistUsername = '';
             artistBio = '';
             avatarUrl = null;
             selectedMediums = [];
@@ -252,6 +257,19 @@
             placeholder="Your professional name as an artist"
           />
           <p class="field-description">This is how you'll be known in the artistic community</p>
+        </div>
+        
+        <div class="form-group">
+          <label for="artistUsername">Artist Username *</label>
+          <input
+            type="text"
+            id="artistUsername"
+            bind:value={artistUsername}
+            required
+            disabled={loading || uploading}
+            placeholder="Your url username"
+          />
+          <p class="field-description">This is how your artist profile URL will display.</p>
         </div>
         
         <div class="form-group">
