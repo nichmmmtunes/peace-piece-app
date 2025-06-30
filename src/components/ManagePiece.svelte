@@ -1169,6 +1169,11 @@
     border-color: var(--color-primary-300);
   }
 
+  :global(.light-mode) .status-button.active {
+    background: var(--color-neutral-300);
+  }
+
+
   .status-button:disabled {
     opacity: 0.7;
     cursor: not-allowed;
