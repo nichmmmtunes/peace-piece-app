@@ -438,20 +438,18 @@
 
           <div class="piece-meta">
             <div class="organizer">
-              {#if organizer && organizer.avatar_url}
-                <div class="organizer-avatar">
-                  <img src={organizer.avatar_url} alt={organizer.name} />
-                </div>
-              {/if}
+              {#if organizer}
+              <div class="organizer-avatar">
+                <img src={organizer.avatar_url} alt={organizer.name} />
+              </div>
               <div class="organizer-info" in:fly={{ y: 20, duration: 300, delay: 200 }}>
                 <span>Organized by</span>
                 <a href="/profile/{organizer.organizer_username}" use:link class="organizer-name">
                   {organizer.name}
                 </a>
-                {#if organizer && organizer.bio}
                 <p class="organizer-bio">{ organizer.bio }</p>
-                {/if}
               </div>
+              {/if}
             </div>
 
             <!-- Sponsors -->
