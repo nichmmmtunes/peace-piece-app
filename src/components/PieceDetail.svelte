@@ -1560,7 +1560,6 @@
   }
 
   .contributor-avatar,
-  .sponsor-logo,
   .sponsor-placeholder {
     width: 35px;
     height: 45px;
