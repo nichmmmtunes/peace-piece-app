@@ -671,8 +671,13 @@
           <div class="contributors-list">
             {#each piece.contributors as contributor}
               <div class="contributor-item">
-                <span class="contributor-name">{contributor.name}</span>
-                <span class="contributor-role">{contributor.role}</span>
+                <div class="contributor-avatar">
+                  <img src="{contributor.avatar_url}" width="100" height="auto" loading="lazy">
+                </div>
+                <div class="contributor-texts">
+                  <span class="contributor-name">{contributor.name}</span>
+                  <span class="contributor-role">{contributor.role}</span>
+                </div>
               </div>
             {/each}
           </div>
