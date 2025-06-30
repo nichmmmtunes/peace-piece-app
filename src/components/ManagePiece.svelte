@@ -1159,6 +1159,10 @@
     border: none;
   }
 
+  :global(.light-mode) .status-button {
+    background: var(--card-bg);
+  }
+
   .status-button.active {
     background-color: var(--color-primary-100);
     color: var(--color-primary-700);
