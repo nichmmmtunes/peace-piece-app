@@ -220,6 +220,10 @@
     margin-bottom: 0;
   }
 
+  .payment-policy-section a {
+    color: var(--text-muted);
+  }
+
   .contact-info {
     background: transparent;
     border-radius: var(--radius-md);
