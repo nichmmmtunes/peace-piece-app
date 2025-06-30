@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { push, link } from 'svelte-spa-router';
   import { supabase } from '../lib/supabase';
+  import { user } from '../stores/authStore';
   import { fade, fly } from 'svelte/transition';
   import RichTextEditor from './RichTextEditor.svelte';
 
@@ -139,7 +140,7 @@
   async function loadOrganizers() {
     const { data } = await supabase
       .from('organizers')
-      .select('id, name');
+      .select('id, name, user_id');
     
     if (data) {
       organizers = data;
@@ -382,7 +383,9 @@
                 >
                   <option value="">Select an organizer</option>
                   {#each organizers as organizer}
+                    {#if organizer.user_id == $user.id}
                     <option value={organizer.id}>{organizer.name}</option>
+                    {/if}
                   {/each}
                 </select>
               </div>
@@ -1143,6 +1146,7 @@
   .current-audio {
     width: 100%;
     margin-bottom: var(--space-2);
+    min-width: 280px;
   }
 
   .current-video {
