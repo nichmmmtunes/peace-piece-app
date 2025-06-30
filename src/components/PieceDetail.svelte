@@ -1531,8 +1531,7 @@
   }
 
   /* Contributors Section */
-  .contributors-section h3,
-  .sponsors-section h3 {
+  .contributors-section h33 {
     font-size: 1.125rem;
     font-weight: 500;
     margin: 0 0 var(--space-3) 0;
