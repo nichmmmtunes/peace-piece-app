@@ -290,7 +290,6 @@
             <button class="follow-btn" class:following={isFollowing} on:click={toggleFollow}>
               {isFollowing ? 'Following' : 'Follow'}
             </button>
-            <button class="add-to-list-btn">Add to List</button>
             <button class="invite-btn">Invite to Project</button>
           {/if}
         </div>
