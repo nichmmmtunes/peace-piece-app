@@ -647,7 +647,7 @@
               <p>Listen to the piece while viewing</p>
             </div>
             <audio 
-              bind:this={audioElement} loop
+              bind:this={audioElement} loop="true"
               controls src={piece.audio_url} class="audio-element">
               Your browser does not support the audio element.
             </audio>
