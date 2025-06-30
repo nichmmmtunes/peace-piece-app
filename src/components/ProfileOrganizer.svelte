@@ -79,7 +79,6 @@
           <div class="profile-details">
             <h1 class="profile-name">{profile.name || 'Anonymous User'}</h1>
             <div class="profile-meta">
-              <span class="location">Location</span>
               {#if profile.description}
                 <p>{profile.description}</p>
               {/if}
