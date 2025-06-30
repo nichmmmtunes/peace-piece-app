@@ -42,7 +42,7 @@
         isOrganizer = true;
       }
 
-      const { orgData, error: orgError } = await supabase
+      const { data: orgData, error: orgError } = await supabase
         .from('organizers')
         .select('*')
         .eq('id', piece.organizer_id)
