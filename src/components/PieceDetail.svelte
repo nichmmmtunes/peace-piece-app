@@ -462,7 +462,7 @@
 
             <!-- Sponsors -->
             <div class="sponsors-section" in:fly={{ y: 20, duration: 300, delay: 300 }}>
-                <h3>Proudly Supported by</h3>
+                <h3>Proudly sponsored by</h3>
                 <div class="sponsors-list">
                     <div class="sponsor-card">
                       <div class="sponsor-logo">
