@@ -832,6 +832,10 @@
     background: var(--bg-color);
   }
 
+  :global(.light-mode) .contribution-info {
+    background: var(--card-color);
+  }
+
   .contribution-status {
     font-size: 0.75rem;
     color: var(--text-muted);
