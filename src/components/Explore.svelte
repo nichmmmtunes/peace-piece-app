@@ -602,7 +602,7 @@
   .supporters-section,
   .artists-section,
   .organizers-section {
-    margin-top: var(--space-6);
+    margin-top: 2rem;
   }
 
   .category-grid {
