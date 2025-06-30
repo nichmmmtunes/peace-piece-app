@@ -20,6 +20,15 @@
     approvedApplications: 0
   };
   
+  // Sponsor management
+  let sponsors: any[] = [];
+  let allSponsors: any[] = [];
+  let showSponsorModal = false;
+  let editingSponsorId: string | null = null;
+  let sponsorName = '';
+  let sponsorAmount: number | null = null;
+  let sponsorId = '';
+  
   async function loadPieceData() {
     try {
       loading = true;
@@ -83,10 +92,33 @@
       stats.totalDonations = donations.reduce((sum, donation) => sum + donation.amount_total, 0);
       stats.totalDonors = new Set(donations.map(d => d.customer_id)).size;
       
+      // Extract sponsors from piece data
+      if (piece.sponsors && Array.isArray(piece.sponsors)) {
+        sponsors = piece.sponsors;
+      }
+      
+      // Load all available sponsors for the dropdown
+      await loadAllSponsors();
+      
     } catch (e: any) {
       error = e.message;
     } finally {
       loading = false;
+    }
+  }
+  
+  async function loadAllSponsors() {
+    try {
+      const { data, error } = await supabase
+        .from('sponsors')
+        .select('*')
+        .order('name');
+        
+      if (error) throw error;
+      
+      allSponsors = data || [];
+    } catch (e: any) {
+      console.error('Error loading sponsors:', e);
     }
   }
   
@@ -153,6 +185,130 @@
       if (updateError) throw updateError;
       
       // Reload piece data to get updated status
+      await loadPieceData();
+      
+    } catch (e: any) {
+      error = e.message;
+    } finally {
+      loading = false;
+    }
+  }
+  
+  // Sponsor management functions
+  function openSponsorModal(sponsor: any = null) {
+    if (sponsor) {
+      // Edit existing sponsor
+      editingSponsorId = sponsor.id;
+      sponsorId = sponsor.id;
+      sponsorName = sponsor.name;
+      sponsorAmount = sponsor.amount;
+    } else {
+      // Add new sponsor
+      editingSponsorId = null;
+      sponsorId = '';
+      sponsorName = '';
+      sponsorAmount = null;
+    }
+    
+    showSponsorModal = true;
+  }
+  
+  function closeSponsorModal() {
+    showSponsorModal = false;
+    editingSponsorId = null;
+    sponsorId = '';
+    sponsorName = '';
+    sponsorAmount = null;
+  }
+  
+  async function saveSponsor() {
+    try {
+      if (!sponsorId && !sponsorName) {
+        throw new Error('Please select or enter a sponsor name');
+      }
+      
+      if (!sponsorAmount) {
+        throw new Error('Please enter a sponsorship amount');
+      }
+      
+      loading = true;
+      
+      // If editing an existing sponsor
+      if (editingSponsorId) {
+        // First delete the existing relationship
+        const { error: deleteError } = await supabase
+          .from('piece_sponsors')
+          .delete()
+          .eq('piece_id', params.id)
+          .eq('sponsor_id', editingSponsorId);
+          
+        if (deleteError) throw deleteError;
+      }
+      
+      // If using an existing sponsor
+      if (sponsorId) {
+        // Insert the piece_sponsors relationship
+        const { error: insertError } = await supabase
+          .from('piece_sponsors')
+          .insert({
+            piece_id: params.id,
+            sponsor_id: sponsorId,
+            amount: sponsorAmount * 100 // Convert to cents
+          });
+          
+        if (insertError) throw insertError;
+      } else {
+        // Create a new sponsor first
+        const { data: newSponsor, error: sponsorError } = await supabase
+          .from('sponsors')
+          .insert({
+            name: sponsorName,
+            logo_url: null,
+            website: null
+          })
+          .select('id')
+          .single();
+          
+        if (sponsorError) throw sponsorError;
+        
+        // Then create the relationship
+        const { error: relationError } = await supabase
+          .from('piece_sponsors')
+          .insert({
+            piece_id: params.id,
+            sponsor_id: newSponsor.id,
+            amount: sponsorAmount * 100 // Convert to cents
+          });
+          
+        if (relationError) throw relationError;
+      }
+      
+      // Reload piece data to get updated sponsors
+      await loadPieceData();
+      closeSponsorModal();
+      
+    } catch (e: any) {
+      error = e.message;
+    } finally {
+      loading = false;
+    }
+  }
+  
+  async function deleteSponsor(sponsorId: string) {
+    if (!confirm('Are you sure you want to remove this sponsor?')) return;
+    
+    try {
+      loading = true;
+      
+      const { error: deleteError } = await supabase
+        .from('piece_sponsors')
+        .delete()
+        .eq('piece_id', params.id)
+        .eq('sponsor_id', sponsorId);
+        
+      if (deleteError) throw deleteError;
+      
+      // Reload piece data to get updated sponsors
       await loadPieceData();
       
     } catch (e: any) {
@@ -325,6 +481,41 @@
           {/if}
         </section>
 
+        <!-- Sponsors Section -->
+        <section class="sponsors-section card">
+          <h2>Sponsors</h2>
+          
+          {#if sponsors && sponsors.length > 0}
+            <div class="sponsors-list">
+              {#each sponsors as sponsor}
+                <div class="sponsor-item">
+                  <div class="sponsor-info">
+                    <span class="sponsor-name">{sponsor.name}</span>
+                    <span class="sponsor-amount">{formatAmount(sponsor.amount)}</span>
+                  </div>
+                  <div class="sponsor-actions">
+                    <button class="edit-sponsor-btn" on:click={() => openSponsorModal(sponsor)}>Edit</button>
+                    <button class="delete-sponsor-btn" on:click={() => deleteSponsor(sponsor.id)}>Remove</button>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          {:else}
+            <div class="empty-state">
+              <p>No sponsors yet.</p>
+              <p>Add sponsors to support your piece.</p>
+            </div>
+          {/if}
+          
+          <button class="add-sponsor-btn action-button" on:click={() => openSponsorModal()}>
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Add New Sponsor
+          </button>
+        </section>
+
         <!-- Piece Actions -->
         <section class="piece-actions card">
           <h2>Piece Actions</h2>
@@ -392,6 +583,76 @@
         </section>
       </div>
     </div>
+    
+    <!-- Sponsor Modal -->
+    {#if showSponsorModal}
+      <div class="modal-overlay" on:click={closeSponsorModal}>
+        <div class="modal-content" on:click|stopPropagation>
+          <div class="modal-header">
+            <h3>{editingSponsorId ? 'Edit Sponsor' : 'Add New Sponsor'}</h3>
+            <button class="close-modal-btn" on:click={closeSponsorModal}>×</button>
+          </div>
+          
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="sponsorSelect">Select Existing Sponsor</label>
+              <select 
+                id="sponsorSelect" 
+                bind:value={sponsorId}
+                disabled={loading}
+              >
+                <option value="">-- Create New Sponsor --</option>
+                {#each allSponsors as sponsor}
+                  <option value={sponsor.id}>{sponsor.name}</option>
+                {/each}
+              </select>
+            </div>
+            
+            {#if !sponsorId}
+              <div class="form-group">
+                <label for="sponsorName">Sponsor Name</label>
+                <input 
+                  type="text" 
+                  id="sponsorName" 
+                  bind:value={sponsorName}
+                  placeholder="Enter sponsor name"
+                  disabled={loading}
+                />
+              </div>
+            {/if}
+            
+            <div class="form-group">
+              <label for="sponsorAmount">Sponsorship Amount ($)</label>
+              <input 
+                type="number" 
+                id="sponsorAmount" 
+                bind:value={sponsorAmount}
+                placeholder="Enter amount"
+                min="1"
+                step="100"
+                disabled={loading}
+              />
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button class="cancel-btn" on:click={closeSponsorModal} disabled={loading}>Cancel</button>
+            <button class="save-btn" on:click={saveSponsor} disabled={loading || (!sponsorId && !sponsorName) || !sponsorAmount}>
+              {#if loading}
+                <svg class="spinner" viewBox="0 0 24 24" width="16" height="16">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="60" stroke-dashoffset="60" stroke-linecap="round">
+                    <animate attributeName="stroke-dashoffset" dur="2s" values="60;0" repeatCount="indefinite"/>
+                  </circle>
+                </svg>
+                Saving...
+              {:else}
+                Save Sponsor
+              {/if}
+            </button>
+          </div>
+        </div>
+      </div>
+    {/if}
   {/if}
 </div>
 
@@ -558,9 +819,14 @@
     grid-row: 1;
   }
 
+  .sponsors-section {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
   .piece-actions {
     grid-column: 2;
-    grid-row: 2;
+    grid-row: 2 / 4;
   }
 
   .card h2 {
@@ -592,7 +858,7 @@
     padding: var(--space-3);
     background: var(--bg-color);
     border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
+    border: none;
   }
 
   .applicant-info {
@@ -775,6 +1041,74 @@
     color: var(--text-muted);
   }
 
+  .sponsors-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+
+  .sponsor-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-color);
+    border-radius: var(--radius-md);
+    border: none;
+  }
+
+  .sponsor-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sponsor-name {
+    font-weight: 500;
+    color: var(--text-color);
+  }
+
+  .sponsor-amount {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .sponsor-actions {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .edit-sponsor-btn, .delete-sponsor-btn {
+    background: none;
+    border: none;
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+  }
+
+  .edit-sponsor-btn {
+    color: var(--color-primary-600);
+  }
+
+  .edit-sponsor-btn:hover {
+    background-color: var(--color-primary-50);
+  }
+
+  .delete-sponsor-btn {
+    color: var(--color-error-600);
+  }
+
+  .delete-sponsor-btn:hover {
+    background-color: var(--color-error-50);
+  }
+
+  .add-sponsor-btn {
+    margin-top: var(--space-3);
+    width: 100%;
+  }
+
   .action-buttons {
     display: flex;
     flex-direction: column;
@@ -888,6 +1222,116 @@
     background-color: var(--color-primary-50);
   }
 
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: var(--space-4);
+  }
+
+  .modal-content {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+
+  .close-modal-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+  }
+
+  .close-modal-btn:hover {
+    background-color: var(--border-color);
+    color: var(--text-color);
+  }
+
+  .modal-body {
+    padding: var(--space-6);
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6);
+    border-top: 1px solid var(--border-color);
+  }
+
+  .cancel-btn {
+    padding: var(--space-2) var(--space-4);
+    background: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .cancel-btn:hover {
+    background-color: var(--color-neutral-100);
+  }
+
+  .save-btn {
+    padding: var(--space-2) var(--space-4);
+    background-color: var(--color-primary-600);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .save-btn:hover:not(:disabled) {
+    background-color: var(--color-primary-700);
+  }
+
+  .save-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
   @media (max-width: 1024px) {
     .manage-grid {
       grid-template-columns: 1fr;
@@ -895,6 +1339,7 @@
 
     .applications-section,
     .donations-section,
+    .sponsors-section,
     .piece-actions {
       grid-column: 1;
       grid-row: auto;
@@ -923,6 +1368,16 @@
 
     .donation-summary {
       grid-template-columns: 1fr;
+    }
+
+    .sponsor-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-2);
+    }
+
+    .sponsor-actions {
+      align-self: flex-end;
     }
   }
 </style>
