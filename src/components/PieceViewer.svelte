@@ -1135,6 +1135,7 @@
     font-weight: 500;
     color: white;
     margin-bottom: var(--space-1);
+    line-height: 1.5;
   }
 
   .contributor-role {
