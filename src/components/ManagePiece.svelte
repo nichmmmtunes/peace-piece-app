@@ -853,7 +853,7 @@
     padding: var(--space-3);
     background-color: var(--bg-color);
     color: var(--text-color);
-    border: 1px solid var(--border-color);
+    border: none;
     border-radius: 50px;
     font-weight: 500;
     cursor: pointer;
