@@ -461,31 +461,22 @@
             </div>
 
             <!-- Sponsors -->
-            {#if piece.sponsors && piece.sponsors.length > 0}
-              <div class="sponsors-section" in:fly={{ y: 20, duration: 300, delay: 300 }}>
+            <div class="sponsors-section" in:fly={{ y: 20, duration: 300, delay: 300 }}>
                 <h3>Proudly Supported by</h3>
                 <div class="sponsors-list">
-                  {#each piece.sponsors as sponsor}
                     <div class="sponsor-card">
-                      {#if sponsor.logo_url}
-                        <img src={sponsor.logo_url} alt={sponsor.name} class="sponsor-logo" />
-                      {:else}
+                        <img src="/logo.svg" alt="Peace Piece" class="sponsor-logo" />
                         <div class="sponsor-placeholder">
-                          {sponsor.name?.[0]?.toUpperCase() || 'S'}
+                          {sponsor.name?.[0]?.toUpperCase() || 'Peace Piece'}
                         </div>
-                      {/if}
                       <div class="sponsor-info">
-                        <h4 class="sponsor-name">{sponsor.name}</h4>
-                        <span class="sponsor-amount">{formatAmount(sponsor.amount)}</span>
-                        {#if sponsor.description }
-                        <p class="sponsor-description">{sponsor.description}</p>
-                        {/if}
+                        <h4 class="sponsor-name">Peace Piece</h4>
+                        <span class="sponsor-amount">500</span
+                        <p class="sponsor-description">Proudly sponsoring peace since 2025.</p>
                       </div>
                     </div>
-                  {/each}
                 </div>
               </div>
-            {/if}
           </div>
           
           <!-- Mission -->
