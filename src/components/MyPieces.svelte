@@ -482,11 +482,15 @@
   }
 
   .browse-button:hover {
-    background-color: var(--color-neutral-100);
+    background: var(--color-neutral-100);
+  }
+
+  :global(.dark-mode) .browse-button {
+    background: var(--card-bg);
   }
 
   :global(.dark-mode) .browse-button:hover {
-    background-color: var(--color-neutral-900);
+    background: #000;
   }
 
   .pieces-grid {
