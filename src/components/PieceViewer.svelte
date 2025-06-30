@@ -1114,7 +1114,7 @@
     text-align: center;
   }
 
-  .contributor-image {
+  .contributor-avatar {
     width: 35px;
     height: 45px;
     overflow: hidden;
@@ -1123,7 +1123,7 @@
     filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, .1));
   }
 
-  .contributor-image img {
+  .contributor-avatar img {
     width: 100%;
     height: 100%;
     object-fit: contain;
