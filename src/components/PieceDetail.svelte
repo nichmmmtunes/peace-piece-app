@@ -465,7 +465,9 @@
                 <h3>Proudly Supported by</h3>
                 <div class="sponsors-list">
                     <div class="sponsor-card">
-                      <img src="/logo.svg" alt="Peace Piece" class="sponsor-logo" />
+                      <div class="sponsor-logo">
+                        <img src="/logo.svg" alt="Peace Piece" />
+                      </div>
                       <div class="sponsor-info">
                         <h4 class="sponsor-name">Peace Piece</h4>
                         <span class="sponsor-amount">500</span>
@@ -1568,7 +1570,7 @@
   }
 
   .contributor-avatar img,
-  .sponsor-logo {
+  .sponsor-logo img {
     width: 100%;
     height: 100%;
     object-fit: cover;
