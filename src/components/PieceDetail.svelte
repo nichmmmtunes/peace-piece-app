@@ -1575,7 +1575,12 @@
     flex-shrink: 0;
   }
 
-  .contributor-avatar img,
+  .contributor-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
   .sponsor-logo img {
     width: 100%;
     height: 100%;
