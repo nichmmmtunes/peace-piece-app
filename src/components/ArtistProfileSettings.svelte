@@ -268,6 +268,7 @@
             required
             disabled={loading || uploading}
             placeholder="Your artist username"
+            pattern="^\S+$"
           />
           <p class="field-description">This is how your artist profile URL will display.</p>
         </div>
