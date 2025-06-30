@@ -540,10 +540,6 @@
     color: var(--text-muted);
   }
 
-  .featured-section {
-    margin-bottom: var(--space-12);
-  }
-
   .featured-grid {
     display: flex;
     gap: var(--space-4);
