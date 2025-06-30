@@ -1112,6 +1112,7 @@
     padding: var(--space-3);
     backdrop-filter: blur(10px);
     text-align: center;
+    display: flex;
   }
 
   .contributor-avatar {
