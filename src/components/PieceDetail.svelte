@@ -463,7 +463,7 @@
             <!-- Sponsors -->
             {#if piece.sponsors && piece.sponsors.length > 0}
               <div class="sponsors-section" in:fly={{ y: 20, duration: 300, delay: 300 }}>
-                <h3>Sponsors</h3>
+                <h3>Proudly Supported by</h3>
                 <div class="sponsors-list">
                   {#each piece.sponsors as sponsor}
                     <div class="sponsor-card">
