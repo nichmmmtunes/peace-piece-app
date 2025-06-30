@@ -10,6 +10,7 @@
   let title = '';
   let projectMission = '';
   let pieceDescription = '';
+  let piecePoem = '';
   let imageFile: File | null = null;
   let audioFile: File | null = null;
   let videoFile: File | null = null;
@@ -79,6 +80,7 @@
       title = piece.title;
       projectMission = piece.mission || '';
       pieceDescription = piece.piece_description || '';
+      piecePoem = piece.piece_poem || '';
       organizerId = piece.organizer_id;
       currentImageUrl = piece.image_url || '';
       currentAudioUrl = piece.audio_url || '';
@@ -202,6 +204,7 @@
           title,
           mission: projectMission,
           piece_description: pieceDescription,
+          piece_poem: piecePoem,
           image_url: imageUrl,
           audio_url: audioUrl,
           video_url: videoUrl,
@@ -633,6 +636,20 @@
           <!-- Media Section -->
           <section class="form-section">
             <h2>Media</h2>
+            
+            <div class="form-group">
+              <label for="piecePoem">Poem</label>
+              <textarea
+                id="piecePoem"
+                bind:value={piecePoem}
+                rows="8"
+                disabled={loading}
+                placeholder="Enter the poem for your Peace Piece..."
+              ></textarea>
+              <div class="field-help">
+                <p>Add the full text of the poem associated with this Peace Piece.</p>
+              </div>
+            </div>
             
             <div class="media-grid">
               <div class="form-group">
