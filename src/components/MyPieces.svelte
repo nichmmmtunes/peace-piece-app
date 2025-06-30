@@ -483,7 +483,10 @@
 
   .browse-button:hover {
     background-color: var(--color-neutral-100);
-    border-color: var(--border-color) !important;
+  }
+
+  :global(.dark-mode) .browse-button:hover {
+    background-color: var(--color-neutral-800);
   }
 
   .pieces-grid {
