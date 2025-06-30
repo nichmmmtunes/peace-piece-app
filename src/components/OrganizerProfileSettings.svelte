@@ -265,7 +265,7 @@
             disabled={loading}
             placeholder="Enter your organization username"
           />
-          <p class="field-description">This is the name that will be displayed as the organizer of your Peace Pieces</p>
+          <p class="field-description">This is how your organizer profile URL will display.</p>
         </div>
         
         <div class="form-group">
