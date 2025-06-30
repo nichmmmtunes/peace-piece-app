@@ -45,7 +45,7 @@
       const { orgData, error: orgError } = await supabase
         .from('organizers')
         .select('*')
-        .eq('id', piece.organizer_id)
+        .eq('id', piece.organizer_user_id)
         .maybeSingle();
 
       if (orgError) throw orgError;
