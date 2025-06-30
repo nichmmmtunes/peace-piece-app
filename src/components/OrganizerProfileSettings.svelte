@@ -6,6 +6,7 @@
   import { fade, fly } from 'svelte/transition';
   
   let organizerName = '';
+  let organizerUsername = '';
   let organizerDescription = '';
   let avatarUrl: string | null = null;
   let loading = false;
@@ -31,6 +32,7 @@
         organizerExists = true;
         organizerId = data.id;
         organizerName = data.name || '';
+        organizerUsername = data.organizer_username || '';
         organizerDescription = data.description || '';
         avatarUrl = data.avatar_url;
       } else {
