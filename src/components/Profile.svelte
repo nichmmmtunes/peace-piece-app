@@ -833,7 +833,7 @@
   }
 
   :global(.light-mode) .contribution-info {
-    background: var(--card-color);
+    background: var(--card-bg);
   }
 
   .contribution-status {
