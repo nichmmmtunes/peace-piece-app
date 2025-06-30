@@ -1142,7 +1142,7 @@
   .file-preview {
     margin-top: var(--space-3);
     padding: var(--space-3);
-    background-color: var(--color-neutral-50);
+    background-color: var(--bg-color);
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
   }
