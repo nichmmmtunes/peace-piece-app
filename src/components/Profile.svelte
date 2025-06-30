@@ -781,7 +781,7 @@
   }
 
   .contribution-item {
-    border: 1px solid var(--border-color);
+    border: none;
     border-radius: var(--radius-lg);
     overflow: hidden;
     transition: transform 0.2s, box-shadow 0.2s;
