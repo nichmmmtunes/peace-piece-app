@@ -472,7 +472,17 @@
     loadPiece();
   }
 
+  let scrollY = 0;
+  let scrolled = false;
+
+  // Reactive statement that updates the 'scrolled' variable
+  // whenever 'scrollY' changes.
+  $: scrolled = scrollY > 100; // Add the class after scrolling 100px
+
 </script>
+
+<svelte:window bind:scrollY={scrollY} />
+
 
 <div 
   class="piece-viewer" 
