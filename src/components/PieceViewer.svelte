@@ -1119,7 +1119,7 @@
 
   .shortcuts-help {
     position: fixed;
-    top: 5rem;
+    top: 4.3rem;
     left: var(--space-4);
     background: rgba(0, 0, 0, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.2);
