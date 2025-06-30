@@ -1120,7 +1120,7 @@
     height: 45px;
     overflow: hidden;
     border-radius: 100px;
-    border: solid 2px var(--bg-color);
+    border: solid 2px var(--color-neutral-800);
     filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, .1));
   }
 
