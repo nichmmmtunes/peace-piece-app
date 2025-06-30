@@ -38,14 +38,14 @@
       piece = data;
       
       // Check if current user is the organizer
-      if ($user && piece.organizer_user_id === $user.id) {
+      if ($user && piece.organizer_id === $user.id) {
         isOrganizer = true;
       }
 
       const { orgData, error: orgError } = await supabase
         .from('organizers')
         .select('*')
-        .eq('id', piece.organizer_user_id)
+        .eq('id', piece.organizer_id)
         .maybeSingle();
 
       if (orgError) throw orgError;
