@@ -969,7 +969,7 @@
 
   .organizer-info {
     display: flex;
-    gap: .5rem;
+    gap: .3rem;
   }
 
   .organizer-name {
