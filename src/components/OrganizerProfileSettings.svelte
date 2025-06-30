@@ -22,7 +22,7 @@
       
       const { data, error } = await supabase
         .from('organizers')
-        .select('id, name, description, avatar_url')
+        .select('id, name, description, avatar_url, organizer_username')
         .eq('user_id', $user?.id)
         .maybeSingle();
         
