@@ -1127,6 +1127,11 @@
     padding: var(--space-4);
     backdrop-filter: blur(10px);
     z-index: 50;
+    transition: top .2s;
+  }
+
+  .shortcuts-help.scrolled {
+    top: 1.3rem !important;
   }
 
   .shortcuts-content h4 {
