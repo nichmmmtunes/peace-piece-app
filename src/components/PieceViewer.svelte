@@ -1111,8 +1111,8 @@
     border-radius: var(--radius-md);
     padding: var(--space-3);
     backdrop-filter: blur(10px);
-    text-align: center;
     display: flex;
+    gap: 1.5rem;
   }
 
   .contributor-avatar {
