@@ -1133,6 +1133,10 @@
     border: none;
   }
 
+  :global(.light-mode) .action-button {
+    background: var(--card-bg);
+  }
+
   .status-actions {
     margin-top: var(--space-4);
     padding-top: var(--space-4);
