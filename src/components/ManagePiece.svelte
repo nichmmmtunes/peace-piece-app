@@ -431,7 +431,7 @@
           <div class="donation-summary">
             <div class="summary-card">
               <h3>Total Raised</h3>
-              <div class="amount">{formatAmount(piece.amount_raised || 0)}</div>
+              <div class="amount">${piece.amount_raised || 0}</div>
               
               {#if piece.funding_goal}
                 <div class="progress-container">
