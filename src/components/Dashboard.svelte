@@ -1403,6 +1403,14 @@
     margin-bottom: -78px;
   } 
 
+  @media (max-width: 1200px) {
+    .welcome-header {
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: 0;
+    }
+  }
+
   /* Responsive Adjustments */
   @media (max-width: 1024px) {
     .dashboard-grid {
