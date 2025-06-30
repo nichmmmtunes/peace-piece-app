@@ -1114,6 +1114,21 @@
     text-align: center;
   }
 
+  .contributor-image {
+    width: 35px;
+    height: 45px;
+    overflow: hidden;
+    border-radius: 100px;
+    border: solid 2px var(--bg-color);
+    filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, .1));
+  }
+
+  .contributor-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
   .contributor-name {
     display: block;
     font-weight: 500;
