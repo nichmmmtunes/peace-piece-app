@@ -1187,10 +1187,6 @@
     background: var(--color-primary-700);
     color: var(--color-primary-100);
   }
-
-  .add-button:hover {
-    background-color: var(--color-primary-200);
-  }
   
   /* Tags Styling */
   .tags-section {
