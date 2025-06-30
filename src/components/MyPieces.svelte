@@ -563,11 +563,15 @@
   .piece-placeholder {
     width: 100%;
     height: 180px;
-    background: linear-gradient(45deg, #262626, var(--color-neutral-900));
+    background: linear-gradient(45deg, var(--color-neutral-200), var(--color-primary-00));
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--text-muted);
+  }
+
+  :global(.dark-mode) .piece-placeholder {
+    background: linear-gradient(45deg, #262626, var(--color-neutral-900));
   }
 
   .piece-placeholder svg {
