@@ -1024,7 +1024,7 @@
   .text-content {
     background: rgba(255, 255, 255, 0.1);
     border: none;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-sm);
     padding: var(--space-6);
     backdrop-filter: blur(10px);
   }
