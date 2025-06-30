@@ -1106,13 +1106,13 @@
   }
 
   .contributor-item {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
     border-radius: var(--radius-md);
     padding: var(--space-3);
     backdrop-filter: blur(10px);
     display: flex;
-    gap: 1.5rem;
+    gap: 1rem;
   }
 
   .contributor-avatar {
