@@ -802,6 +802,10 @@
     text-align: center;
     flex: 1;
     margin: 0 var(--space-6);
+    width: fit-content;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
   .viewer-title {
