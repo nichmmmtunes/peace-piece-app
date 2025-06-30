@@ -440,7 +440,7 @@
             <div class="organizer">
               {#if organizer && organizer.avatar_url}
                 <div class="organizer-avatar">
-                  <img src={organizer.avatar_url} alt={piece.organizer_name} />
+                  <img src={organizer.avatar_url} alt={organizer.name} />
                 </div>
               {/if}
               <div class="organizer-info" in:fly={{ y: 20, duration: 300, delay: 200 }}>
