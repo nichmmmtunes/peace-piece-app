@@ -304,6 +304,10 @@
     console.log('  - Will show Auth component:', shouldShowAuth);
     console.log('  - Will show Router:', !shouldShowAuth);
   }
+
+  $: if ($location) {
+    window.scrollTo(0, 0);
+  }
 </script>
 
 <main>
