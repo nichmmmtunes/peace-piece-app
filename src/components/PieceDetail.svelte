@@ -466,7 +466,6 @@
                 <div class="sponsors-list">
                     <div class="sponsor-card">
                         <img src="/logo.svg" alt="Peace Piece" class="sponsor-logo" />
-                        <div class="sponsor-placeholder">Peace Piece</div>
                       <div class="sponsor-info">
                         <h4 class="sponsor-name">Peace Piece</h4>
                         <span class="sponsor-amount">500</span>
