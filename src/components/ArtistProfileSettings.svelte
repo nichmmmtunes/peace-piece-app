@@ -36,7 +36,7 @@
       
       const { data, error } = await supabase
         .from('artists')
-        .select('id, name, bio, avatar_url, artistic_mediums')
+        .select('id, name, bio, avatar_url, artistic_mediums, artist_username')
         .eq('user_id', $user?.id)
         .maybeSingle();
         
