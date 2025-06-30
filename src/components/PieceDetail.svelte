@@ -628,13 +628,16 @@
           
           <!-- Funding Progress -->
           <div class="funding-progress" in:fly={{ y: 20, duration: 300, delay: 200 }}>
-            {#if piece.funding_goal && piece.funding_goal > 0}
             <div class="funding-header">
               <h3>Funding Progress</h3>
               <span class="total-raised"><span class="dollar-sign">$</span>{piece.amount_raised || 0}</span>
               <div class="funding-amounts">
+                {#if piece.funding_goal}
                 <span class="amount-separator">raised of</span>
                 <span class="funding-goal">{formatAmount(piece.funding_goal)} goal</span>
+                {:else}
+                  <span class="amount-separator">raised</span>
+                {/if}
               </div>
             </div>            
             
@@ -645,7 +648,7 @@
               ></div>
               <div 
                 class="progress-fill" 
-                style="width: {calculateProgress(piece.amount_raised || 0, piece.funding_goal)}%"
+                style="width: {calculateProgress(piece.amount_raised || 0, piece.funding_goal || 100)}%"
               ></div>
             </div>
 
@@ -655,7 +658,6 @@
                 <span class="legend-label">Artist Fees</span>
               </div>
             </div>
-            {/if}
 
             <div class="countdown">
               {#if piece.publication_target_date}
