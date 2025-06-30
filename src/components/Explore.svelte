@@ -349,31 +349,6 @@
       </div>
     {/if}
 
-    <!-- Supporters Section -->
-    {#if supporters.length > 0}
-      <section class="supporters-section">
-        <h2 class="section-title">Supporters</h2>
-        <div class="supporters-grid">
-          {#each supporters as supporter, index (supporter.id)}
-          {#if supporter.id !== $user?.id}
-            <div class="supporter-card" in:fly={{ y: 20, duration: 300, delay: index * 50 }}>
-              <a href="/profile/{supporter.username}" use:link class="card-link">
-                {#if supporter.avatar_url}
-                  <img src={supporter.avatar_url} alt={supporter.username} />
-                {:else}
-                  <div class="avatar-placeholder-initials">
-                    {getInitials(supporter.username)}
-                  </div>
-                {/if}
-                <p>{supporter.username}</p>
-              </a>
-            </div>
-          {/if}
-          {/each}
-        </div>
-      </section>
-    {/if}
-
     {#if artists.length > 0}
       <section class="artists-section">
         <h2 class="section-title">Artists</h2>
@@ -414,6 +389,31 @@
                   </div>
                 {/if}
                 <p>{organizer.name}</p>
+              </a>
+            </div>
+          {/if}
+          {/each}
+        </div>
+      </section>
+    {/if}
+
+    <!-- Supporters Section -->
+    {#if supporters.length > 0}
+      <section class="supporters-section">
+        <h2 class="section-title">Supporters</h2>
+        <div class="supporters-grid">
+          {#each supporters as supporter, index (supporter.id)}
+          {#if supporter.id !== $user?.id}
+            <div class="supporter-card" in:fly={{ y: 20, duration: 300, delay: index * 50 }}>
+              <a href="/profile/{supporter.username}" use:link class="card-link">
+                {#if supporter.avatar_url}
+                  <img src={supporter.avatar_url} alt={supporter.username} />
+                {:else}
+                  <div class="avatar-placeholder-initials">
+                    {getInitials(supporter.username)}
+                  </div>
+                {/if}
+                <p>{supporter.username}</p>
               </a>
             </div>
           {/if}
