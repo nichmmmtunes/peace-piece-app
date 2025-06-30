@@ -789,15 +789,11 @@
     padding: var(--space-3);
     background-color: var(--bg-color);
     color: var(--text-color);
-    border-radius: var(--radius-md);
+    border-radius: 50px;
     text-decoration: none;
     font-weight: 500;
     transition: background-color 0.2s;
     border: 1px solid var(--border-color);
-  }
-
-  .action-button:hover {
-    background-color: var(--color-neutral-100);
   }
 
   .status-actions {
