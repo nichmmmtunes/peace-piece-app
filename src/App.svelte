@@ -49,6 +49,12 @@
   let checkingManagementAuth = false;
   let isAuthorizedToManage = false;
   let pieceToManage: any = null;
+  let currentPathId: string | null = null;
+  
+  // New variables for update route authorization
+  let checkingUpdateAuth = false;
+  let isAuthorizedToUpdate = false;
+  let pieceToUpdate: any = null;
 
   onMount(() => {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -255,19 +261,20 @@
     checkOnboardingStatus();
   }
 
-  let currentPathId: string | null = null;
-
   // Handle route protection and onboarding flow
   $: if ($location) {
     if (!$authLoading) {
       const currentPath = $location;
       const cleanPath = getCleanPath(currentPath);
       
-      // Reset authorization state for management route
+      // Reset authorization states
       isAuthorizedToManage = false;
       pieceToManage = null;
+      isAuthorizedToUpdate = false;
+      pieceToUpdate = null;
       currentPathId = null;
       checkingManagementAuth = false;
+      checkingUpdateAuth = false;
 
       // Check for management route specifically
       if (cleanPath.startsWith('/manage/')) {
@@ -299,7 +306,39 @@
               .finally(() => checkingManagementAuth = false);
           }
         }
-      } else if (!$user && protectedRoutes.includes(cleanPath)) {
+      } 
+      // Check for update route specifically
+      else if (cleanPath.startsWith('/update/')) {
+        currentPathId = extractIdFromPath(cleanPath, '/update/:id');
+        if (currentPathId) {
+          checkingUpdateAuth = true;
+          if (!$user) {
+            push('/auth'); // Redirect to auth if not logged in
+          } else {
+            // Fetch piece details to verify organizer
+            supabase
+              .from('piece_details')
+              .select('id, title, organizer_user_id')
+              .eq('id', currentPathId)
+              .single()
+              .then(({ data, error: pieceError }) => {
+                if (pieceError || !data || data.organizer_user_id !== $user.id) {
+                  console.warn('Unauthorized access attempt to update piece:', currentPathId);
+                  push('/dashboard'); // Redirect if not organizer or piece not found
+                } else {
+                  isAuthorizedToUpdate = true;
+                  pieceToUpdate = data;
+                }
+              })
+              .catch(err => {
+                console.error('Error checking update authorization:', err);
+                push('/dashboard'); // Redirect on error
+              })
+              .finally(() => checkingUpdateAuth = false);
+          }
+        }
+      }
+      else if (!$user && protectedRoutes.includes(cleanPath)) {
         push('/auth');
       } else if ($user && !checkingOnboarding && initialCheckDone) {
         if (cleanPath === '/auth') {
@@ -404,7 +443,7 @@
       {/if}
       
       <div class="content-area">
-        {#if $authLoading || checkingManagementAuth}
+        {#if $authLoading || checkingManagementAuth || checkingUpdateAuth}
           <div class="loading">Loading...</div>
         {:else if shouldShowAuthComponent}
           <Auth />
@@ -420,6 +459,16 @@
           </div>
         {:else if getCleanPath($location).startsWith('/manage/') && isAuthorizedToManage}
           <ManagePiece params={{ id: currentPathId }} />
+        {:else if getCleanPath($location).startsWith('/update/') && !isAuthorizedToUpdate}
+          <div class="error-container">
+            <div class="error-card">
+              <h2>Access Denied</h2>
+              <p>You don't have permission to update this piece.</p>
+              <a href="/dashboard" use:link class="primary">Back to Dashboard</a>
+            </div>
+          </div>
+        {:else if getCleanPath($location).startsWith('/update/') && isAuthorizedToUpdate}
+          <UpdatePiece params={{ id: currentPathId }} />
         {:else}
           <Router {routes} />
         {/if}
