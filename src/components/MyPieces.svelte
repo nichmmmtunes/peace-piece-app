@@ -669,12 +669,12 @@
   }
 
   .action-button.edit {
-    color: var(--color-text-color);
+    color: var(--text-color);
     border-right: 1px solid var(--border-color);
   }
 
   .action-button.manage {
-    color: var(--color-primary-00);
+    color: var(--text-color);
   }
 
   .action-button:hover {
