@@ -953,7 +953,7 @@
   }
 
   .organizer-avatar {
-    width: 35px;
+width: 35px;
     height: 45px;
     overflow: hidden;
     border-radius: 100px;
