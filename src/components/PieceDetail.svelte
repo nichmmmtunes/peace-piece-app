@@ -42,6 +42,16 @@
         isOrganizer = true;
       }
 
+      const { orgData, error: orgError } = await supabase
+        .from('organizers')
+        .select('*')
+        .eq('id', piece.organizer_user_id)
+        .single();
+        
+      if (orgError) throw orgError;
+      
+      organizer = orgData;
+
       // Check if current user is a contributor
       if ($user && piece.contributors) {
         const isUserContributor = piece.contributors.some(
@@ -435,8 +445,8 @@
               {/if}
               <div class="organizer-info" in:fly={{ y: 20, duration: 300, delay: 200 }}>
                 <span>Organized by</span>
-                <a href="/profile/{piece.organizer_name}" use:link class="organizer-name">
-                  {piece.organizer_name}
+                <a href="/profile/{organizer.organizer_name}" use:link class="organizer-name">
+                  {organizer.organizer_name}
                 </a>
                 {#if organizer && organizer.bio}
                 <p class="organizer-bio">{ organizer.bio }</p>
