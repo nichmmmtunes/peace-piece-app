@@ -652,12 +652,14 @@
               ></div>
             </div>
 
+            {#if piece.artist_fees}
             <div class="progress-bar-legend">
               <div
                 class="artist-goal-legend">
                 <span class="legend-label">Artist Fees</span>
               </div>
             </div>
+            {/if}
 
             <div class="countdown">
               {#if piece.publication_target_date}
