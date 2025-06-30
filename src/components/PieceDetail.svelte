@@ -38,7 +38,7 @@
       piece = data;
       
       // Check if current user is the organizer
-      if ($user && piece.organizer_id === $user.id) {
+      if ($user && piece.organizer_user_id === $user.id) {
         isOrganizer = true;
       }
 
@@ -953,7 +953,7 @@
   }
 
   .organizer-avatar {
-width: 35px;
+    width: 35px;
     height: 45px;
     overflow: hidden;
     border-radius: 100px;
