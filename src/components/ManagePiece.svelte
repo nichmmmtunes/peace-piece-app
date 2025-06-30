@@ -756,7 +756,7 @@
     padding: var(--space-2) var(--space-3);
     background: var(--bg-color);
     border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
+    border: none;
   }
 
   .donation-info {
