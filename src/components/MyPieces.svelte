@@ -675,7 +675,7 @@
   }
 
   .action-button.manage {
-    color: var(--color-accent-600);
+    color: var(--color-primary-00);
   }
 
   .action-button:hover {
